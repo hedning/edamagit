@@ -94,11 +94,9 @@ export async function logFile(repository: MagitRepository, fileUri: Uri) {
 }
 
 async function log(repository: MagitRepository, args: string[], revs: string[], paths: string[] = []) {
-  const output = await gitRun(repository.gitRepository, args.concat(revs, ['--'], paths), {}, LogLevel.Error);
-  const logEntries = parseLog(output.stdout);
-  const revName = revs.join(' ');
+  
   const uri = LogView.encodeLocation(repository);
-  return ViewUtils.showView(uri, new LogView(uri, { entries: logEntries, revName }));
+  return ViewUtils.showView(uri, new LogView(uri, repository, args, revs, paths));
 }
 
 async function getRevs(repository: MagitRepository) {
@@ -127,47 +125,4 @@ function createLogArgs(switches: Switch[], options: Option[]) {
     args.push(switchMap['-g'].name);
   }
   return args;
-}
-
-function parseLog(stdout: string): MagitLogEntry[] {
-  const commits: MagitLogEntry[] = [];
-  // Split stdout lines
-  const lines = stdout.match(/[^\r\n]+/g);
-  // regex to parse line
-  const lineRe = new RegExp(
-    '^([/|\\-_* .o]+)?' + // Graph
-    '([a-f0-9]{40})' + // Sha
-    '( \\(([^()]+)\\))?' + // Refs
-    '( \\[([^\\[\\]]+)\\])' + // Author
-    '( \\[([^\\[\\]]+)\\])' + // Time
-    '(.*)$', // Message
-    'g');
-  // regex to match graph only line
-  const graphRe = /^[/|\\-_* .o]+$/g;
-
-  lines?.forEach(l => {
-    if (l.match(graphRe)) { //graph only
-      // Add to previous commits
-      commits[commits.length - 1]?.graph?.push(l);
-    } else {
-      const matches = l.matchAll(lineRe).next().value;
-      if (matches && matches.length > 0) {
-        const graph = matches[1]; // undefined if graph doesn't exist
-        const log = {
-          graph: graph ? [graph] : undefined,
-          refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
-          author: matches[6],
-          time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
-          commit: {
-            hash: matches[2],
-            message: matches[9],
-            parents: [],
-            authorEmail: undefined
-          }
-        };
-        commits.push(log);
-      }
-    }
-  });
-  return commits;
 }

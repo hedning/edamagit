@@ -10,21 +10,89 @@ import { DocumentView } from './general/documentView';
 import { TextView } from './general/textView';
 import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
+import { gitRun, LogLevel } from '../utils/gitRawRunner';
 
+
+function parseLog(stdout: string): MagitLogEntry[] {
+  const commits: MagitLogEntry[] = [];
+  // Split stdout lines
+  const lines = stdout.match(/[^\r\n]+/g);
+  // regex to parse line
+  const lineRe = new RegExp(
+    '^([/|\\-_* .o]+)?' + // Graph
+    '([a-f0-9]{40})' + // Sha
+    '( \\(([^()]+)\\))?' + // Refs
+    '( \\[([^\\[\\]]+)\\])' + // Author
+    '( \\[([^\\[\\]]+)\\])' + // Time
+    '(.*)$', // Message
+    'g');
+  // regex to match graph only line
+  const graphRe = /^[/|\\-_* .o]+$/g;
+
+  lines?.forEach(l => {
+    if (l.match(graphRe)) { //graph only
+      // Add to previous commits
+      commits[commits.length - 1]?.graph?.push(l);
+    } else {
+      const matches = l.matchAll(lineRe).next().value;
+      if (matches && matches.length > 0) {
+        const graph = matches[1]; // undefined if graph doesn't exist
+        const log = {
+          graph: graph ? [graph] : undefined,
+          refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
+          author: matches[6],
+          time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
+          commit: {
+            hash: matches[2],
+            message: matches[9],
+            parents: [],
+            authorEmail: undefined
+          }
+        };
+        commits.push(log);
+      }
+    }
+  });
+  return commits;
+}
 export default class LogView extends DocumentView {
 
   static UriPath: string = 'log.magit';
+  needsUpdate = true
+  args: string[];
+  revs: string[];
+  paths: string[];
 
-  constructor(uri: Uri, log: MagitLog) {
+  constructor(uri: Uri, repository: MagitRepository, args: string[], revs: string[], paths: string[]) {
     super(uri);
-
-    this.subViews = [
-      new TextView(`Commits in ${log.revName}`),
-      ...log.entries.map(entry => new CommitLongFormItemView(entry)),
-    ];
+    this.args = args;
+    this.revs = revs;
+    const revName = this.revs.join(' ');
+    this.paths = paths;
+    this.addSubview(new TextView(`Commits in ${revName}`));
+    this.update(repository);
   }
 
-  public update(state: MagitRepository): void { }
+  public async update(state: MagitRepository) {
+    const repo = state.gitRepository;
+    const output = await gitRun(repo, this.args.concat(this.revs, ['--'], this.paths), {}, LogLevel.Error);
+    const logEntries = parseLog(output.stdout);
+    const revName = this.revs.join(' ');
+
+    this.subViews = [
+      new TextView(`Commits in ${revName}`),
+      ...logEntries.map(entry => new CommitLongFormItemView(entry)),
+    ];
+    // For some reason the fire event can get eaten if fired synchronously 
+    const trigger = () => {
+      if (!this.emitter) {
+        setTimeout(trigger, 0);
+      } else {
+        setTimeout(this.triggerUpdate.bind(this), 0);
+      }
+    };
+    trigger();
+  }
 
   static index = 0;
   static encodeLocation(repository: MagitRepository): Uri {
@@ -59,7 +127,16 @@ export class CommitLongFormItemView extends CommitItemView {
     }
 
     const availableMsgWidth = 70 - this.content.reduce((prev, v) => prev + v.length, 0);
-    const truncatedAuthor = truncateText(logEntry.author, 17, 18);
+    let maxAuthorWidth =  17;
+    // fixme: add setting toggle
+    const shortenToInitials = true;
+    if (shortenToInitials) {
+      const initials = logEntry.author.split(/\s/).map(s => s.substring(0, 1)).join('');
+      logEntry.author = initials;
+      maxAuthorWidth = 4;
+    }
+
+    const truncatedAuthor = truncateText(logEntry.author, maxAuthorWidth, maxAuthorWidth + 1);
     const truncatedMsg = truncateText(msg, availableMsgWidth, availableMsgWidth + 1);
     this.content.push(`${truncatedMsg}${truncatedAuthor}${timeDistance}`);
 
