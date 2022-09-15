@@ -21,6 +21,7 @@ import { PullRequestView } from '../views/forge/pullRequestView';
 import { sep } from 'path';
 import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
+import { toMagitChange } from './statusCommands';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
 
@@ -141,9 +142,19 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position) {
 }
 
 export async function visitCommit(repository: MagitRepository, commitHash: string) {
-  const result = await gitRun(repository.gitRepository, ['show', commitHash]);
-  const commit: MagitCommit = { hash: commitHash, message: '', parents: [] };
+  const repo = repository.gitRepository;
+  const commit = await repo.getCommit(commitHash);
+  // fixme: handle merge commits correctly
+  const p = commit.parents[0];
+  const range: [string, string] = [p, commit.hash];
+  const changes = await repo.diffBetween(...range);
+
+  const diffs = await Promise.all(changes
+    .map(async change => {
+      const diff = await repo.diffBetween(...range, change.uri.fsPath);
+      return toMagitChange(repo, change, diff);
+    }));
 
   const uri = CommitDetailView.encodeLocation(repository, commit.hash);
-  return ViewUtils.showView(uri, new CommitDetailView(uri, commit, result.stdout));
+  return ViewUtils.showView(uri, new CommitDetailView(uri, commit, diffs));
 }
