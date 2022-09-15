@@ -14,6 +14,7 @@ import { Status } from '../typings/git';
 import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
+import { toMagitChange } from './statusCommands';
 
 const diffingMenu = {
   title: 'Diffing',
@@ -94,7 +95,6 @@ export async function showDiffSection(repository: MagitRepository, section: Sect
 async function showStash({ repository }: MenuState) {
 
   const stashesPicker: PickMenuItem<Stash>[] = repository.stashes.map(stash => ({ label: `stash@{${stash.index}}`, meta: stash })) ?? [];
-
   const chosenStash = await PickMenuUtil.showMenu(stashesPicker);
 
   if (chosenStash) {
@@ -105,28 +105,24 @@ async function showStash({ repository }: MenuState) {
 export async function showStashDetail(repository: MagitRepository, stash: Stash) {
   const uri = StashDetailView.encodeLocation(repository, stash);
 
-  const stashShowTask = gitRun(repository.gitRepository, ['stash', 'show', '-p', `stash@{${stash.index}}`]);
+  const ref = `refs/stash@{${stash.index}}`;
+  const {changes: tracked} = await VisitAtPoint.getRef(repository, ref);
+
   let stashUntrackedFiles: MagitChange[] = [];
   try {
-    let untracked = await gitRun(repository.gitRepository, ['ls-tree', '-r', 'stash@{0}^3', '--name-only']);
+    let {changes: untracked} = await VisitAtPoint.getRef(repository, `${ref}^3`);
 
-    let untrackedList = untracked.stdout.split(Constants.LineSplitterRegex);
-    untrackedList = untrackedList.slice(0, untrackedList.length - 1);
-
-    stashUntrackedFiles = untrackedList.map(fileName => ({
-      uri: Uri.parse(fileName),
-      originalUri: Uri.parse(fileName),
-      relativePath: fileName,
-      renameUri: undefined,
+    stashUntrackedFiles = untracked.map(c => ({
+      ...c,
       status: Status.UNTRACKED,
       section: Section.Untracked
     }));
 
   } catch { }
 
-  const stashDiff = (await stashShowTask).stdout;
+  // const stashDiff = (await stashShowTask).stdout;
 
-  return ViewUtils.showView(uri, new StashDetailView(uri, stash, stashDiff, stashUntrackedFiles));
+  return ViewUtils.showView(uri, new StashDetailView(uri, stash, tracked, stashUntrackedFiles));
 }
 
 async function showCommit({ repository }: MenuState) {

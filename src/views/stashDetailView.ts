@@ -13,16 +13,17 @@ export class StashDetailView extends DocumentView {
   static UriPath: string = 'stash.magit';
   needsUpdate = false;
 
-  constructor(public uri: Uri, stash: Stash, diff: string, untrackedFiles: MagitChange[]) {
+  constructor(public uri: Uri, stash: Stash, tracked: MagitChange[], untrackedFiles: MagitChange[]) {
     super(uri);
 
     this.addSubview(new TextView(`Stash@{${stash.index}} ${stash.description}`));
+
+    this.addSubview(new ChangeSectionView(Section.Unstaged, tracked, `-stashDetail@{${stash.index}}`));
 
     if (untrackedFiles.length) {
       this.addSubview(new ChangeSectionView(Section.Untracked, untrackedFiles, `-stashDetail@{${stash.index}}`));
     }
 
-    this.addSubview(new TextView(diff));
   }
 
   public update(state: MagitRepository): void { }

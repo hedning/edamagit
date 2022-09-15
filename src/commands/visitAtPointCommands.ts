@@ -216,7 +216,7 @@ function parseNameStatus(repo: Repository, entries: string[]): Change[] {
   return result;
 }
 
-async function getRef(magitState: MagitRepository, ref?: string) {
+export async function getRef(magitState: MagitRepository, ref?: string) {
   const repo = magitState.gitRepository;
   ref = ref ?? magitState.HEAD?.name;
   if (!ref) {
