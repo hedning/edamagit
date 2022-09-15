@@ -245,7 +245,8 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
   );
 
   const {commit, changes} = await getRef(magitState, commitHash);
+  const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.gitRepository, p)));
 
   const uri = CommitDetailView.encodeLocation(magitState, commit.hash);
-  return ViewUtils.showView(uri, new CommitDetailView(uri, commit, changes));
+  return ViewUtils.showView(uri, new CommitDetailView(uri, commit, changes, parents));
 }

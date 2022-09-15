@@ -9,7 +9,8 @@ import { ChangeView } from './changes/changeView';
 import { Section, SectionHeaderView } from './general/sectionHeader';
 import { LineBreakView } from './general/lineBreakView';
 import GitTextUtils from '../utils/gitTextUtils';
-import { CommitItemView } from './commits/commitSectionView';
+import { CommitItemView, CommitSectionView } from './commits/commitSectionView';
+import { Commit } from '../typings/git';
 
 export class CommitDetailView extends DocumentView {
 
@@ -17,20 +18,21 @@ export class CommitDetailView extends DocumentView {
   isHighlightable = true;
   needsUpdate = false;
 
-  constructor(uri: Uri, public commit: MagitCommit, changes: MagitChange[]) {
+  constructor(uri: Uri, public commit: MagitCommit, changes: MagitChange[], parents: Commit[]) {
     super(uri);
 
 
     this.addSubview(new CommitItemView(commit));
     // this.addSubview(shaView);
     const author = `${commit.authorName} <${commit.authorEmail}>`;
-    const parents = commit.parents.join(' ');
     const authorDetails = new TextView(`Author:     ${author}`);
     this.addSubview(authorDetails);
 
     this.addSubview(new TextView(`AuthorDate: ${commit.authorDate}`));
     this.addSubview(new TextView(`CommitDate: ${commit.commitDate}`));
-    this.addSubview(new TextView(`Parents:    ${parents}`));
+
+
+    this.addSubview(new CommitSectionView(Section.Parents, parents));
 
     const messageView = new TextView(commit.message);
     this.addSubview(new LineBreakView(), messageView, new LineBreakView());
