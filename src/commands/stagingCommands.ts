@@ -97,7 +97,7 @@ async function unstage(repository: MagitRepository, selection: Selection, select
   if (selectedView instanceof HunkView) {
     let hunkView = selectedView as HunkView;
 
-    if (hunkView.section === Section.Staged) {
+    if (hunkView.section === Section.Staged || hunkView.section === Section.Changes) {
       const patch = GitTextUtils.generatePatchFromChangeHunkView(selectedView, selection, true);
       return ApplyAtPoint.apply(repository, patch, { index: true, reverse: true });
     } else {
