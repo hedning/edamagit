@@ -130,13 +130,15 @@ async function resetBranch({ repository }: MenuState) {
 
   const ref = await MagitUtils.chooseRef(repository, 'Reset branch', true, false, false);
 
-  const resetToRef = await MagitUtils.chooseRef(repository, `Reset ${ref} to`);
+  const resetToRefString = await MagitUtils.chooseRef(repository, `Reset ${ref} to`);
+
+  const resetToRef = await repository.gitRepository.getBranch(resetToRefString);
 
   if (ref && resetToRef) {
 
     if (ref === repository.HEAD?.name) {
 
-      const args = ['reset', '--hard', resetToRef];
+      const args = ['reset', '--hard', resetToRefString];
       if (MagitUtils.magitAnythingModified(repository)) {
 
         if (await MagitUtils.confirmAction(`Uncommitted changes will be lost. Proceed?`)) {
@@ -146,7 +148,12 @@ async function resetBranch({ repository }: MenuState) {
         return await gitRun(repository.gitRepository, args);
       }
     } else {
-      const args = ['update-ref', `refs/heads/${ref}`, `refs/heads/${resetToRef}`];
+      const args = ['update-ref', `refs/heads/${ref}`];
+      if (resetToRef.remote) {
+        args.push(`${resetToRefString}`);
+      } else {
+        args.push(`refs/heads/${resetToRef}`);
+      }
       return gitRun(repository.gitRepository, args);
     }
   }
