@@ -94,9 +94,14 @@ export async function logFile(repository: MagitRepository, fileUri: Uri) {
 }
 
 async function log(repository: MagitRepository, args: string[], revs: string[], paths: string[] = []) {
-  
-  const uri = LogView.encodeLocation(repository);
-  return ViewUtils.showView(uri, new LogView(uri, repository, args, revs, paths));
+
+  const uri = LogView.encodeLocation(repository, revs);
+  const view = ViewUtils.createOrUpdateView(
+      repository,
+      uri,
+      () => new LogView(uri, repository, args, revs, paths)
+  );
+  return ViewUtils.showView(uri, view);
 }
 
 async function getRevs(repository: MagitRepository) {

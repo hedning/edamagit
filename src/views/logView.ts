@@ -69,7 +69,7 @@ export default class LogView extends DocumentView {
     this.revs = revs;
     const revName = this.revs.join(' ');
     this.paths = paths;
-    this.addSubview(new TextView(`Commits in ${revName}`));
+    this.addSubview(new TextView(`Loading commits in ${revName}`));
     this.update(repository);
   }
 
@@ -83,7 +83,7 @@ export default class LogView extends DocumentView {
       new TextView(`Commits in ${revName}`),
       ...logEntries.map(entry => new CommitLongFormItemView(entry)),
     ];
-    // For some reason the fire event can get eaten if fired synchronously 
+    // For some reason the fire event can get eaten if fired synchronously
     const trigger = () => {
       if (!this.emitter) {
         setTimeout(trigger, 0);
@@ -94,9 +94,8 @@ export default class LogView extends DocumentView {
     trigger();
   }
 
-  static index = 0;
-  static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${LogView.UriPath}?${repository.uri.fsPath}#${LogView.index++}`);
+  static encodeLocation(repository: MagitRepository, revs: string[]): Uri {
+    return Uri.parse(`${Constants.MagitUriScheme}:${LogView.UriPath}?${repository.uri.fsPath}#${revs.join(':')}`);
   }
 }
 
