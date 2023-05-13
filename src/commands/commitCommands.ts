@@ -119,7 +119,9 @@ export async function runCommitLikeCommand(repository: MagitRepository, args: st
     instructionStatus = vscode.window.setStatusBarMessage(`Type C-c C-c to finish, or C-c C-k to cancel`);
 
     if (showStagedChanges) {
-      stagedEditorTask = Diffing.showDiffSection(repository, Section.Staged, true);
+      args.splice(1, 0, '-v');
+      // stagedEditorTask = Diffing.showDiffSection(repository, Section.Staged, true);
+
     }
 
     const env: NodeJS.ProcessEnv = { 'GIT_EDITOR': `"${codePath}" --wait` };
