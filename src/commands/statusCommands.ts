@@ -38,7 +38,10 @@ export async function magitStatus(): Promise<any> {
     // Checks for existing Magit status view
     let view = views.get(uri.toString());
     if (view) {
-      await MagitUtils.magitStatusAndUpdate(repository);
+      /** Just fire off the update in the background, it can take while, so we want to show what we already
+       * have immediately
+       */
+      MagitUtils.magitStatusAndUpdate(repository);
       if (editor?.document.uri.path === MagitStatusView.UriPath) {
         return;
       }
