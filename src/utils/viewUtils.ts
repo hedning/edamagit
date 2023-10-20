@@ -10,12 +10,12 @@ import { magitConfig, views } from '../extension';
 
 export default class ViewUtils {
 
-  public static createOrUpdateView(repository: MagitRepository, uri: Uri, viewFactory: () => DocumentView) {
+  public static createOrUpdateView<T extends DocumentView>(repository: MagitRepository, uri: Uri, viewFactory: () => T): T {
     const existingView = views.get(uri.toString());
 
     if (existingView) {
       existingView.update(repository);
-      return existingView;
+      return existingView as T;
     }
     return viewFactory();
   }
