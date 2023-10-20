@@ -7,9 +7,9 @@
   "author": {
     "name": "Kristian Andersen Hole"
   },
-  "version": "0.6.40",
+  "version": "0.7.40",
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.63.0"
   },
   "icon": "images/edamagit_logo.png",
   "categories": [
