@@ -17,50 +17,47 @@ const whileRebasingMenu = {
 
 export async function rebasing(repository: MagitRepository) {
 
-  if (repository.rebasingState) {
-    return MenuUtil.showMenu(whileRebasingMenu, { repository });
-  } else {
+  if (repository.rebasingState) return MenuUtil.showMenu(whileRebasingMenu, { repository });
 
-    const switches = [
-      { key: '-k', name: '--keep-empty', description: 'Keep empty commits' },
-      { key: '-p', name: '--rebase-merges', description: 'Rebase merges' },
-      { key: '-c', name: '--committer-date-is-author-date', description: 'Lie about committer date' },
-      { key: '-a', name: '--autosquash', description: 'Autosquash' },
-      { key: '-A', name: '--autostash', description: 'Autostash' },
-      { key: '-i', name: '--interactive', description: 'Interactive' },
-      { key: '-h', name: '--no-verify', description: 'Disable hooks' },
-    ];
+  const switches = [
+    { key: '-k', name: '--keep-empty', description: 'Keep empty commits' },
+    { key: '-p', name: '--rebase-merges', description: 'Rebase merges' },
+    { key: '-c', name: '--committer-date-is-author-date', description: 'Lie about committer date' },
+    { key: '-a', name: '--autosquash', description: 'Autosquash' },
+    { key: '-A', name: '--autostash', description: 'Autostash' },
+    { key: '-i', name: '--interactive', description: 'Interactive' },
+    { key: '-h', name: '--no-verify', description: 'Disable hooks' },
+  ];
 
-    const HEAD = repository.HEAD;
+  const HEAD = repository.HEAD;
 
-    const commands = [];
+  const commands = [];
 
-    if (HEAD?.pushRemote) {
-      commands.push({
-        label: 'p', description: `onto ${HEAD.pushRemote.remote}/${HEAD.pushRemote.name}`,
-        action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.pushRemote!.remote}/${HEAD.pushRemote!.name}`, switches)
-      });
-    }
-
-    if (HEAD?.upstreamRemote) {
-      commands.push({
-        label: 'u', description: `onto ${HEAD.upstreamRemote.remote}/${HEAD.upstreamRemote.name}`,
-        action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.upstreamRemote!.remote}/${HEAD.upstreamRemote!.name}`, switches)
-      });
-    }
-
-    commands.push(...[
-      { label: 'e', description: `onto elsewhere`, action: rebase },
-      { label: 'i', description: `interactively`, action: rebaseInteractively }
-    ]);
-
-    const rebasingMenu = {
-      title: `Rebasing ${HEAD?.name}`,
-      commands
-    };
-
-    return MenuUtil.showMenu(rebasingMenu, { repository, switches });
+  if (HEAD?.pushRemote) {
+    commands.push({
+      label: 'p', description: `onto ${HEAD.pushRemote.remote}/${HEAD.pushRemote.name}`,
+      action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.pushRemote!.remote}/${HEAD.pushRemote!.name}`, switches)
+    });
   }
+
+  if (HEAD?.upstreamRemote) {
+    commands.push({
+      label: 'u', description: `onto ${HEAD.upstreamRemote.remote}/${HEAD.upstreamRemote.name}`,
+      action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.upstreamRemote!.remote}/${HEAD.upstreamRemote!.name}`, switches)
+    });
+  }
+
+  commands.push(...[
+    { label: 'e', description: `onto elsewhere`, action: rebase },
+    { label: 'i', description: `interactively`, action: rebaseInteractively }
+  ]);
+
+  const rebasingMenu = {
+    title: `Rebasing ${HEAD?.name}`,
+    commands
+  };
+
+  return MenuUtil.showMenu(rebasingMenu, { repository, switches });
 }
 
 async function rebase({ repository, switches }: MenuState) {
