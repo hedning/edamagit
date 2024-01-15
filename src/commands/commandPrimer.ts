@@ -15,37 +15,28 @@ export class CommandPrimer {
 
     return async (editor: TextEditor) => {
       const repository = await MagitUtils.getCurrentMagitRepo(editor.document.uri);
+      if (!repository) return;
 
-      if (repository) {
-        try {
-          await command(repository);
-        } catch (error) {
-          this.handleError(repository, error);
-        } finally {
-          if (triggersUpdate) {
-            MagitUtils.magitStatusAndUpdate(repository);
-          }
-        }
+      try {
+        await command(repository);
+      } catch (error) {
+        this.handleError(repository, error);
       }
+      if (triggersUpdate) MagitUtils.magitStatusAndUpdate(repository);
     };
   }
 
   static primeRepoAndView(command: ViewCommand, triggersUpdate: boolean = true): (editor: TextEditor) => Promise<any> {
-
     return async (editor: TextEditor) => {
       const [repository, currentView] = MagitUtils.getCurrentMagitRepoAndView(editor.document.uri);
+      if (!repository || !currentView) return;
 
-      if (repository && currentView) {
-        try {
-          await command(repository, currentView);
-        } catch (error) {
-          this.handleError(repository, error);
-        } finally {
-          if (triggersUpdate) {
-            MagitUtils.magitStatusAndUpdate(repository);
-          }
-        }
+      try {
+        await command(repository, currentView);
+      } catch (error) {
+        this.handleError(repository, error);
       }
+      if (triggersUpdate) MagitUtils.magitStatusAndUpdate(repository);
     };
   }
 
@@ -54,18 +45,14 @@ export class CommandPrimer {
 
       const fileUri = editor.document.uri;
       const repository = await MagitUtils.getCurrentMagitRepo(fileUri);
+      if (!repository) return;
 
-      if (repository) {
-        try {
-          await command(repository, fileUri);
-        } catch (error) {
-          this.handleError(repository, error);
-        } finally {
-          if (triggersUpdate) {
-            MagitUtils.magitStatusAndUpdate(repository);
-          }
-        }
+      try {
+        await command(repository, fileUri);
+      } catch (error) {
+        this.handleError(repository, error);
       }
+      if (triggersUpdate) MagitUtils.magitStatusAndUpdate(repository);
     };
   }
 
