@@ -44,6 +44,36 @@ import { submodules } from './commands/submodulesCommands';
 import { forgeRefreshInterval } from './forge';
 import { View } from './views/general/view';
 
+class MagitFolding implements vscode.FoldingRangeProvider {
+  onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
+
+  provideFoldingRanges(
+    document: vscode.TextDocument,
+    context: vscode.FoldingContext,
+    token: vscode.CancellationToken,
+  ): vscode.ProviderResult<vscode.FoldingRange[]> {
+    // Simply fetch the view and return the recorded foldable states
+    // The main thing here is being able to search through folded stuff
+    const ranges: vscode.FoldingRange[] = [];
+
+    const view = views.get(document.uri.toString());
+    if (!view) return ranges;
+
+    const queue: View[] = [view];
+    while (queue.length > 0) {
+      const v = queue.pop()!;
+      queue.push(...v.subViews);
+      if (!v.isFoldable) continue;
+
+      ranges.push(new vscode.FoldingRange(
+        v.range.start.line,
+        v.range.end.line,
+      ));
+    }
+    return ranges;
+  }
+}
+
 export const magitRepositories: Map<string, MagitRepository> = new Map<string, MagitRepository>();
 export const views: Map<string, DocumentView> = new Map<string, DocumentView>();
 export const processLog: MagitProcessLogEntry[] = [];
@@ -110,35 +140,6 @@ export async function activate(context: ExtensionContext) {
   const contentProvider = new ContentProvider();
   const highlightProvider = new HighlightProvider();
   const semanticTokensProvider = new SemanticTokensProvider();
-
-  class MagitFolding implements vscode.FoldingRangeProvider {
-    onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
-
-    provideFoldingRanges(
-      document: vscode.TextDocument,
-      context: vscode.FoldingContext,
-      token: vscode.CancellationToken,
-    ): vscode.ProviderResult<vscode.FoldingRange[]> {
-      // Simply fetch the view and return the recorded foldable states
-      // The main thing here is being able to search through folded stuff
-      const view = views.get(document.uri.toString());
-      if (!view) return [];
-
-      const ranges: vscode.FoldingRange[] = [];
-      const queue: View[] = [view];
-      while (queue.length > 0) {
-        const v = queue.pop()!;
-        queue.push(...v.subViews);
-        if (!v.isFoldable) continue;
-
-        ranges.push(new vscode.FoldingRange(
-          v.range.start.line,
-          v.range.end.line,
-        ));
-      }
-      return ranges;
-    }
-  }
 
   const providerRegistrations = Disposable.from(
     workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, contentProvider),
