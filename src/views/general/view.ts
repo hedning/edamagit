@@ -63,10 +63,8 @@ export abstract class View {
   click(position: Position): View | undefined {
     if (this.range.contains(position)) {
       const result = this.onClicked();
-
-      if (this.folded) {
-        return result;
-      }
+      // Can't depend on folded being correct here I think
+      // if (this.folded) return result;
 
       let subResult: View | undefined = undefined;
       for (const subView of this.subViews) {
