@@ -14,7 +14,6 @@ export class ChangeSectionView extends View {
     this.subViews = [
       new SectionHeaderView(section, changes.length),
       ...changes.map(change => new ChangeView(section, change, context)),
-      new LineBreakView()
     ];
   }
 }

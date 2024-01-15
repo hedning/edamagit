@@ -36,7 +36,7 @@ export default class MagitStatusView extends DocumentView {
 
     let latestGitError = getLatestGitError(magitState);
     if (latestGitError) {
-        this.addSubview(new ErrorMessageView(latestGitError));
+      this.addSubview(new ErrorMessageView(latestGitError));
     }
 
     this.addSubview(new BranchHeaderSectionView(magitState.HEAD));
@@ -61,14 +61,17 @@ export default class MagitStatusView extends DocumentView {
 
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
       this.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
+      this.addSubview(new LineBreakView());
     }
 
     if ((magitState.workingTreeChanges.length || magitState.mergeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
       this.addSubview(new ChangeSectionView(Section.Unstaged, [...magitState.mergeChanges, ...magitState.workingTreeChanges]));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.indexChanges.length && !magitConfig.hiddenStatusSections.has('staged')) {
       this.addSubview(new ChangeSectionView(Section.Staged, magitState.indexChanges));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.stashes?.length && !magitConfig.hiddenStatusSections.has('stashes')) {
