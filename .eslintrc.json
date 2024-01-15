@@ -22,7 +22,7 @@
     "rules": {
         "eqeqeq": "error",
         "quotes": [2, "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
-        "curly": "warn",
+        "curly": "off",
         "no-empty": "off",
         "no-unused-vars": "off",
         "semi": "warn",
