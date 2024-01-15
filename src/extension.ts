@@ -1,4 +1,5 @@
 import { workspace, extensions, commands, ExtensionContext, Disposable, languages, window } from 'vscode';
+import * as vscode from 'vscode';
 import ContentProvider from './providers/contentProvider';
 import { GitExtension, API } from './typings/git';
 import { pushing } from './commands/pushingCommands';
@@ -41,6 +42,7 @@ import { copySectionValueCommand } from './commands/copySectionValueCommands';
 import { copyBufferRevisionCommands } from './commands/copyBufferRevisionCommands';
 import { submodules } from './commands/submodulesCommands';
 import { forgeRefreshInterval } from './forge';
+import { View } from './views/general/view';
 
 export const magitRepositories: Map<string, MagitRepository> = new Map<string, MagitRepository>();
 export const views: Map<string, DocumentView> = new Map<string, DocumentView>();
@@ -66,11 +68,8 @@ function loadConfig() {
 }
 
 function readHiddenStatusSections(configEntry: any): Set<string> {
-  if (Array.isArray(configEntry)) {
-    return new Set(configEntry);
-  } else {
-    return new Set();
-  }
+  if (!Array.isArray(configEntry)) return new Set();
+  return new Set(configEntry);
 }
 
 export async function activate(context: ExtensionContext) {
@@ -112,9 +111,39 @@ export async function activate(context: ExtensionContext) {
   const highlightProvider = new HighlightProvider();
   const semanticTokensProvider = new SemanticTokensProvider();
 
+  class MagitFolding implements vscode.FoldingRangeProvider {
+    onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
+
+    provideFoldingRanges(
+      document: vscode.TextDocument,
+      context: vscode.FoldingContext,
+      token: vscode.CancellationToken,
+    ): vscode.ProviderResult<vscode.FoldingRange[]> {
+      // Simply fetch the view and return the recorded foldable states
+      // The main thing here is being able to search through folded stuff
+      const view = views.get(document.uri.toString());
+      if (!view) return [];
+
+      const ranges: vscode.FoldingRange[] = [];
+      const queue: View[] = [view];
+      while (queue.length > 0) {
+        const v = queue.pop()!;
+        queue.push(...v.subViews);
+        if (!v.isFoldable) continue;
+
+        ranges.push(new vscode.FoldingRange(
+          v.range.start.line,
+          v.range.end.line,
+        ));
+      }
+      return ranges;
+    }
+  }
+
   const providerRegistrations = Disposable.from(
     workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, contentProvider),
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, highlightProvider),
+    languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
   );
   context.subscriptions.push(

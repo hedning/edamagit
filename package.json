@@ -501,9 +501,9 @@
         "when": "activeEditor"
       },
       {
-        "command": "magit.toggle-fold",
+        "command": "editor.toggleFold",
         "key": "tab",
-        "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
+        "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/ && foldingEnabled"
       },
       {
         "command": "magit.refresh",

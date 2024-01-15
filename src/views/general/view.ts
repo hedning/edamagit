@@ -16,16 +16,14 @@ export abstract class View {
   }
 
   set folded(value: boolean) {
-    if (this.id) {
-      viewFoldStatusMemory.set(this.id, value);
-    }
+    if (this.id) viewFoldStatusMemory.set(this.id, value);
     this._folded = value;
   }
 
   get range(): Range {
-    if (this.folded) {
-      return new Range(new Position(this._range.start.line, this._range.start.character), new Position(this._range.start.line, 300));
-    }
+    // if (this.folded) {
+    //   return new Range(new Position(this._range.start.line, this._range.start.character), new Position(this._range.start.line, 300));
+    // }
     return this._range;
   }
 
@@ -55,7 +53,7 @@ export abstract class View {
     );
     this.range = new Range(startLineNumber, 0, currentLineNumber - 1, renderedContent.length > 0 ? renderedContent[renderedContent.length - 1].length : 0);
 
-    return this.folded ? renderedContent.slice(0, 1) : renderedContent;
+    return renderedContent;
   }
 
   get id(): string | undefined { return undefined; }
