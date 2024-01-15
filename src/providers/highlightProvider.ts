@@ -5,17 +5,18 @@ export default class HighlightProvider implements vscode.DocumentHighlightProvid
 
   dispose() { }
 
-  provideDocumentHighlights(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.DocumentHighlight[]> {
-
-    const highlights: vscode.DocumentHighlight[] = [];
+  provideDocumentHighlights(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken,
+  ): vscode.ProviderResult<vscode.DocumentHighlight[]> {
 
     const currentView = views.get(document.uri.toString());
-    if (currentView) {
-      const clickedView = currentView.click(position);
-      if (clickedView?.isHighlightable) {
-        highlights.push(new vscode.DocumentHighlight(clickedView.range, vscode.DocumentHighlightKind.Text));
-      }
-    }
-    return highlights;
+    if (!currentView) return;
+
+    const clickedView = currentView.click(position);
+    if (!clickedView?.isHighlightable) return;
+
+    return [new vscode.DocumentHighlight(clickedView.range, vscode.DocumentHighlightKind.Text)];
   }
 }
