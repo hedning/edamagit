@@ -17,25 +17,26 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
 
     this._subscriptions = vscode.Disposable.from(
       vscode.workspace.onDidCloseTextDocument(
-        doc => {
-          if (doc.uri.scheme === Constants.MagitUriScheme) {
-            views.delete(doc.uri.toString());
-          }
-        }),
+        (doc) => {
+          if (doc.uri.scheme !== Constants.MagitUriScheme) return;
+
+          views.delete(doc.uri.toString());
+        }
+      ),
       vscode.workspace.onDidSaveTextDocument(
-        async doc => {
+        async (doc) => {
           for (const visibleEditor of vscode.window.visibleTextEditors) {
-            if (visibleEditor.document.uri.scheme === Constants.MagitUriScheme) {
-              if (FilePathUtils.isDescendant(visibleEditor.document.uri.query, doc.uri.fsPath)) {
-                const repository = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
-                if (!repository) {
-                  return;
-                }
-                return MagitUtils.magitStatusAndUpdate(repository);
-              }
-            }
+            if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
+            if (!FilePathUtils.isDescendant(visibleEditor.document.uri.query, doc.uri.fsPath)) continue;
+
+            const repository = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
+            if (!repository) return;
+
+            return MagitUtils.magitStatusAndUpdate(repository);
           }
-        }));
+        }
+      ),
+    );
   }
 
   dispose() {
