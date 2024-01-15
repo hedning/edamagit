@@ -61,21 +61,19 @@ export abstract class View {
   onClicked(): View | undefined { return this; }
 
   click(position: Position): View | undefined {
-    if (this.range.contains(position)) {
-      const result = this.onClicked();
-      // Can't depend on folded being correct here I think
-      // if (this.folded) return result;
+    if (!this.range.contains(position)) return;
 
-      let subResult: View | undefined = undefined;
-      for (const subView of this.subViews) {
-        subResult = subView.click(position);
-        if (subResult) {
-          break;
-        }
-      }
+    const result = this.onClicked();
+    // Can't depend on folded being correct here I think
+    // if (this.folded) return result;
 
-      return subResult ?? result;
+    let subResult: View | undefined = undefined;
+    for (const subView of this.subViews) {
+      subResult = subView.click(position);
+      if (subResult) break;
     }
+
+    return subResult ?? result;
   }
 
   addSubview(...views: View[]) {
