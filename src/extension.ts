@@ -92,7 +92,6 @@ function loadConfig() {
     quickSwitchEnabled: workspaceConfig.get('quick-switch-enabled'),
     winGitPath: workspaceConfig.get('win-git-path')
   };
-
   let configCodePath: string | undefined = workspaceConfig.get('code-path');
   setCodePath(configCodePath);
 }
@@ -106,28 +105,21 @@ export async function activate(context: ExtensionContext) {
 
   const gitExtension = extensions.getExtension<GitExtension>('vscode.git')!;
   if (!gitExtension.isActive) {
-    // Activate vscode internal git extension
     await gitExtension.activate();
-    // and give it some time to load some state
+    // and give it some time to load some state...
     await new Promise(r => setTimeout(r, 1000));
   }
 
   const gitExtensionExports = gitExtension.exports;
-  if (!gitExtensionExports.enabled) {
-    throw new Error('vscode.git Git extension not enabled');
-  }
+  if (!gitExtensionExports.enabled) throw new Error('vscode.git Git extension not enabled');
 
   loadConfig();
   workspace.onDidChangeConfiguration(configChangedEvent => {
-    if (configChangedEvent.affectsConfiguration('magit')) {
-      loadConfig();
-    }
+    if (configChangedEvent.affectsConfiguration('magit')) loadConfig();
   });
 
   context.subscriptions.push(gitExtensionExports.onDidChangeEnablement(enabled => {
-    if (!enabled) {
-      throw new Error('vscode.git Git extension was disabled');
-    }
+    if (!enabled) throw new Error('vscode.git Git extension was disabled');
   }));
 
   gitApi = gitExtensionExports.getAPI(1);
@@ -137,20 +129,14 @@ export async function activate(context: ExtensionContext) {
     magitRepositories.delete(repository.rootUri.fsPath);
   }));
 
-  const contentProvider = new ContentProvider();
-  const highlightProvider = new HighlightProvider();
   const semanticTokensProvider = new SemanticTokensProvider();
-
   const providerRegistrations = Disposable.from(
-    workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, contentProvider),
-    languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, highlightProvider),
+    workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, new ContentProvider()),
+    languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
   );
-  context.subscriptions.push(
-    contentProvider,
-    providerRegistrations,
-  );
+  context.subscriptions.push(providerRegistrations);
 
   context.subscriptions.push(
     commands.registerCommand('magit.status', magitStatus),
