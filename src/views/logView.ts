@@ -12,47 +12,46 @@ import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
 import { gitRun, LogLevel } from '../utils/gitRawRunner';
 
+// regex to parse log lines
+const lineRe = new RegExp(
+  '^([/|\\-_* .o]+)?' + // Graph
+  '([a-f0-9]{40})' + // Sha
+  '( \\(([^()]+)\\))?' + // Refs
+  '( \\[([^\\[\\]]+)\\])' + // Author
+  '( \\[([^\\[\\]]+)\\])' + // Time
+  '(.*)$', // Message
+  'g');
+const graphRe = /^[/|\\-_* .o]+$/g;
 
 function parseLog(stdout: string): MagitLogEntry[] {
-  const commits: MagitLogEntry[] = [];
-  // Split stdout lines
   const lines = stdout.match(/[^\r\n]+/g);
-  // regex to parse line
-  const lineRe = new RegExp(
-    '^([/|\\-_* .o]+)?' + // Graph
-    '([a-f0-9]{40})' + // Sha
-    '( \\(([^()]+)\\))?' + // Refs
-    '( \\[([^\\[\\]]+)\\])' + // Author
-    '( \\[([^\\[\\]]+)\\])' + // Time
-    '(.*)$', // Message
-    'g');
-  // regex to match graph only line
-  const graphRe = /^[/|\\-_* .o]+$/g;
+  if (!lines) return [];
 
-  lines?.forEach(l => {
-    if (l.match(graphRe)) { //graph only
-      // Add to previous commits
-      commits[commits.length - 1]?.graph?.push(l);
-    } else {
-      const matches = l.matchAll(lineRe).next().value;
-      if (matches && matches.length > 0) {
-        const graph = matches[1]; // undefined if graph doesn't exist
-        const log = {
-          graph: graph ? [graph] : undefined,
-          refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
-          author: matches[6],
-          time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
-          commit: {
-            hash: matches[2],
-            message: matches[9],
-            parents: [],
-            authorEmail: undefined
-          }
-        };
-        commits.push(log);
-      }
+  const commits: MagitLogEntry[] = [];
+  for (const line of lines) {
+    if (line.match(graphRe)) { // graph only, ie. the whole line is just graph stuff
+      commits[commits.length - 1]?.graph?.push(line);
+      continue;
     }
-  });
+
+    const matches = line.matchAll(lineRe).next().value;
+    if (!matches || matches.length === 0) continue;
+
+    const graph = matches[1]; // undefined if graph doesn't exist
+    commits.push({
+      graph: graph ? [graph] : undefined,
+      refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
+      author: matches[6],
+      time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
+      commit: {
+        hash: matches[2],
+        message: matches[9],
+        parents: [],
+        authorEmail: undefined
+      }
+    });
+  }
+
   return commits;
 }
 export default class LogView extends DocumentView {
@@ -126,7 +125,7 @@ export class CommitLongFormItemView extends CommitItemView {
     }
 
     const availableMsgWidth = 70 - this.content.reduce((prev, v) => prev + v.length, 0);
-    let maxAuthorWidth =  17;
+    let maxAuthorWidth = 17;
     // fixme: add setting toggle
     const shortenToInitials = true;
     if (shortenToInitials) {
