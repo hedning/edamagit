@@ -76,6 +76,7 @@ export default class MagitStatusView extends DocumentView {
 
     if (magitState.stashes?.length && !magitConfig.hiddenStatusSections.has('stashes')) {
       this.addSubview(new StashSectionView(magitState.stashes));
+      this.addSubview(new LineBreakView());
     }
 
     const refs = magitState.remotes.reduce((prev, remote) => remote.branches.concat(prev), magitState.branches.concat(magitState.tags));
