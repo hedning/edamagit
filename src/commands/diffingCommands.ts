@@ -106,24 +106,19 @@ export async function showStashDetail(repository: MagitRepository, stash: Stash)
   const uri = StashDetailView.encodeLocation(repository, stash);
 
   const ref = `refs/stash@{${stash.index}}`;
-  const {commit, changes: unstaged} = await VisitAtPoint.getRef(repository, ref);
-
-  const {changes: staged} = await VisitAtPoint.getRef(repository, commit.parents[1]);
+  const { commit, changes: unstaged } = await VisitAtPoint.getRef(repository, ref);
+  const { changes: staged } = await VisitAtPoint.getRef(repository, commit.parents[1]);
 
   let stashUntrackedFiles: MagitChange[] = [];
   if (commit.parents.length === 3) {
-    let {changes: untracked} = await VisitAtPoint.getRef(repository, commit.parents[2]);
+    let { changes: untracked } = await VisitAtPoint.getRef(repository, commit.parents[2]);
 
     stashUntrackedFiles = untracked.map(c => ({
       ...c,
       status: Status.UNTRACKED,
       section: Section.Untracked
     }));
-
-  
   }
-
-  // const stashDiff = (await stashShowTask).stdout;
 
   return ViewUtils.showView(uri, new StashDetailView(uri, stash, unstaged, staged, stashUntrackedFiles));
 }
