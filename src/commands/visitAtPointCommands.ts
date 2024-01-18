@@ -30,62 +30,43 @@ import { ca } from 'date-fns/locale';
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
 
   const activePosition = window.activeTextEditor?.selection.active;
-
-  if (!activePosition) {
-    return;
-  }
+  if (!activePosition) return;
 
   const selectedView = currentView.click(activePosition);
 
   if (selectedView instanceof ChangeView) {
+    const change = selectedView.change;
+    if (change.hunks?.length) return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView);
 
-    const change = (selectedView as ChangeView).change;
+    // Check if change path is a directory. Reveal directories in file explorer
+    if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
-    if (change.hunks?.length) {
-      return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView);
-    } else {
+    return workspace.openTextDocument(change.uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
 
-      // Check if change path is a directory. Reveal directories in file explorer
-      if (change.relativePath?.endsWith(sep)) {
-        return commands.executeCommand('revealInExplorer', change.uri);
-      } else {
-        return workspace.openTextDocument(change.uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
-      }
-    }
-  }
-  else if (selectedView instanceof HunkView) {
-
+  } else if (selectedView instanceof HunkView) {
     return visitHunk(selectedView, activePosition);
 
   } else if (selectedView instanceof CommitItemView) {
+    return visitCommit(repository, selectedView.commit.hash);
 
-    const commit: MagitCommit = (selectedView as CommitItemView).commit;
-    return visitCommit(repository, commit.hash);
-
-  } else if (selectedView instanceof BranchListingView ||
+  } else if (
+    selectedView instanceof BranchListingView ||
     selectedView instanceof RemoteBranchListingView ||
-    selectedView instanceof TagListingView) {
-
-    const commit = (selectedView as BranchListingView).ref.commit;
-    return visitCommit(repository, commit!);
+    selectedView instanceof TagListingView
+  ) {
+    return visitCommit(repository, selectedView.ref.commit!);
 
   } else if (selectedView instanceof StashItemView) {
-
-    const stash = (selectedView as StashItemView).stash;
-    return Diffing.showStashDetail(repository, stash);
-
+    return Diffing.showStashDetail(repository, selectedView.stash);
 
   } else if (selectedView instanceof IssueItemView) {
-
-    const issue = (selectedView as IssueItemView).issue;
+    const issue = selectedView.issue;
     const uri = IssueView.encodeLocation(repository, issue);
-    let issueView = ViewUtils.createOrUpdateView(repository, uri, () => new IssueView(uri, issue));
-
+    const issueView = ViewUtils.createOrUpdateView(repository, uri, () => new IssueView(uri, issue));
     return ViewUtils.showView(uri, issueView);
 
   } else if (selectedView instanceof PullRequestItemView) {
-
-    const pullRequest = (selectedView as PullRequestItemView).pullRequest;
+    const pullRequest = selectedView.pullRequest;
     const uri = PullRequestView.encodeLocation(repository, pullRequest);
     let pullRequestView = ViewUtils.createOrUpdateView(repository, uri, () => new PullRequestView(uri, pullRequest));
 
@@ -93,8 +74,10 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
 
   } else if (selectedView instanceof ErrorMessageView) {
     return processView(repository);
+
   } else {
     window.setStatusBarMessage('There is no thing at point that could be visited', Constants.StatusMessageDisplayTimeout);
+
   }
 }
 
@@ -233,7 +216,7 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
       return toMagitChange(repo, change, ret.stdout);
     }));
 
-    return {commit, changes: magitChanges};
+  return { commit, changes: magitChanges };
 }
 
 export async function visitCommit(magitState: MagitRepository, commitHash: string) {
@@ -244,7 +227,7 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
     magitState.branches.concat(magitState.tags)
   );
 
-  const {commit, changes} = await getRef(magitState, commitHash);
+  const { commit, changes } = await getRef(magitState, commitHash);
   const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.gitRepository, p)));
 
   const uri = CommitDetailView.encodeLocation(magitState, commit.hash);
