@@ -15,33 +15,26 @@ export async function magitApplyEntityAtPoint(repository: MagitRepository, curre
   const selectedView = currentView.click(window.activeTextEditor!.selection.active);
 
   if (selectedView instanceof CommitItemView) {
-
-    const commit = (selectedView as CommitItemView).commit;
-
+    const commit = selectedView.commit;
     return CherryPicking.cherryPick(repository, commit.hash, { noCommit: true });
 
-  } else if (selectedView instanceof BranchListingView ||
+  } else if (
+    selectedView instanceof BranchListingView ||
     selectedView instanceof RemoteBranchListingView ||
-    selectedView instanceof TagListingView) {
-
+    selectedView instanceof TagListingView
+  ) {
     const ref = (selectedView as BranchListingView).ref;
-
-    if (ref.commit) {
-      return CherryPicking.cherryPick(repository, ref.commit, { noCommit: true });
-    }
+    if (ref.commit) return CherryPicking.cherryPick(repository, ref.commit, { noCommit: true });
 
   } else if (selectedView instanceof StashItemView) {
-
-    const stash = (selectedView as StashItemView).stash;
-
+    const stash = selectedView.stash;
     const args = ['stash', 'apply', '--index', `stash@{${stash.index}}`];
     return gitRun(repository.gitRepository, args);
+
   } else {
     const ref = await MagitUtils.chooseRef(repository, 'Apply changes from commit');
 
-    if (ref) {
-      return CherryPicking.cherryPick(repository, ref, { noCommit: true });
-    }
+    if (ref) return CherryPicking.cherryPick(repository, ref, { noCommit: true });
   }
 }
 
