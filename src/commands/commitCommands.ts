@@ -26,7 +26,7 @@ const commitMenu = {
   ]
 };
 
-export async function magitCommit(repository: MagitRepository) {
+export async function magitCommit(repository: Thenable<MagitRepository | undefined>) {
 
   const switches = [
     { key: '-a', name: '--all', description: 'Stage all modified and deleted files' },
@@ -40,10 +40,12 @@ export async function magitCommit(repository: MagitRepository) {
 }
 
 export async function commit({ repository, switches }: MenuState, commitArgs: string[] = []) {
+  const repo = await repository;
+  if (!repo) return;
 
   let stageAllSwitch = switches?.find(({ key }) => key === '-a');
 
-  if (repository.indexChanges.length === 0 && !stageAllSwitch?.activated && stageAllSwitch) {
+  if (repo.indexChanges.length === 0 && !stageAllSwitch?.activated && stageAllSwitch) {
     if (await MagitUtils.confirmAction('Nothing staged. Stage and commit all unstaged changes?')) {
       stageAllSwitch.activated = true;
     }
@@ -51,42 +53,54 @@ export async function commit({ repository, switches }: MenuState, commitArgs: st
 
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
 
-  return runCommitLikeCommand(repository, args, { showStagedChanges: !stageAllSwitch?.activated });
+  return runCommitLikeCommand(repo, args, { showStagedChanges: !stageAllSwitch?.activated });
 }
 
 export async function ammendCommit({ repository, switches }: MenuState, commitArgs: string[] = []) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
-  return runCommitLikeCommand(repository, args);
+  return runCommitLikeCommand(repo, args);
 }
 
 export async function rewordCommit({ repository, switches }: MenuState, commitArgs: string[] = []) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
-  return runCommitLikeCommand(repository, args, { showStagedChanges: false });
+  return runCommitLikeCommand(repo, args, { showStagedChanges: false });
 }
 
 async function fixup({ repository, switches }: MenuState) {
-  const sha = await MagitUtils.chooseCommit(repository, 'Fixup commit');
+  const repo = await repository;
+  if (!repo) return;
+
+  const sha = await MagitUtils.chooseCommit(repo, 'Fixup commit');
 
   if (sha) {
     const args = ['commit', ...MenuUtil.switchesToArgs(switches), '--fixup', sha];
 
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   } else {
     throw new Error('No commit chosen to fixup');
   }
 }
 
 async function instantFixup({ repository, switches = [] }: MenuState) {
-  const sha = await MagitUtils.chooseCommit(repository, 'Instantly Fixup commit');
+  const repo = await repository;
+  if (!repo) return;
+
+  const sha = await MagitUtils.chooseCommit(repo, 'Instantly Fixup commit');
 
   if (sha) {
     let shortHash = GitTextUtils.shortHash(sha);
 
-    await gitRun(repository.gitRepository, ['commit', '--no-gpg-sign', '--no-edit', ...MenuUtil.switchesToArgs(switches), `--fixup=${shortHash}`, '--']);
+    await gitRun(repo.gitRepository, ['commit', '--no-gpg-sign', '--no-edit', ...MenuUtil.switchesToArgs(switches), `--fixup=${shortHash}`, '--']);
 
     const args = ['rebase', '-i', '--autosquash', '--autostash', shortHash + '~'];
 
-    return await gitRun(repository.gitRepository, args, { env: { 'GIT_SEQUENCE_EDITOR': 'true' } });
+    return await gitRun(repo.gitRepository, args, { env: { 'GIT_SEQUENCE_EDITOR': 'true' } });
   } else {
     throw new Error('No commit chosen to fixup');
   }
