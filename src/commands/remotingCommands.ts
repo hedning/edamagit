@@ -12,7 +12,7 @@ const remotingMenu = {
   ]
 };
 
-export async function remoting(repository: MagitRepository) {
+export async function remoting(repository: Thenable<MagitRepository | undefined>) {
   return MenuUtil.showMenu(remotingMenu, { repository });
 }
 
@@ -21,8 +21,10 @@ async function addRemote() {
 }
 
 async function renameRemote({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const remote = await window.showQuickPick(repository.remotes.map(r => r.name), { placeHolder: 'Rename remote' });
+  const remote = await window.showQuickPick(repo.remotes.map(r => r.name), { placeHolder: 'Rename remote' });
 
   if (remote) {
 
@@ -30,7 +32,7 @@ async function renameRemote({ repository }: MenuState) {
 
     if (newName) {
       const args = ['remote', 'rename', remote, newName];
-      gitRun(repository.gitRepository, args);
+      gitRun(repo.gitRepository, args);
     }
   }
 }
