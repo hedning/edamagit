@@ -149,6 +149,8 @@ function prettifyGraph(current: string, prev: string): string {
       case ' ': { // need this for
 
         if (prev[i] === ascii.pipe) {
+          if (current[r] === ascii.l) { out += '╰'; break; }
+          if (current[l] === ascii.r) { out += '╯'; break; }
           out += ' '; break;
           break;
         }
