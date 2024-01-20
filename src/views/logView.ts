@@ -71,6 +71,7 @@ We need the next line though to figure out the _spaces_ -> ╭ rule
 |/| | | | |
 | * | | | |
 | | |/ / /
+* | | | |
 
 * │ │ │ │ │
 │╮ ╮ ╮ ╮ ╮ ╮
@@ -78,6 +79,14 @@ We need the next line though to figure out the _spaces_ -> ╭ rule
 │╯│ │ │ │ │
 │ * │ │ │ │
 │ │ │╯ ╯ ╯
+
+This actually look really good:
+* │ │ │ │ │
+├╮╰╮╰╮╰╮╰╮╰╮
+│╰╮╰╮╰╮╯╭╯╭╯
+├╯│ │ │ │ │
+│ * │╭╯╭╯╭╯
+│ │ ├╯╭╯╭╯
 
 `;
 
