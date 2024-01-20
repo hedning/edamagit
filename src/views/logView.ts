@@ -91,7 +91,14 @@ This actually look really good:
 `;
 
 const ascii = {
+  /**
+   * ╮, though ╰ could make sense some times
+   */
   l: '\\',
+
+  /**
+   * ╯, though ╭ could make sense some times, might have to disambiguate
+   */
   r: '/',
   up: '|',
   star: '*',
