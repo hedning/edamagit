@@ -25,9 +25,11 @@ const cherryPickingMenu = {
   ]
 };
 
-export async function cherryPicking(repository: MagitRepository) {
+export async function cherryPicking(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.cherryPickingState) {
+  if (repo.cherryPickingState) {
     return MenuUtil.showMenu(whileCherryPickingMenu, { repository });
   } else {
     const switches = [
@@ -40,18 +42,24 @@ export async function cherryPicking(repository: MagitRepository) {
 }
 
 async function pick({ repository, switches }: MenuState) {
-  const target = await MagitUtils.chooseRef(repository, 'Cherry-pick');
+  const repo = await repository;
+  if (!repo) return;
+
+  const target = await MagitUtils.chooseRef(repo, 'Cherry-pick');
 
   if (target) {
-    return cherryPick(repository, target, { edit: switches?.find(s => s.key === '-e' && s.activated) ? true : false });
+    return cherryPick(repo, target, { edit: switches?.find(s => s.key === '-e' && s.activated) ? true : false });
   }
 }
 
 async function applySomeCommit({ repository }: MenuState) {
-  const commit = await MagitUtils.chooseRef(repository, 'Apply changes from commit');
+  const repo = await repository;
+  if (!repo) return;
+
+  const commit = await MagitUtils.chooseRef(repo, 'Apply changes from commit');
 
   if (commit) {
-    return cherryPick(repository, commit, { noCommit: true });
+    return cherryPick(repo, commit, { noCommit: true });
   }
 }
 
@@ -79,11 +87,17 @@ export async function cherryPick(repository: MagitRepository, target: string, { 
 }
 
 async function continueCherryPick({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['cherry-pick', '--continue'];
-  return CommitCommands.runCommitLikeCommand(repository, args);
+  return CommitCommands.runCommitLikeCommand(repo, args);
 }
 
 async function cherryPickControlCommand({ repository }: MenuState, command: string) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['cherry-pick', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
