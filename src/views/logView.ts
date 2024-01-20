@@ -95,25 +95,28 @@ const ascii = {
   r: '/',
   up: '|',
   star: '*',
+  pipe: '|',
 } as const;
 
-function prettifyGraph(graph: string, last: string): string {
+function prettifyGraph(current: string, prev: string): string {
   // Consider using a string replace here
   // Could also write a help command line tool, we're already relying
   // on git as a «lib» here.
 
 
   let out: string = '';
-  for (let i = 0; i < graph.length; i++) {
-    const c = graph[i]!;
+  for (let i = 0; i < current.length; i++) {
+    const c = current[i]!;
+    const l = i - 1;
+    const r = i + 1;
     switch (c) {
       case '*': {
         if (
-          last[i] === '|' ||
-          last[i] === '*' ||
-          last[i - 1] === '\\' ||
-          last[i + 1] === '/'
-        ) {
+          prev[i] === '|' ||
+          prev[i] === '*' ||
+          prev[l] === '\\' ||
+          prev[r] === '/'
+        ) { // There's some extra cases here in case we go totally te the
           out += '┿';
           break;
         }
@@ -121,11 +124,6 @@ function prettifyGraph(graph: string, last: string): string {
         break;
       }
       case '|': {
-        const l = graph[i - 1];
-        const r = graph[i + 1];
-        const lastLeft = last[i - 1];
-        const lastRight = last[i + 1];
-
         // Need to figure out if any we're connected with the left or right edge.
         // │ ┿
         // │ │╲
@@ -133,22 +131,27 @@ function prettifyGraph(graph: string, last: string): string {
         // │╱│
 
         // simple cases, we have a direct parent above
-        if (last[i] === ascii.star) {
-          if (l === ascii.r && r === ascii.l) { out += '┼'; break; }
-          if (r === ascii.l) { out += '├'; break; }
-          if (l === ascii.r) { out += '┤'; break; }
+        if (prev[i] === ascii.star) {
+          if (current[l] === ascii.r && current[r] === ascii.l) { out += '┼'; break; }
+          if (current[r] === ascii.l) { out += '├'; break; }
+          if (current[l] === ascii.r) { out += '┤'; break; }
           out += '│'; break;
         }
 
         //
-        if (last[i] !== ascii.star) {
+        if (prev[i] !== ascii.star) {
           out += '│'; break;
         }
-        if (l === ascii.r) { out += '├'; break; }
+        if (current[l] === ascii.r) { out += '├'; break; }
 
         out += '│'; break;
       }
       case ' ': { // need this for
+
+        if (prev[i] === ascii.pipe) {
+          out += ' '; break;
+          break;
+        }
         out += ' '; break;
       }
       case '/': { out += '╯'; break; }
