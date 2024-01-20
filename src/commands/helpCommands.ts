@@ -6,15 +6,15 @@ import * as JSONC from 'jsonc-parser';
 import ViewUtils from '../utils/viewUtils';
 import { logPath } from '../extension';
 
-export async function magitHelp(repository: MagitRepository) {
+export async function magitHelp(repository: Thenable<MagitRepository | undefined>) {
   return openHelpView(repository);
 }
 
-export async function magitDispatch(repository: MagitRepository) {
+export async function magitDispatch(repository: Thenable<MagitRepository | undefined>) {
   return openHelpView(repository);
 }
 
-async function openHelpView(repository: MagitRepository) {
+async function openHelpView(repository: Thenable<MagitRepository | undefined>) {
   let keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
   let userKeyBindings = [];
 
@@ -23,7 +23,9 @@ async function openHelpView(repository: MagitRepository) {
     const userKeyBindingsText = userKeyBindingsDoc.getText().replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
     userKeyBindings = JSONC.parse(userKeyBindingsText);
   } catch (e) { console.error(e); }
+  const repo = await repository;
+  if (!repo) return;
 
-  const uri = HelpView.encodeLocation(repository);
+  const uri = HelpView.encodeLocation(repo);
   return ViewUtils.showView(uri, new HelpView(uri, userKeyBindings));
 }
