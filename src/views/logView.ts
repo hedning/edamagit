@@ -24,14 +24,80 @@ const lineRe = new RegExp(
 const graphRe = /^[/|\\-_* .o]+$/g;
 
 
+` box  drawing
+  	0 	1 	2 	3 	4 	5 	6 	7 	8 	9 	A 	B 	C 	D 	E 	F
+U+250x 	─ 	━ 	│ 	┃ 	┄ 	┅ 	┆ 	┇ 	┈ 	┉ 	┊ 	┋ 	┌ 	┍ 	┎ 	┏
+U+251x 	┐ 	┑ 	┒ 	┓ 	└ 	┕ 	┖ 	┗ 	┘ 	┙ 	┚ 	┛ 	├ 	┝ 	┞ 	┟
+U+252x 	┠ 	┡ 	┢ 	┣ 	┤ 	┥ 	┦ 	┧ 	┨ 	┩ 	┪ 	┫ 	┬ 	┭ 	┮ 	┯
+U+253x 	┰ 	┱ 	┲ 	┳ 	┴ 	┵ 	┶ 	┷ 	┸ 	┹ 	┺ 	┻ 	┼ 	┽ 	┾ 	┿
+U+254x 	╀ 	╁ 	╂ 	╃ 	╄ 	╅ 	╆ 	╇ 	╈ 	╉ 	╊ 	╋ 	╌ 	╍ 	╎ 	╏
+U+255x 	═ 	║ 	╒ 	╓ 	╔ 	╕ 	╖ 	╗ 	╘ 	╙ 	╚ 	╛ 	╜ 	╝ 	╞ 	╟
+U+256x 	╠ 	╡ 	╢ 	╣ 	╤ 	╥ 	╦ 	╧ 	╨ 	╩ 	╪ 	╫ 	╬ 	╭ 	╮ 	╯
+U+257x 	╰ 	╱ 	╲ 	╳ 	╴ 	╵ 	╶ 	╷ 	╸ 	╹ 	╺ 	╻ 	╼ 	╽ 	╾ 	╿
+
+│
+`;
+
+`
+ │╱│
+ ┿ │
+ │╲ ╲
+
+ ├╯│
+ ┿ │
+ ├╮╰╮
+
+Crossings might be hard, do it correctly we'd have to know if we're going under or connecting.
+Think we use the above rules to figure if we're going from or to an edge
+
+We need the next line though to figure out the _spaces_ -> ╭ rule
+ │ ┿
+ │ │╲
+ │ │╱
+ │╱│
+ ┿ │
+
+ # I fairly certain something like this should be possible
+ │ ┿
+ │ ├╮
+ │╭│╯
+ ├╯│
+ ┿ │
+
+
+* | | | | |
+|\ \ \ \ \ \
+| |_|_|/ / /
+|/| | | | |
+| * | | | |
+| | |/ / /
+
+* │ │ │ │ │
+│╮ ╮ ╮ ╮ ╮ ╮
+│ │_│_│╯ ╯ ╯
+│╯│ │ │ │ │
+│ * │ │ │ │
+│ │ │╯ ╯ ╯
+
+`;
+
+const ascii = {
+  l: '\\',
+  r: '/',
+  up: '|',
+  star: '*',
+} as const;
 
 function prettifyGraph(graph: string, last: string): string {
   // Consider using a string replace here
+  // Could also write a help command line tool, we're already relying
+  // on git as a «lib» here.
+
+
   let out: string = '';
   for (let i = 0; i < graph.length; i++) {
     const c = graph[i]!;
     switch (c) {
-      // TODO: make this configurable
       case '*': {
         if (
           last[i] === '|' ||
@@ -45,9 +111,40 @@ function prettifyGraph(graph: string, last: string): string {
         out += '┯';
         break;
       }
-      case '|': { out += '│'; break; }
-      case '/': { out += '╱'; break; }
-      case '\\': { out += '╲'; break; }
+      case '|': {
+        const l = graph[i - 1];
+        const r = graph[i + 1];
+        const lastLeft = last[i - 1];
+        const lastRight = last[i + 1];
+
+        // Need to figure out if any we're connected with the left or right edge.
+        // │ ┿
+        // │ │╲
+        // │ │╱
+        // │╱│
+
+        // simple cases, we have a direct parent above
+        if (last[i] === ascii.star) {
+          if (l === ascii.r && r === ascii.l) { out += '┼'; break; }
+          if (r === ascii.l) { out += '├'; break; }
+          if (l === ascii.r) { out += '┤'; break; }
+          out += '│'; break;
+        }
+
+        //
+        if (last[i] !== ascii.star) {
+          out += '│'; break;
+        }
+        if (l === ascii.r) { out += '├'; break; }
+
+        out += '│'; break;
+      }
+      case ' ': { // need this for
+        out += ' '; break;
+      }
+      case '/': { out += '╯'; break; }
+      case '\\': { out += '╮'; break; }
+      case '_': { out += '─'; break; }
       default: { out += c; }
     }
   }
