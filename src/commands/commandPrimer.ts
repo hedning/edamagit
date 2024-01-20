@@ -5,7 +5,7 @@ import { DocumentView } from '../views/general/documentView';
 import GitTextUtils from '../utils/gitTextUtils';
 import { MagitError } from '../models/magitError';
 
-type Command = (repository: MagitRepository) => Promise<any>;
+type Command = (repository: Thenable<MagitRepository | undefined>) => Promise<any>;
 type ViewCommand = (repository: MagitRepository, view: DocumentView) => Promise<any>;
 type FileCommand = (repository: MagitRepository, fileUri: Uri) => Promise<any>;
 
@@ -14,15 +14,18 @@ export class CommandPrimer {
   static primeRepo(command: Command, triggersUpdate: boolean = true): (editor: TextEditor) => Promise<any> {
 
     return async (editor: TextEditor) => {
-      const repository = await MagitUtils.getCurrentMagitRepo(editor.document.uri);
-      if (!repository) return;
+      const repoPromise = MagitUtils.getCurrentMagitRepo(editor.document.uri);
 
       try {
-        await command(repository);
+        await command(repoPromise);
       } catch (error) {
-        this.handleError(repository, error);
+        this.handleError(repoPromise, error);
       }
-      if (triggersUpdate) MagitUtils.magitStatusAndUpdate(repository);
+      if (triggersUpdate) {
+        const repo = await repoPromise;
+        if (!repo) return;
+        MagitUtils.magitStatusAndUpdate(repo);
+      }
     };
   }
 
@@ -56,10 +59,11 @@ export class CommandPrimer {
     };
   }
 
-  static handleError(repository: MagitRepository, error: any) {
+  static async handleError(repository: Thenable<MagitRepository | undefined>, error: any) {
 
     if (error.gitErrorCode || error.stderr || error instanceof MagitError) {
-      pushLatestGitError(repository, GitTextUtils.formatError(error));
+      const repo = await repository;
+      if (repo) pushLatestGitError(repo, GitTextUtils.formatError(error));
     } else {
       //   using statusBar message might be better
       //   but then custom, shorter messages are needed
