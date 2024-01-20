@@ -105,11 +105,12 @@ const ascii = {
   pipe: '|',
 } as const;
 
+// OK, need to rewrite this to something stateful, that keeps track
+// of a chars inputs and outputs
 function prettifyGraph(current: string, prev: string): string {
   // Consider using a string replace here
   // Could also write a help command line tool, we're already relying
   // on git as a «lib» here.
-
 
   let out: string = '';
   for (let i = 0; i < current.length; i++) {
@@ -119,13 +120,11 @@ function prettifyGraph(current: string, prev: string): string {
     switch (c) {
       case '*': {
         if (
-          prev[i] === '|' ||
-          prev[i] === '*' ||
-          prev[l] === '\\' ||
-          prev[r] === '/'
-        ) { // There's some extra cases here in case we go totally te the
-          out += '┿';
-          break;
+          prev[i] === ascii.star ||
+          prev[i] === ascii.pipe ||
+          prev[r] === ascii.r
+        ) {
+          out += '┿'; break;
         }
         out += '┯';
         break;
@@ -157,16 +156,27 @@ function prettifyGraph(current: string, prev: string): string {
         out += '│'; break;
       }
       case ' ': { // need this for
-
         if (prev[i] === ascii.pipe) {
           if (current[r] === ascii.l) { out += '╰'; break; }
           if (current[l] === ascii.r) { out += '╯'; break; }
-          out += ' '; break;
-          break;
+        }
+        // Think this is actually the only case here
+        // We can't connect back to the left, so have to send it to right
+        if (prev[i] === ascii.l) { out += '╰'; break; }
+
+        if (current[r] === ascii.r) { out += '╭'; break; }
+
+        if (prev[i] === ascii.r) {
+          // This doesn't connect downwards, given our strict mapping, might have to test of something else
         }
         out += ' '; break;
       }
-      case '/': { out += '╯'; break; }
+      case '/': {
+        if (prev[i] === ' ' && prev[r] === ascii.pipe) { out += '─'; break; }
+
+        out += '╯'; break;
+
+      }
       case '\\': { out += '╮'; break; }
       case '_': { out += '─'; break; }
       default: { out += c; }
@@ -189,19 +199,25 @@ function parseLog(stdout: string): MagitLogEntry[] {
       lastGraph = line;
       continue;
     }
-
     const matches = line.matchAll(lineRe).next().value;
-    if (!matches || matches.length === 0) continue;
+    if (!matches || matches.length === 0) {
+      console.warn('buggy regex, rejected: ', line);
+      continue; // This shouldn't reall happpen?
+    }
 
     const graph = matches[1]; // undefined if graph doesn't exist
+    const hash = matches[2];
+    const message = matches[9];
+    const date = matches[8];
+    const author = matches[6];
     commits.push({
       graph: graph ? [prettifyGraph(graph, lastGraph)] : undefined,
       refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
-      author: matches[6],
-      time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
+      time: new Date(Number(date) * 1000), // convert seconds to milliseconds
+      author,
       commit: {
-        hash: matches[2],
-        message: matches[9],
+        hash,
+        message,
         parents: [],
         authorEmail: undefined
       }
