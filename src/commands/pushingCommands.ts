@@ -33,7 +33,7 @@ function generatePushingMenu(repository: MagitRepository) {
   return { title: 'Pushing', commands: pushingMenuItems };
 }
 
-export async function pushing(repository: MagitRepository) {
+export async function pushing(repository: Thenable<MagitRepository | undefined>) {
 
   const switches = [
     { key: '-f', name: '--force-with-lease', description: 'Force with lease' },
@@ -42,64 +42,76 @@ export async function pushing(repository: MagitRepository) {
     { key: '-d', name: '--dry-run', description: 'Dry run' }
   ];
 
-  return MenuUtil.showMenu(generatePushingMenu(repository), { repository, switches });
+  const repo = await repository;
+  if (!repo) return;
+
+  return MenuUtil.showMenu(generatePushingMenu(repo), { repository, switches });
 }
 
 async function pushToPushRemote({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const pushRemote = repository.HEAD?.pushRemote;
-  const ref = repository.HEAD?.name;
+  const pushRemote = repo.HEAD?.pushRemote;
+  const ref = repo.HEAD?.name;
 
   if (pushRemote?.remote && ref) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), pushRemote.remote, ref];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function pushSetPushRemote({ repository, ...rest }: MenuState) {
-  const remotes: PickMenuItem<string>[] = repository.remotes
+  const repo = await repository;
+  if (!repo) return;
+
+  const remotes: PickMenuItem<string>[] = repo.remotes
     .map(r => ({ label: r.name, description: r.pushUrl, meta: r.name }));
 
   const chosenRemote = await PickMenuUtil.showMenu(remotes);
 
-  const ref = repository.HEAD?.name;
+  const ref = repo.HEAD?.name;
 
   if (chosenRemote && ref) {
-    await GitUtils.setConfigVariable(repository, `branch.${ref}.pushRemote`, chosenRemote);
+    await GitUtils.setConfigVariable(repo, `branch.${ref}.pushRemote`, chosenRemote);
 
-    repository.HEAD!.pushRemote = { name: ref, remote: chosenRemote };
+    repo.HEAD!.pushRemote = { name: ref, remote: chosenRemote };
     return pushToPushRemote({ repository, ...rest });
   }
 }
 
 async function pushUpstream({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const upstreamRemote = repository.HEAD?.upstreamRemote;
-  const ref = repository.HEAD?.name;
+  const upstreamRemote = repo.HEAD?.upstreamRemote;
+  const ref = repo.HEAD?.name;
 
   if (upstreamRemote?.remote && ref) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), upstreamRemote.remote, ref];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function pushSetUpstream({ repository, ...rest }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  let choices = [...repository.refs];
+  let choices = [...repo.refs];
 
-  if (repository.remotes.length > 0 &&
-    !choices.find(ref => ref.name === repository.remotes[0].name + '/' + repository.HEAD?.name)) {
+  if (repo.remotes.length > 0 &&
+    !choices.find(ref => ref.name === repo.remotes[0].name + '/' + repo.HEAD?.name)) {
     choices = [{
-      name: `${repository.remotes[0].name}/${repository.HEAD?.name}`,
-      remote: repository.remotes[0].name,
+      name: `${repo.remotes[0].name}/${repo.HEAD?.name}`,
+      remote: repo.remotes[0].name,
       type: RefType.RemoteHead
     }, ...choices];
   }
 
   const refs: PickMenuItem<string>[] = choices
-    .filter(ref => ref.type !== RefType.Tag && ref.name !== repository.HEAD?.name)
+    .filter(ref => ref.type !== RefType.Tag && ref.name !== repo.HEAD?.name)
     .sort((refA, refB) => refB.type - refA.type)
     .map(r => ({ label: r.name!, description: GitTextUtils.shortHash(r.commit), meta: r.name! }));
 
@@ -108,7 +120,7 @@ async function pushSetUpstream({ repository, ...rest }: MenuState) {
     chosenRemote = await PickMenuUtil.showMenu(refs);
   } catch { }
 
-  const ref = repository.HEAD?.name;
+  const ref = repo.HEAD?.name;
 
   if (chosenRemote && ref) {
 
@@ -116,10 +128,10 @@ async function pushSetUpstream({ repository, ...rest }: MenuState) {
 
     if (remote && name) {
 
-      await GitUtils.setConfigVariable(repository, `branch.${ref}.merge`, `refs/heads/${name}`);
-      await GitUtils.setConfigVariable(repository, `branch.${ref}.remote`, remote);
+      await GitUtils.setConfigVariable(repo, `branch.${ref}.merge`, `refs/heads/${name}`);
+      await GitUtils.setConfigVariable(repo, `branch.${ref}.remote`, remote);
 
-      repository.HEAD!.upstreamRemote = { name, remote };
+      repo.HEAD!.upstreamRemote = { name, remote };
 
       return pushUpstream({ repository, ...rest });
     }
@@ -131,37 +143,44 @@ async function pushElsewhere() {
 }
 
 async function pushOther({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const ref = await MagitUtils.chooseRef(repository, 'Push', false, false, true);
-  const remote = await MagitUtils.chooseRef(repository, `Push ${ref} to`, false, false, true, true);
+  const ref = await MagitUtils.chooseRef(repo, 'Push', false, false, true);
+  const remote = await MagitUtils.chooseRef(repo, `Push ${ref} to`, false, false, true, true);
 
   const [remoteName, ...remoteBranchNameParts] = remote.split('/');
   const remoteBranchName = remoteBranchNameParts.join('/');
 
   if (remote && ref) {
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remoteName, `${ref}:${remoteBranchName}`];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function pushTag({ repository, switches }: MenuState) {
-  const remote = repository.HEAD?.upstreamRemote?.remote ?? repository.HEAD?.pushRemote?.remote;
+  const repo = await repository;
+  if (!repo) return;
 
-  const tag = await MagitUtils.chooseTag(repository, 'Push tag');
+  const remote = repo.HEAD?.upstreamRemote?.remote ?? repo.HEAD?.pushRemote?.remote;
+
+  const tag = await MagitUtils.chooseTag(repo, 'Push tag');
 
   if (remote && tag) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remote, tag];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function pushAllTags({ repository, switches }: MenuState) {
-  const remote = repository.HEAD?.upstreamRemote?.remote ?? repository.HEAD?.pushRemote?.remote;
+  const repo = await repository;
+  if (!repo) return;
+
+  const remote = repo.HEAD?.upstreamRemote?.remote ?? repo.HEAD?.pushRemote?.remote;
 
   if (remote) {
-
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remote, '--tags'];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
