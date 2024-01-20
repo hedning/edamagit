@@ -40,10 +40,13 @@ export async function branching(repository: Thenable<MagitRepository | undefined
   return MenuUtil.showMenu(menu, { repository });
 }
 
-export async function showRefs(repository: MagitRepository) {
-  const uri = ShowRefsView.encodeLocation(repository);
+export async function showRefs(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
 
-  let refsView = ViewUtils.createOrUpdateView(repository, uri, () => new ShowRefsView(uri, repository));
+  const uri = ShowRefsView.encodeLocation(repo);
+
+  let refsView = ViewUtils.createOrUpdateView(repo, uri, () => new ShowRefsView(uri, repo));
 
   return ViewUtils.showView(uri, refsView, { viewColumn: ViewColumn.Active });
 }
