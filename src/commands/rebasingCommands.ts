@@ -15,9 +15,12 @@ const whileRebasingMenu = {
   ]
 };
 
-export async function rebasing(repository: MagitRepository) {
+export async function rebasing(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.rebasingState) return MenuUtil.showMenu(whileRebasingMenu, { repository });
+
+  if (repo.rebasingState) return MenuUtil.showMenu(whileRebasingMenu, { repository });
 
   const switches = [
     { key: '-k', name: '--keep-empty', description: 'Keep empty commits' },
@@ -29,21 +32,21 @@ export async function rebasing(repository: MagitRepository) {
     { key: '-h', name: '--no-verify', description: 'Disable hooks' },
   ];
 
-  const HEAD = repository.HEAD;
+  const HEAD = repo.HEAD;
 
   const commands = [];
 
   if (HEAD?.pushRemote) {
     commands.push({
       label: 'p', description: `onto ${HEAD.pushRemote.remote}/${HEAD.pushRemote.name}`,
-      action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.pushRemote!.remote}/${HEAD.pushRemote!.name}`, switches)
+      action: ({ switches }: MenuState) => _rebase(repo, `${HEAD.pushRemote!.remote}/${HEAD.pushRemote!.name}`, switches)
     });
   }
 
   if (HEAD?.upstreamRemote) {
     commands.push({
       label: 'u', description: `onto ${HEAD.upstreamRemote.remote}/${HEAD.upstreamRemote.name}`,
-      action: ({ switches }: MenuState) => _rebase(repository, `${HEAD.upstreamRemote!.remote}/${HEAD.upstreamRemote!.name}`, switches)
+      action: ({ switches }: MenuState) => _rebase(repo, `${HEAD.upstreamRemote!.remote}/${HEAD.upstreamRemote!.name}`, switches)
     });
   }
 
@@ -61,10 +64,13 @@ export async function rebasing(repository: MagitRepository) {
 }
 
 async function rebase({ repository, switches }: MenuState) {
-  const ref = await MagitUtils.chooseRef(repository, 'Rebase');
+  const repo = await repository;
+  if (!repo) return;
+
+  const ref = await MagitUtils.chooseRef(repo, 'Rebase');
 
   if (ref) {
-    return _rebase(repository, ref, switches);
+    return _rebase(repo, ref, switches);
   }
 }
 
@@ -86,30 +92,42 @@ async function _rebase(repository: MagitRepository, ref: string, switches: Switc
 }
 
 async function rebaseControlCommand({ repository }: MenuState, command: string) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['rebase', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
 
 async function rebaseContinue({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['rebase', '--continue'];
-  return Commit.runCommitLikeCommand(repository, args, { editor: 'GIT_SEQUENCE_EDITOR' });
+  return Commit.runCommitLikeCommand(repo, args, { editor: 'GIT_SEQUENCE_EDITOR' });
 }
 
 async function editTodo({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
 
   const args = ['rebase', '--edit-todo'];
 
-  return Commit.runCommitLikeCommand(repository, args, { editor: 'GIT_SEQUENCE_EDITOR', propagateErrors: true });
+  return Commit.runCommitLikeCommand(repo, args, { editor: 'GIT_SEQUENCE_EDITOR', propagateErrors: true });
 }
 
 async function rebaseInteractively({ repository, switches }: MenuState) {
-  const commit = await MagitUtils.chooseCommit(repository, 'Rebase commit and all above it');
+  const repo = await repository;
+  if (!repo) return;
+
+  const commit = await MagitUtils.chooseCommit(repo, 'Rebase commit and all above it');
 
   if (commit) {
     const interactiveSwitches = (switches ?? []).map(s => ({ ...s, activated: s.activated || s.name === '--interactive' }));
 
     const args = ['rebase', ...MenuUtil.switchesToArgs(interactiveSwitches), `${commit}^`];
 
-    return Commit.runCommitLikeCommand(repository, args, { editor: 'GIT_SEQUENCE_EDITOR' });
+    return Commit.runCommitLikeCommand(repo, args, { editor: 'GIT_SEQUENCE_EDITOR' });
   }
 }
