@@ -145,7 +145,10 @@ function prettifyGraph(current: string, prev: string): string {
           out += '│'; break;
         }
 
-        //
+        if (prev[i] === ' ') { // Need to get be connected something
+          if (prev[l] === ascii.l) { out += '╮'; break; } // might need to connect more
+        }
+
         if (prev[i] !== ascii.star) {
           out += '│'; break;
         }
