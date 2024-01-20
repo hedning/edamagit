@@ -12,7 +12,7 @@ export interface MenuItem extends QuickPickItem {
 }
 
 export interface MenuState {
-  repository: MagitRepository;
+  repository: Thenable<MagitRepository | undefined>;
   switches?: Switch[];
   options?: Option[];
   data?: any;
