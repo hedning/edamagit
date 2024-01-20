@@ -4,17 +4,19 @@ import { MenuUtil, MenuState, Switch, MenuItem } from '../menu/menu';
 import { gitRun } from '../utils/gitRawRunner';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 
-export async function fetching(repository: MagitRepository): Promise<any> {
+export async function fetching(repository: Thenable<MagitRepository | undefined>): Promise<any> {
+  const repo = await repository;
+  if (!repo) return;
 
   const fetchingMenuItems: MenuItem[] = [];
 
-  if (repository.HEAD?.pushRemote) {
-    const pushRemote = repository.HEAD?.pushRemote;
+  if (repo.HEAD?.pushRemote) {
+    const pushRemote = repo.HEAD?.pushRemote;
     fetchingMenuItems.push({ label: 'p', description: pushRemote.remote, action: fetchFromPushRemote });
   }
 
-  if (repository.HEAD?.upstream) {
-    const upstream = repository.HEAD?.upstream;
+  if (repo.HEAD?.upstream) {
+    const upstream = repo.HEAD?.upstream;
     fetchingMenuItems.push({ label: 'u', description: upstream.remote, action: fetchFromUpstream });
   }
 
@@ -24,7 +26,7 @@ export async function fetching(repository: MagitRepository): Promise<any> {
 
   fetchingMenuItems.push({ label: 'o', description: 'another branch', action: fetchAnotherBranch });
 
-  if (repository.submodules.length) {
+  if (repo.submodules.length) {
     fetchingMenuItems.push({ label: 's', description: 'submodules', action: fetchSubmodules });
   }
 
@@ -36,51 +38,67 @@ export async function fetching(repository: MagitRepository): Promise<any> {
 }
 
 async function fetchFromPushRemote({ repository, switches }: MenuState) {
-  if (repository.HEAD?.pushRemote) {
-    const args = ['fetch', ...MenuUtil.switchesToArgs(switches), repository.HEAD.pushRemote.remote];
-    return gitRun(repository.gitRepository, args);
+  const repo = await repository;
+  if (!repo) return;
+
+  if (repo.HEAD?.pushRemote) {
+    const args = ['fetch', ...MenuUtil.switchesToArgs(switches), repo.HEAD.pushRemote.remote];
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function fetchFromUpstream({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.HEAD?.upstreamRemote) {
-    const args = ['fetch', ...MenuUtil.switchesToArgs(switches), repository.HEAD.upstreamRemote.remote];
-    return gitRun(repository.gitRepository, args);
+  if (repo.HEAD?.upstreamRemote) {
+    const args = ['fetch', ...MenuUtil.switchesToArgs(switches), repo.HEAD.upstreamRemote.remote];
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function fetchFromElsewhere({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const remotes: PickMenuItem<string>[] = repository.remotes
+  const remotes: PickMenuItem<string>[] = repo.remotes
     .map(r => ({ label: r.name, description: r.pushUrl, meta: r.name }));
 
   const chosenRemote = await PickMenuUtil.showMenu(remotes);
 
   if (chosenRemote) {
     const args = ['fetch', ...MenuUtil.switchesToArgs(switches), chosenRemote];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function fetchAll({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['fetch', ...MenuUtil.switchesToArgs(switches), '--all'];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
 
 async function fetchAnotherBranch({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const remote = await window.showInputBox({ prompt: 'Fetch from remote or url' });
   if (remote) {
     const branch = await window.showInputBox({ prompt: 'Fetch branch' });
     if (branch) {
       const args = ['fetch', ...MenuUtil.switchesToArgs(switches), remote, `refs/heads/${branch}`];
-      return gitRun(repository.gitRepository, args);
+      return gitRun(repo.gitRepository, args);
     }
   }
 }
 
 export async function fetchSubmodules({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
 
   const args = ['fetch', '--verbose', '--recurse-submodules', ...MenuUtil.switchesToArgs(switches)];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
