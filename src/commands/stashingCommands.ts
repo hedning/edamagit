@@ -17,7 +17,7 @@ const stashingMenu = {
   ]
 };
 
-export async function stashing(repository: MagitRepository): Promise<any> {
+export async function stashing(repository: Thenable<MagitRepository | undefined>): Promise<any> {
 
   const switches = [
     { key: '-u', name: '--include-untracked', description: 'Also save untracked files' },
@@ -29,14 +29,18 @@ export async function stashing(repository: MagitRepository): Promise<any> {
 }
 
 async function stash({ repository, switches }: MenuState, stashArgs: string[] = []) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const message = await askForStashMessage(repository);
+  const message = await askForStashMessage(repo);
   if (message !== undefined) {
     return _stash({ repository, switches }, message, stashArgs);
   }
 }
 
 async function _stash({ repository, switches }: MenuState, message: string, stashArgs: string[] = []) {
+  const repo = await repository;
+  if (!repo) return;
 
   const args = ['stash', 'push', ...MenuUtil.switchesToArgs(switches), ...stashArgs];
 
@@ -45,29 +49,31 @@ async function _stash({ repository, switches }: MenuState, message: string, stas
       args.push('--message');
       args.push(message);
     }
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
 async function stashWorktree({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.HEAD?.commit) {
+  if (repo.HEAD?.commit) {
 
-    const message = await askForStashMessage(repository);
+    const message = await askForStashMessage(repo);
 
     if (message !== undefined) {
 
       const intermediaryCommitArgs = ['commit', '--message', 'intermediary stash commit'];
-      const resetCommitArgs = ['reset', '--soft', repository.HEAD?.commit];
+      const resetCommitArgs = ['reset', '--soft', repo.HEAD?.commit];
 
       try {
         try {
-          await gitRun(repository.gitRepository, intermediaryCommitArgs);
+          await gitRun(repo.gitRepository, intermediaryCommitArgs);
         } catch { }
         await _stash({ repository, switches }, message);
-        return gitRun(repository.gitRepository, resetCommitArgs);
+        return gitRun(repo.gitRepository, resetCommitArgs);
       } catch (error) {
-        await gitRun(repository.gitRepository, resetCommitArgs);
+        await gitRun(repo.gitRepository, resetCommitArgs);
         throw error;
       }
     }
@@ -75,28 +81,30 @@ async function stashWorktree({ repository, switches }: MenuState) {
 }
 
 async function stashIndex({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.HEAD?.commit) {
+  if (repo.HEAD?.commit) {
 
-    const message = await askForStashMessage(repository);
+    const message = await askForStashMessage(repo);
 
     if (message !== undefined) {
 
       const intermediaryCommitArgs = ['commit', '--no-verify', '--message', 'intermediary stash commit'];
       const stashWorktree = ['stash', 'push', '--message', 'intermediary stash'];
-      const resetCommitArgs = ['reset', '--soft', repository.HEAD?.commit];
+      const resetCommitArgs = ['reset', '--soft', repo.HEAD?.commit];
       const popIntermediateStashArgs = ['stash', 'pop', '--index', 'stash@{1}'];
 
       try {
         try {
-          await gitRun(repository.gitRepository, intermediaryCommitArgs);
-          await gitRun(repository.gitRepository, stashWorktree);
-          await gitRun(repository.gitRepository, resetCommitArgs);
+          await gitRun(repo.gitRepository, intermediaryCommitArgs);
+          await gitRun(repo.gitRepository, stashWorktree);
+          await gitRun(repo.gitRepository, resetCommitArgs);
         } catch { }
         await _stash({ repository, switches }, message);
-        return gitRun(repository.gitRepository, popIntermediateStashArgs);
+        return gitRun(repo.gitRepository, popIntermediateStashArgs);
       } catch (error) {
-        await gitRun(repository.gitRepository, popIntermediateStashArgs);
+        await gitRun(repo.gitRepository, popIntermediateStashArgs);
         throw error;
       }
     }
