@@ -20,29 +20,40 @@ function generatePullingMenu(repository: MagitRepository) {
   return { title: 'Pulling', commands: pullingMenuItems };
 }
 
-export async function pulling(repository: MagitRepository): Promise<any> {
+export async function pulling(repository: Thenable<MagitRepository | undefined>): Promise<any> {
   const switches = [
     { key: '-r', name: '--rebase', description: 'Rebase local commits' }
   ];
+  const repo = await repository;
+  if (!repo) return;
 
-  return MenuUtil.showMenu(generatePullingMenu(repository), { repository, switches });
+  return MenuUtil.showMenu(generatePullingMenu(repo), { repository, switches });
 }
 
 async function pullFromPushRemote({ repository, switches }: MenuState) {
-  const pushRemote = repository.HEAD?.pushRemote;
+  const repo = await repository;
+  if (!repo) return;
+
+  const pushRemote = repo.HEAD?.pushRemote;
   if (pushRemote) {
     const args = ['pull', ...MenuUtil.switchesToArgs(switches), pushRemote.remote, pushRemote.name];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
 
-function pullFromUpstream({ repository, switches }: MenuState) {
+async function pullFromUpstream({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['pull', ...MenuUtil.switchesToArgs(switches)];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
 
 async function pullFromElsewhere({ repository, switches }: MenuState) {
-  const elseWhere = repository.remotes
+  const repo = await repository;
+  if (!repo) return;
+
+  const elseWhere = repo.remotes
     .flatMap(r =>
       r.branches
         .map(b => b.name)
@@ -56,6 +67,6 @@ async function pullFromElsewhere({ repository, switches }: MenuState) {
     const remote = chosenElse.slice(0, idx);
     const branch = chosenElse.slice(idx + 1);
     const args = ['pull', ...MenuUtil.switchesToArgs(switches), remote, branch];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
