@@ -23,6 +23,20 @@ const lineRe = new RegExp(
   'g');
 const graphRe = /^[/|\\-_* .o]+$/g;
 
+
+function prettifyGraph(graph: string): string {
+  // Consider using a string replace here
+  let out: string = '';
+  for (const c of graph) switch (c) {
+    case '*': { out += '○'; break; }
+    case '|': { out += '│'; break; }
+    case '/': { out += '╱'; break; }
+    case '\\': { out += '╲'; break; }
+    default: { out += c; }
+  }
+  return out;
+}
+
 function parseLog(stdout: string): MagitLogEntry[] {
   const lines = stdout.match(/[^\r\n]+/g);
   if (!lines) return [];
@@ -30,7 +44,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
   const commits: MagitLogEntry[] = [];
   for (const line of lines) {
     if (line.match(graphRe)) { // graph only, ie. the whole line is just graph stuff
-      commits[commits.length - 1]?.graph?.push(line);
+      commits[commits.length - 1]?.graph?.push(prettifyGraph(line));
       continue;
     }
 
@@ -39,7 +53,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
 
     const graph = matches[1]; // undefined if graph doesn't exist
     commits.push({
-      graph: graph ? [graph] : undefined,
+      graph: graph ? [prettifyGraph(graph)] : undefined,
       refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
       author: matches[6],
       time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
