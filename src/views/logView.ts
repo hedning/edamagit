@@ -14,7 +14,7 @@ import { gitRun, LogLevel } from '../utils/gitRawRunner';
 
 // regex to parse log lines
 const lineRe = new RegExp(
-  '^([/|\\-_* .o]+)?' + // Graph
+  '^([/|\\\\-_* .o]+)?' + // Graph
   '([a-f0-9]{40})' + // Sha
   '( \\(([^()]+)\\))?' + // Refs
   '( \\[([^\\[\\]]+)\\])' + // Author
