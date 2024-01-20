@@ -25,13 +25,16 @@ const whileMergingMenu = {
   ]
 };
 
-export async function merging(repository: MagitRepository) {
+export async function merging(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
+
   const switches = [
     { key: '-f', name: '--ff-only', description: 'Fast-forward only' },
     { key: '-n', name: '--no-ff', description: 'No fast-forward' },
   ];
 
-  if (repository.mergingState) {
+  if (repo.mergingState) {
     return MenuUtil.showMenu(whileMergingMenu, { repository });
   } else {
     return MenuUtil.showMenu(mergingMenu, { repository, switches });
@@ -44,11 +47,14 @@ async function merge(
   squashMerge = false,
   editMessage = false
 ) {
-  const ref = await MagitUtils.chooseRef(repository, 'Merge');
+  const repo = await repository;
+  if (!repo) return;
+
+  const ref = await MagitUtils.chooseRef(repo, 'Merge');
 
   if (ref) {
     return _merge(
-      repository,
+      repo,
       ref,
       noCommit,
       squashMerge,
@@ -63,11 +69,14 @@ async function merge(
 // }
 
 async function absorb({ repository }: MenuState) {
-  const ref = await MagitUtils.chooseRef(repository, 'Absorb');
+  const repo = await repository;
+  if (!repo) return;
+
+  const ref = await MagitUtils.chooseRef(repo, 'Absorb');
 
   if (ref) {
-    await _merge(repository, ref);
-    return await gitRun(repository.gitRepository, ['branch', '--delete', ref]);
+    await _merge(repo, ref);
+    return await gitRun(repo.gitRepository, ['branch', '--delete', ref]);
   }
 }
 
@@ -112,8 +121,11 @@ async function commitMerge(menuState: MenuState) {
 }
 
 async function abortMerge({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   if (await MagitUtils.confirmAction(`Abort merge?`)) {
     const args = ['merge', '--abort'];
-    return gitRun(repository.gitRepository, args);
+    return gitRun(repo.gitRepository, args);
   }
 }
