@@ -31,15 +31,18 @@ const options: Option[] = [
   { key: '=n', name: '-n', description: 'Limit number of commits', value: '256', activated: true },
 ];
 
-export async function logging(repository: MagitRepository) {
+export async function logging(repository: Thenable<MagitRepository | undefined>) {
   return MenuUtil.showMenu(loggingMenu, { repository, switches, options });
 }
 
 // A function wrapper to avoid duplicate checking code
 function wrap(action: (repository: MagitRepository, head: MagitBranch, switches: Switch[], options: Option[]) => Promise<any>) {
   return async ({ repository, switches, options }: MenuState) => {
-    if (repository.HEAD && switches && options) {
-      return action(repository, repository.HEAD, switches, options);
+    const repo = await repository;
+    if (!repo) return;
+
+    if (repo.HEAD && switches && options) {
+      return action(repo, repo.HEAD, switches, options);
     }
   };
 }
@@ -97,9 +100,9 @@ async function log(repository: MagitRepository, args: string[], revs: string[], 
 
   const uri = LogView.encodeLocation(repository, revs);
   const view = ViewUtils.createOrUpdateView(
-      repository,
-      uri,
-      () => new LogView(uri, repository, args, revs, paths)
+    repository,
+    uri,
+    () => new LogView(uri, repository, args, revs, paths)
   );
   return ViewUtils.showView(uri, view);
 }
