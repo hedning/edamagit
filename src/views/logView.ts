@@ -24,28 +24,48 @@ const lineRe = new RegExp(
 const graphRe = /^[/|\\-_* .o]+$/g;
 
 
-function prettifyGraph(graph: string): string {
+
+function prettifyGraph(graph: string, last: string): string {
   // Consider using a string replace here
   let out: string = '';
-  for (const c of graph) switch (c) {
-    // TODO: make this configurable
-    case '*': { out += '┿'; break; }
-    case '|': { out += '│'; break; }
-    case '/': { out += '╱'; break; }
-    case '\\': { out += '╲'; break; }
-    default: { out += c; }
+  for (let i = 0; i < graph.length; i++) {
+    const c = graph[i]!;
+    switch (c) {
+      // TODO: make this configurable
+      case '*': {
+        if (
+          last[i] === '|' ||
+          last[i] === '*' ||
+          last[i - 1] === '\\' ||
+          last[i + 1] === '/'
+        ) {
+          out += '┿';
+          break;
+        }
+        out += '┯';
+        break;
+      }
+      case '|': { out += '│'; break; }
+      case '/': { out += '╱'; break; }
+      case '\\': { out += '╲'; break; }
+      default: { out += c; }
+    }
   }
   return out;
 }
+
+
 
 function parseLog(stdout: string): MagitLogEntry[] {
   const lines = stdout.match(/[^\r\n]+/g);
   if (!lines) return [];
 
   const commits: MagitLogEntry[] = [];
+  let lastGraph = '';
   for (const line of lines) {
     if (line.match(graphRe)) { // graph only, ie. the whole line is just graph stuff
-      commits[commits.length - 1]?.graph?.push(prettifyGraph(line));
+      commits[commits.length - 1]?.graph?.push(prettifyGraph(line, lastGraph));
+      lastGraph = line;
       continue;
     }
 
@@ -54,7 +74,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
 
     const graph = matches[1]; // undefined if graph doesn't exist
     commits.push({
-      graph: graph ? [prettifyGraph(graph)] : undefined,
+      graph: graph ? [prettifyGraph(graph, lastGraph)] : undefined,
       refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
       author: matches[6],
       time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
@@ -65,6 +85,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
         authorEmail: undefined
       }
     });
+    if (graph) lastGraph = graph;
   }
 
   return commits;
