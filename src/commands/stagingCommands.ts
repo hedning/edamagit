@@ -57,8 +57,11 @@ async function stage(repository: MagitRepository, selection: Selection, selected
   }
 }
 
-export async function magitStageAll(repository: MagitRepository) {
-  return stageAllTracked(repository);
+export async function magitStageAll(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
+
+  return stageAllTracked(repo);
 }
 
 async function stageAllUntracked(repository: MagitRepository) {
@@ -113,11 +116,13 @@ async function unstage(repository: MagitRepository, selection: Selection, select
   }
 }
 
-export async function magitUnstageAll(repository: MagitRepository) {
+export async function magitUnstageAll(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
 
   if (await MagitUtils.confirmAction('Unstage all changes?')) {
 
-    return unstageAll(repository);
+    return unstageAll(repo);
   }
 }
 
