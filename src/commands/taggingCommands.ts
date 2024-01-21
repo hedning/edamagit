@@ -14,7 +14,7 @@ const taggingMenu = {
   ]
 };
 
-export async function tagging(repository: MagitRepository) {
+export async function tagging(repository: Thenable<MagitRepository | undefined>) {
 
   const switches = [
     { key: '-a', name: '--annotate', description: 'Annotate' },
@@ -26,12 +26,15 @@ export async function tagging(repository: MagitRepository) {
 }
 
 async function createTag({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
 
   const tagName = await window.showInputBox({ prompt: 'Tag name' });
 
   if (tagName) {
 
-    const ref = await MagitUtils.chooseRef(repository, 'Place tag on', true, true);
+    const ref = await MagitUtils.chooseRef(repo, 'Place tag on', true, true);
 
     if (ref) {
 
@@ -40,24 +43,26 @@ async function createTag({ repository, switches }: MenuState) {
       if (
         switches?.find(({ key, activated }) => key === '-a' && activated)
       ) {
-        return Commit.runCommitLikeCommand(repository, args, {
+        return Commit.runCommitLikeCommand(repo, args, {
           updatePostCommitTask: true,
         });
       }
 
-      return await gitRun(repository.gitRepository, args);
+      return await gitRun(repo.gitRepository, args);
     }
   }
 }
 
 async function deleteTag({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const tagRef = await MagitUtils.chooseTag(repository, 'Delete tag');
+  const tagRef = await MagitUtils.chooseTag(repo, 'Delete tag');
 
   if (tagRef) {
 
     const args = ['tag', '-d', ...MenuUtil.switchesToArgs(switches), tagRef];
 
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
