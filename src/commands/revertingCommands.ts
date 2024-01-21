@@ -21,9 +21,12 @@ const revertingMenu = {
   ]
 };
 
-export async function reverting(repository: MagitRepository) {
+export async function reverting(repository: Thenable<MagitRepository | undefined>) {
+  const repo = await repository;
+  if (!repo) return;
 
-  if (repository.revertingState) {
+
+  if (repo.revertingState) {
     return MenuUtil.showMenu(whileRevertingMenu, { repository });
   } else {
 
@@ -37,18 +40,24 @@ export async function reverting(repository: MagitRepository) {
 }
 
 async function revertCommit({ repository, switches }: MenuState) {
-  const target = await MagitUtils.chooseRef(repository, 'Revert commit(s)', true, true);
+  const repo = await repository;
+  if (!repo) return;
+
+  const target = await MagitUtils.chooseRef(repo, 'Revert commit(s)', true, true);
 
   if (target) {
-    return revert(repository, target, { edit: switches?.find(s => s.key === '-e' && s.activated) ? true : false });
+    return revert(repo, target, { edit: switches?.find(s => s.key === '-e' && s.activated) ? true : false });
   }
 }
 
 async function reverseSomeCommit({ repository }: MenuState) {
-  const commit = await MagitUtils.chooseRef(repository, 'Revert changes', true, true);
+  const repo = await repository;
+  if (!repo) return;
+
+  const commit = await MagitUtils.chooseRef(repo, 'Revert changes', true, true);
 
   if (commit) {
-    return revert(repository, commit, { noCommit: true });
+    return revert(repo, commit, { noCommit: true });
   }
 }
 
@@ -77,11 +86,17 @@ export async function revert(repository: MagitRepository, target: string, { noCo
 }
 
 async function continueRevert({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['revert', '--continue'];
-  return Commit.runCommitLikeCommand(repository, args);
+  return Commit.runCommitLikeCommand(repo, args);
 }
 
 async function revertControlCommand({ repository }: MenuState, command: string) {
+  const repo = await repository;
+  if (!repo) return;
+
   const args = ['revert', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRun(repo.gitRepository, args);
 }
