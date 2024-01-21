@@ -27,7 +27,7 @@ import { filePopup } from './commands/filePopupCommands';
 import { remoting } from './commands/remotingCommands';
 import { logging, logFile } from './commands/loggingCommands';
 import { MagitProcessLogEntry } from './models/magitProcessLogEntry';
-import { processView } from './commands/processCommands';
+import { processThenableView } from './commands/processCommands';
 import { resetting, resetMixed, resetHard } from './commands/resettingCommands';
 import { tagging } from './commands/taggingCommands';
 import { worktree } from './commands/worktreeCommands';
@@ -166,7 +166,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.running', CommandPrimer.primeRepo(running)),
     commands.registerTextEditorCommand('magit.worktree', CommandPrimer.primeRepo(worktree)),
     commands.registerTextEditorCommand('magit.submodules', CommandPrimer.primeRepo(submodules)),
-    commands.registerTextEditorCommand('magit.process-log', CommandPrimer.primeRepo(processView, false)),
+    commands.registerTextEditorCommand('magit.process-log', CommandPrimer.primeRepo(processThenableView, false)),
     commands.registerTextEditorCommand('magit.stage-all', CommandPrimer.primeRepo(magitStageAll)),
     commands.registerTextEditorCommand('magit.unstage-all', CommandPrimer.primeRepo(magitUnstageAll)),
 
