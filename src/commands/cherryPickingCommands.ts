@@ -1,10 +1,10 @@
 import { gitRun } from '../utils/gitRawRunner';
 import { MagitRepository } from '../models/magitRepository';
-import { MenuState, MenuUtil } from '../menu/menu';
+import { Menu, MenuState, MenuUtil } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
 import * as CommitCommands from '../commands/commitCommands';
 
-const whileCherryPickingMenu = {
+const whileCherryPickingMenu: Menu = {
   title: 'Cherry-picking',
   commands: [
     { label: 'A', description: 'Continue', action: continueCherryPick },
@@ -13,7 +13,7 @@ const whileCherryPickingMenu = {
   ]
 };
 
-const cherryPickingMenu = {
+const cherryPickingMenu: Menu = {
   title: 'Cherry-picking',
   commands: [
     { label: 'A', description: 'Pick', action: pick },

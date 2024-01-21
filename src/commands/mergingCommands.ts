@@ -1,10 +1,10 @@
-import { MenuState, MenuUtil, Switch } from '../menu/menu';
+import { Menu, MenuState, MenuUtil, Switch } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
 import * as Commit from '../commands/commitCommands';
 import MagitUtils from '../utils/magitUtils';
 
-const mergingMenu = {
+const mergingMenu: Menu = {
   title: 'Merging',
   commands: [
     { label: 'm', description: 'Merge', action: merge },
@@ -17,7 +17,7 @@ const mergingMenu = {
   ]
 };
 
-const whileMergingMenu = {
+const whileMergingMenu: Menu = {
   title: 'Merging',
   commands: [
     { label: 'm', description: 'Commit merge', action: commitMerge },

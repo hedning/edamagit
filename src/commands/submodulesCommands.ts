@@ -1,12 +1,12 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { gitRun } from '../utils/gitRawRunner';
 import { window } from 'vscode';
 import * as Fetching from './fetchingCommands';
 import SubmoduleListView from '../views/submoduleListView';
 import ViewUtils from '../utils/viewUtils';
 
-const submodulesMenu = {
+const submodulesMenu: Menu = {
   title: 'Submodules',
   commands: [
     { label: 'a', description: 'Add', action: add },

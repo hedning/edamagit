@@ -1,10 +1,10 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { commands, window } from 'vscode';
 import { gitRun } from '../utils/gitRawRunner';
 import GitTextUtils from '../utils/gitTextUtils';
 
-const stashingMenu = {
+const stashingMenu: Menu = {
   title: 'Stashing',
   commands: [
     { label: 'z', description: 'Save', action: stash },

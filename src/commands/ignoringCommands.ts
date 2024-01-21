@@ -1,5 +1,5 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
 import FilePathUtils from '../utils/filePathUtils';
 import * as fs from 'fs';
@@ -7,7 +7,7 @@ import { window } from 'vscode';
 import { EOL } from 'os';
 import * as Constants from '../common/constants';
 
-const ignoringMenu = {
+const ignoringMenu: Menu = {
   title: 'Ignoring',
   commands: [
     { label: 'l', description: 'Ignore locally', action: ({ repository }: MenuState) => ignore(repository) },

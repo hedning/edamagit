@@ -1,9 +1,9 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { commands, window } from 'vscode';
 import { gitRun } from '../utils/gitRawRunner';
 
-const remotingMenu = {
+const remotingMenu: Menu = {
   title: 'Remoting',
   commands: [
     { label: 'a', description: 'Add', action: addRemote },

@@ -1,5 +1,5 @@
 import { Uri } from 'vscode';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
 import * as Commit from './commitCommands';
 import * as Staging from './stagingCommands';
@@ -7,7 +7,7 @@ import * as Blaming from './blamingCommands';
 import * as Diffing from './diffingCommands';
 import * as Logging from './loggingCommands';
 
-const filePopupMenu = {
+const filePopupMenu: Menu = {
   title: 'File Actions',
   commands: [
     {

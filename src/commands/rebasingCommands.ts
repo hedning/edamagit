@@ -1,11 +1,11 @@
-import { MenuState, MenuUtil, Switch } from '../menu/menu';
+import { Menu, MenuState, MenuUtil, Switch } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { MagitError } from '../models/magitError';
 import * as Commit from '../commands/commitCommands';
 
-const whileRebasingMenu = {
+const whileRebasingMenu: Menu = {
   title: 'Rebasing',
   commands: [
     { label: 'r', description: 'Continue', action: (state: MenuState) => rebaseContinue(state) },
@@ -55,7 +55,7 @@ export async function rebasing(repository: Thenable<MagitRepository | undefined>
     { label: 'i', description: `interactively`, action: rebaseInteractively }
   ]);
 
-  const rebasingMenu = {
+  const rebasingMenu: Menu = {
     title: `Rebasing ${HEAD?.name}`,
     commands
   };

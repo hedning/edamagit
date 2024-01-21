@@ -1,11 +1,11 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { gitRun } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
 import * as Commit from '../commands/commitCommands';
 
-const taggingMenu = {
+const taggingMenu: Menu = {
   title: 'Tagging',
   commands: [
     { label: 't', description: 'Create', action: createTag },

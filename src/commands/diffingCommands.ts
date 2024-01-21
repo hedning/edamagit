@@ -2,7 +2,7 @@ import { Uri, window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
 import { DiffView } from '../views/diffView';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
 import { StashDetailView } from '../views/stashDetailView';
 import MagitUtils from '../utils/magitUtils';
@@ -16,7 +16,7 @@ import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
 import { toMagitChange } from './statusCommands';
 
-const diffingMenu = {
+const diffingMenu: Menu = {
   title: 'Diffing',
   commands: [
     { label: 'r', description: 'Diff range', action: diffRange },

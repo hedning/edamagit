@@ -1,10 +1,10 @@
 import { MagitRepository } from '../models/magitRepository';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import { gitRun } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
 
-const worktreeMenu = {
+const worktreeMenu: Menu = {
   title: 'Worktree',
   commands: [
     { label: 'b', description: 'Create new worktree', action: createWorktree },

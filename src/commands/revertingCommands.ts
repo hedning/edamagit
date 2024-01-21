@@ -1,10 +1,10 @@
 import { gitRun } from '../utils/gitRawRunner';
 import { MagitRepository } from '../models/magitRepository';
-import { MenuState, MenuUtil } from '../menu/menu';
+import { Menu, MenuState, MenuUtil } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
 import * as Commit from '../commands/commitCommands';
 
-const whileRevertingMenu = {
+const whileRevertingMenu: Menu = {
   title: 'Reverting',
   commands: [
     { label: 'V', description: 'Continue', action: continueRevert },
@@ -13,7 +13,7 @@ const whileRevertingMenu = {
   ]
 };
 
-const revertingMenu = {
+const revertingMenu: Menu = {
   title: 'Reverting',
   commands: [
     { label: 'V', description: 'Revert commit(s)', action: revertCommit },

@@ -1,6 +1,6 @@
 import { Uri, window } from 'vscode';
 import { StatusMessageDisplayTimeout } from '../common/constants';
-import { MenuState, MenuUtil, Switch, Option } from '../menu/menu';
+import { MenuState, MenuUtil, Switch, Option, Menu } from '../menu/menu';
 import { MagitBranch } from '../models/magitBranch';
 import { MagitLogEntry } from '../models/magitLogCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -9,7 +9,7 @@ import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
 import LogView from '../views/logView';
 
-const loggingMenu = {
+const loggingMenu: Menu = {
   title: 'Logging',
   commands: [
     { label: 'l', description: 'Log current', action: wrap(logCurrent) },

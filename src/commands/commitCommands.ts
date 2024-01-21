@@ -3,7 +3,7 @@ import * as Constants from '../common/constants';
 import { execPath } from 'process';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
-import { MenuUtil, MenuState } from '../menu/menu';
+import { MenuUtil, MenuState, Menu } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
 import * as Diffing from './diffingCommands';
 import { Section } from '../views/general/sectionHeader';
@@ -14,7 +14,7 @@ import ViewUtils from '../utils/viewUtils';
 import GitTextUtils from '../utils/gitTextUtils';
 import { magitConfig } from '../extension';
 
-const commitMenu = {
+const commitMenu: Menu = {
   title: 'Committing',
   commands: [
     { label: 'c', description: 'Commit', action: commit },
