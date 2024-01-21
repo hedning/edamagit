@@ -21,7 +21,7 @@ const submodulesMenu = {
   ]
 };
 
-export async function submodules(repository: MagitRepository) {
+export async function submodules(repository: Thenable<MagitRepository | undefined>) {
 
   const switches = [
     { key: '-f', name: '--force', description: 'Force' },
@@ -37,69 +37,83 @@ export async function submodules(repository: MagitRepository) {
 }
 
 async function add({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
   const submoduleRemote = await window.showInputBox({ prompt: `Add submodule (remote url)` });
 
   if (submoduleRemote) {
 
     const args = ['submodule', 'add', ...MenuUtil.switchesToArgs(switches), submoduleRemote];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function init({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Populate module');
+  const submodule = await pickSubmodule(repo, 'Populate module');
 
   if (submodule) {
     const args = ['submodule', 'init', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function populate({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Populate module');
+  const submodule = await pickSubmodule(repo, 'Populate module');
 
   if (submodule) {
     const args = ['submodule', 'update', '--init', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function update({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Update module');
+  const submodule = await pickSubmodule(repo, 'Update module');
 
   if (submodule) {
     const args = ['submodule', 'update', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function sync({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Synchronize module');
+  const submodule = await pickSubmodule(repo, 'Synchronize module');
 
   if (submodule) {
     const args = ['submodule', 'sync', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function unpopulate({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Unpopulate module');
+  const submodule = await pickSubmodule(repo, 'Unpopulate module');
 
   if (submodule) {
     const args = ['submodule', 'deinit', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRun(repo.gitRepository, args);
   }
 }
 
 async function remove({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const submodule = await pickSubmodule(repository, 'Remove module');
+  const submodule = await pickSubmodule(repo, 'Remove module');
 
   if (submodule) {
 
@@ -107,17 +121,19 @@ async function remove({ repository, switches }: MenuState) {
     const deinitArgs = ['submodule', 'deinit', '--', submodule];
     const removeArgs = ['rm', '--', submodule];
 
-    await gitRun(repository.gitRepository, absorbArgs);
-    await gitRun(repository.gitRepository, deinitArgs);
-    return await gitRun(repository.gitRepository, removeArgs);
+    await gitRun(repo.gitRepository, absorbArgs);
+    await gitRun(repo.gitRepository, deinitArgs);
+    return await gitRun(repo.gitRepository, removeArgs);
   }
 }
 
 async function listAll({ repository, switches }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const uri = SubmoduleListView.encodeLocation(repository);
+  const uri = SubmoduleListView.encodeLocation(repo);
 
-  let submoduleListView = ViewUtils.createOrUpdateView(repository, uri, () => new SubmoduleListView(uri, repository));
+  let submoduleListView = ViewUtils.createOrUpdateView(repo, uri, () => new SubmoduleListView(uri, repo));
 
   return ViewUtils.showView(uri, submoduleListView);
 }
