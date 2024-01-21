@@ -29,7 +29,7 @@ const diffingMenu = {
   ]
 };
 
-export async function diffing(repository: MagitRepository) {
+export async function diffing(repository: Thenable<MagitRepository | undefined>) {
 
   // const switches = [
   // { key: '-f', name: '--function-context', description: 'Show surrounding functions' },
@@ -43,41 +43,55 @@ export async function diffing(repository: MagitRepository) {
 }
 
 async function diffRange({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  let range = await window.showInputBox({ prompt: `Diff for range (${repository.HEAD?.name})` });
+  let range = await window.showInputBox({ prompt: `Diff for range (${repo.HEAD?.name})` });
 
   if (!range) {
-    range = repository.HEAD?.name;
+    range = repo.HEAD?.name;
   }
 
   if (range) {
     const args = [range];
-    return diff(repository, range, args);
+    return diff(repo, range, args);
   }
 }
 
 async function diffPaths({ repository }: MenuState) {
-  const fileA = await window.showInputBox({ prompt: 'First file', value: repository.uri.fsPath });
+  const repo = await repository;
+  if (!repo) return;
+
+  const fileA = await window.showInputBox({ prompt: 'First file', value: repo.uri.fsPath });
 
   if (fileA) {
 
-    const fileB = await window.showInputBox({ prompt: 'Second file', value: repository.uri.fsPath });
+    const fileB = await window.showInputBox({ prompt: 'Second file', value: repo.uri.fsPath });
 
     if (fileB) {
-      return diff(repository, 'files', ['--no-index', fileA, fileB]);
+      return diff(repo, 'files', ['--no-index', fileA, fileB]);
     }
   }
 }
 
 async function diffStaged({ repository }: MenuState) {
-  return showDiffSection(repository, Section.Staged);
+  const repo = await repository;
+  if (!repo) return;
+
+  return showDiffSection(repo, Section.Staged);
 }
 
 async function diffUnstaged({ repository }: MenuState) {
-  return showDiffSection(repository, Section.Unstaged);
+  const repo = await repository;
+  if (!repo) return;
+
+  return showDiffSection(repo, Section.Unstaged);
 }
 async function diffWorktree({ repository }: MenuState) {
-  return diff(repository, 'worktree', ['HEAD']);
+  const repo = await repository;
+  if (!repo) return;
+
+  return diff(repo, 'worktree', ['HEAD']);
 }
 
 async function diff(repository: MagitRepository, id: string, args: string[] = []) {
@@ -93,12 +107,14 @@ export async function showDiffSection(repository: MagitRepository, section: Sect
 }
 
 async function showStash({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const stashesPicker: PickMenuItem<Stash>[] = repository.stashes.map(stash => ({ label: `stash@{${stash.index}}`, meta: stash })) ?? [];
+  const stashesPicker: PickMenuItem<Stash>[] = repo.stashes.map(stash => ({ label: `stash@{${stash.index}}`, meta: stash })) ?? [];
   const chosenStash = await PickMenuUtil.showMenu(stashesPicker);
 
   if (chosenStash) {
-    return showStashDetail(repository, chosenStash);
+    return showStashDetail(repo, chosenStash);
   }
 }
 
@@ -124,11 +140,13 @@ export async function showStashDetail(repository: MagitRepository, stash: Stash)
 }
 
 async function showCommit({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const ref = await MagitUtils.chooseRef(repository, 'Show commit', true, true);
+  const ref = await MagitUtils.chooseRef(repo, 'Show commit', true, true);
 
   if (ref) {
-    return VisitAtPoint.visitCommit(repository, ref);
+    return VisitAtPoint.visitCommit(repo, ref);
   }
 }
 
