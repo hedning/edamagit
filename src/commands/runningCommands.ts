@@ -8,12 +8,22 @@ import { SpawnOptions } from '../utils/commandRunner/command';
 const runningMenu = {
   title: 'Running',
   commands: [
-    { label: '!', description: 'Git subcommand (in topdir)', action: ({ repository }: MenuState) => run(repository) },
-    { label: 'p', description: 'Git subcommand (in pwd)', action: ({ repository }: MenuState) => run(repository, workspace.getWorkspaceFolder(repository.uri)?.uri) }
+    {
+      label: '!', description: 'Git subcommand (in topdir)', action: async ({ repository }: MenuState) => {
+        const repo = await repository;
+        if (repo) run(repo);
+      }
+    },
+    {
+      label: 'p', description: 'Git subcommand (in pwd)', action: async ({ repository }: MenuState) => {
+        const repo = await repository;
+        if (repo) run(repo, workspace.getWorkspaceFolder(repo.uri)?.uri);
+      }
+    }
   ]
 };
 
-export async function running(repository: MagitRepository) {
+export async function running(repository: Thenable<MagitRepository | undefined>) {
   return MenuUtil.showMenu(runningMenu, { repository });
 }
 
