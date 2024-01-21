@@ -13,32 +13,36 @@ const worktreeMenu = {
   ]
 };
 
-export async function worktree(repository: MagitRepository) {
-
+export async function worktree(repository: Thenable<MagitRepository | undefined>) {
   return MenuUtil.showMenu(worktreeMenu, { repository });
 }
 
 async function createWorktree({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const ref = await MagitUtils.chooseRef(repository, 'Checkout ');
+  const ref = await MagitUtils.chooseRef(repo, 'Checkout ');
 
   if (ref) {
-    const worktreePath = await window.showInputBox({ value: repository.uri.fsPath, prompt: 'Create worktree' });
+    const worktreePath = await window.showInputBox({ value: repo.uri.fsPath, prompt: 'Create worktree' });
 
     if (worktreePath) {
       const args = ['worktree', 'add', worktreePath, ref];
-      return await gitRun(repository.gitRepository, args);
+      return await gitRun(repo.gitRepository, args);
     }
   }
 }
 
 async function createWorktreeAndBranch({ repository }: MenuState) {
+  const repo = await repository;
+  if (!repo) return;
 
-  const worktreePath = await window.showInputBox({ value: repository.uri.fsPath, prompt: 'Create worktree' });
+
+  const worktreePath = await window.showInputBox({ value: repo.uri.fsPath, prompt: 'Create worktree' });
 
   if (worktreePath) {
 
-    const ref = await MagitUtils.chooseRef(repository, 'Create and checkout branch starting at');
+    const ref = await MagitUtils.chooseRef(repo, 'Create and checkout branch starting at');
 
     if (ref) {
 
@@ -46,7 +50,7 @@ async function createWorktreeAndBranch({ repository }: MenuState) {
 
       if (branchName) {
         const args = ['worktree', 'add', '-b', branchName, worktreePath, ref];
-        return await gitRun(repository.gitRepository, args);
+        return await gitRun(repo.gitRepository, args);
       }
     }
   }
