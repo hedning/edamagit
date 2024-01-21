@@ -15,15 +15,17 @@ const ignoringMenu = {
   ]
 };
 
-export async function ignoring(repository: MagitRepository) {
+export async function ignoring(repository: Thenable<MagitRepository | undefined>) {
   return MenuUtil.showMenu(ignoringMenu, { repository });
 }
 
-async function ignore(repository: MagitRepository, globally = false) {
+async function ignore(repository: Thenable<MagitRepository | undefined>, globally = false) {
+  const repo = await repository;
+  if (!repo) return;
 
   const ignoreSuggestions: PickMenuItem<string>[] = [];
 
-  repository.untrackedFiles.forEach(change => {
+  repo.untrackedFiles.forEach(change => {
     const fileName = FilePathUtils.fileName(change.originalUri);
     const fileExtension = FilePathUtils.fileExtension(fileName);
 
@@ -42,9 +44,9 @@ async function ignore(repository: MagitRepository, globally = false) {
     let gitIgnoreFilePath: string;
 
     if (globally) {
-      gitIgnoreFilePath = repository.uri.fsPath + '/.gitignore';
+      gitIgnoreFilePath = repo.uri.fsPath + '/.gitignore';
     } else {
-      gitIgnoreFilePath = repository.uri.fsPath + '/.git/info/exclude';
+      gitIgnoreFilePath = repo.uri.fsPath + '/.git/info/exclude';
     }
 
     return new Promise<void>((resolve, reject) => {
