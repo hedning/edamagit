@@ -3,12 +3,15 @@ import { Range } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 
-export async function processView(repository: Thenable<MagitRepository | undefined>) {
+export async function processThenableView(repository: Thenable<MagitRepository | undefined>) {
   const repo = await repository;
   if (!repo) return;
+  return processView(repo);
+}
 
-  const uri = ProcessView.encodeLocation(repo);
-  let processView = ViewUtils.createOrUpdateView(repo, uri, () => new ProcessView(uri));
+export async function processView(repository: MagitRepository) {
+  const uri = ProcessView.encodeLocation(repository);
+  let processView = ViewUtils.createOrUpdateView(repository, uri, () => new ProcessView(uri));
 
   return ViewUtils.showView(uri, processView, { selection: new Range(100000, 0, 100000, 0) });
 }
