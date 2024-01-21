@@ -19,7 +19,9 @@ export class CommandPrimer {
       try {
         await command(repoPromise);
       } catch (error) {
-        this.handleError(repoPromise, error);
+        const repo = await repoPromise;
+        if (!repo) return;
+        this.handleError(repo, error);
       }
       if (triggersUpdate) {
         const repo = await repoPromise;
@@ -59,7 +61,7 @@ export class CommandPrimer {
     };
   }
 
-  static async handleError(repository: Thenable<MagitRepository | undefined>, error: any) {
+  static async handleError(repository: MagitRepository, error: any) {
 
     if (error.gitErrorCode || error.stderr || error instanceof MagitError) {
       const repo = await repository;
