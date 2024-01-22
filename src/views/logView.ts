@@ -80,81 +80,22 @@ function prettifyGraph(prev: string, current: string, next: string): string {
         out += '│'; break;
       }
       case ascii.r: {
-        // if (
-        //   (next[i - 2] === ascii.r || current[i - 2] === ascii._) &&
-        //   next[l] === ascii.pipe &&
-        //   current[l] === ascii.pipe
-        // ) { out += '╯'; break; }
-
-        // if (
-        //   (prev[i + 2] === ascii.r || prev[i + 2] === ascii._) &&
-        //   prev[r] === ascii.pipe &&
-        //   current[r] === ascii.pipe
-        // ) { out += '╯'; break; }
-
-        // if (
-        //   prev[r] === ascii.pipe &&
-        //   next[l] === ascii.pipe &&
-        //   current[r] === ' '
-        // ) { out += '╯'; break; }
-        // if (
-        //   prev[r] === ascii.pipe &&
-        //   next[l] === ascii.r &&
-        //   current[r] === ' '
-        // ) { out += '╯'; break; }
-        // if (
-        //   prev[r] === ascii.r &&
-        //   next[l] === ascii.r &&
-        //   current[r] === ' '
-        // ) { out += '╯'; break; }
-        // if (
-        //   prev[r] === ascii.r &&
-        //   next[l] === ascii.pipe &&
-        //   current[r] === ' '
-        // ) { out += '╯'; break; }
         if (
           prev[r] === ascii.r &&
           next[i] === ascii.pipe &&
           current[r] === ' '
         ) { out += '│'; break; }
 
-        // if ( // in-out
-        //   prev[i] === ascii.l &&
-        //   next[l] === ascii.pipe &&
-        //   current[r] === ' '
-        // ) { out += '╯'; break; }
-
         out += '╯'; break;
       }
       case ascii.l: {
         if (
           prev[l] === ascii.star &&
-          prev[i] === ' '
+          prev[i] === ' ' &&
+          next[r] === ascii.star
         ) { out += '│'; break; }
 
-        // if (
-        //   prev[l] === ascii.pipe &&
-        //   next[r] === ascii.pipe &&
-        //   current[r] === ' '
-        // ) { out += '╰'; break; }
-        // if (
-        //   prev[l] === ascii.pipe &&
-        //   next[r] === ascii.l &&
-        //   current[r] === ' '
-        // ) { out += '╰'; break; }
-        // if (
-        //   prev[l] === ascii.l &&
-        //   next[r] === ascii.l &&
-        //   current[r] === ' '
-        // ) { out += '╰'; break; }
-        // if (
-        //   prev[l] === ascii.l &&
-        //   next[r] === ascii.pipe &&
-        //   current[r] === ' '
-        // ) { out += '╰'; break; }
-
         if ( // in-out
-          (prev[l] === ascii.l || prev[l] === ascii.pipe) &&
           next[i] === ascii.r
         ) { out += '│'; break; }
 
