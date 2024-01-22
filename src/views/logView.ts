@@ -104,6 +104,12 @@ function prettifyGraph(prev: string, current: string, next: string): string {
         ) { out += '╯'; break; }
         if (
           prev[r] === ascii.r &&
+          next[l] === ascii.r &&
+          current[r] === ' '
+        ) { out += '╯'; break; }
+
+        if (
+          prev[r] === ascii.r &&
           next[l] === ascii.pipe &&
           current[r] === ' '
         ) { out += '╯'; break; }
