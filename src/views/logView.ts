@@ -28,12 +28,17 @@ U+257x 	╰ 	╱ 	╲ 	╳ 	╴ 	╵ 	╶ 	╷ 	╸ 	╹ 	╺ 	╻ 	╼ 	╽ 	�
 function prettifyGraph(prev: string, current: string, next: string): string {
   // Consider using a string replace here
   let out: string = '';
-  for (const c of current) switch (c) {
-    case '*': { out += '●'; break; }
-    case '|': { out += '│'; break; }
-    case '/': { out += '╱'; break; }
-    case '\\': { out += '╲'; break; }
-    default: { out += c; }
+  for (let i = 0; i < current.length; i++) {
+    const c = current[i];
+    const l = i - 1;
+    const r = i + 1;
+    switch (c) {
+      case '*': { out += '┿'; break; }
+      case '|': { out += '│'; break; }
+      case '/': { out += '╱'; break; }
+      case '\\': { out += '╲'; break; }
+      default: { out += c; }
+    }
   }
   return out;
 }
