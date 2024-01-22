@@ -54,6 +54,9 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           (next[i] === ascii.pipe || next[i] === ascii.star)
         ) { out += '┿'; break; }
         if (
+          next[r] === ascii.r
+        ) { out += '┿'; break; }
+        if (
           prev[i] === ascii.pipe || prev[i] === ascii.star
         ) { out += '┷'; break; }
         if (
@@ -150,6 +153,16 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           current[r] === ascii.r &&
           next[i] === ascii.pipe &&
           next[r] === ' '
+        ) { out += '╭'; break; }
+
+        if (
+          current[r] === ascii.star &&
+          next[i] === ascii.r &&
+          next[l] === ascii.pipe
+        ) { out += '╭'; break; }
+        if (
+          current[r] === ascii.r &&
+          next[i] === ascii.star
         ) { out += '╭'; break; }
 
         out += ' '; break;
