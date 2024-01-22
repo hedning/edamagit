@@ -62,7 +62,19 @@ function prettifyGraph(prev: string, current: string, next: string): string {
 
         out += '━'; break;
       }
-      case '|': { out += '│'; break; }
+      case '|': {
+        if ( // check if the / goes through us or not
+          current[r] === ascii.r &&
+          current[l] !== ascii._ &&
+          next[l] !== ascii.r
+        ) { out += '├'; break; }
+        if (
+          next[r] === ascii.l &&
+          next[i] === ' '
+        ) { out += '╰'; break; }
+
+        out += '│'; break;
+      }
       case ascii.r: {
         /**
           │ │╱
@@ -128,6 +140,12 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           current[r] === ascii.r &&
           prev[i] === ' '
         ) { out += '│'; break; }
+        if (
+          (current[l] === ascii.pipe) &&
+          next[l] === ' ' &&
+          next[i] === ascii.l
+        ) { out += '╮'; break; }
+
 
 
         out += ' '; break;
