@@ -25,22 +25,10 @@ U+257x 	╰ 	╱ 	╲ 	╳ 	╴ 	╵ 	╶ 	╷ 	╸ 	╹ 	╺ 	╻ 	╼ 	╽ 	�
 */
 
 
-// regex to parse log lines
-const lineRe = new RegExp(
-  '^([/|\\-_* .o]+)?' + // Graph
-  '([a-f0-9]{40})' + // Sha
-  '( \\(([^()]+)\\))?' + // Refs
-  '( \\[([^\\[\\]]+)\\])' + // Author
-  '( \\[([^\\[\\]]+)\\])' + // Time
-  '(.*)$', // Message
-  'g');
-const graphRe = /^[/|\\-_* .o]+$/g;
-
-
-function prettifyGraph(graph: string): string {
+function prettifyGraph(prev: string, current: string, next: string): string {
   // Consider using a string replace here
   let out: string = '';
-  for (const c of graph) switch (c) {
+  for (const c of current) switch (c) {
     case '*': { out += '●'; break; }
     case '|': { out += '│'; break; }
     case '/': { out += '╱'; break; }
@@ -50,33 +38,69 @@ function prettifyGraph(graph: string): string {
   return out;
 }
 
+// regex to parse log lines
+const lineRe = new RegExp(
+  '^([/|\\\\-_* .o]+)?' + // Graph
+  '([a-f0-9]{40})' + // Sha
+  '( \\(([^()]+)\\))?' + // Refs
+  '( \\[([^\\[\\]]+)\\])' + // Author
+  '( \\[([^\\[\\]]+)\\])' + // Time
+  '(.*)$', // Message
+  'g');
+const graphRe = /^[/|\\\\-_* .o]+$/g;
+function reParse(line: string): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
+  if (!line) return { graph: '' };
+
+  if (line.match(graphRe)) return { graph: line };
+
+  const matches: string[] = line.matchAll(lineRe).next().value;
+  if (!matches) return { graph: '' };
+  return {
+    graph: matches[1]!,
+    refs: matches[4]!,
+    author: matches[6]!,
+    time: matches[8]!, // convert seconds to milliseconds
+    hash: matches[2]!,
+    message: matches[9]!,
+  };
+}
+
 function parseLog(stdout: string): MagitLogEntry[] {
   const lines = stdout.match(/[^\r\n]+/g);
   if (!lines) return [];
 
+  if (lines.length < 2) return [];
+
+  let prev = { graph: '' };
+  let i = 0;
+  let current = reParse(lines[i]);
+  i += 1;
+  let next = reParse(lines[i]) ?? { graph: '' };
   const commits: MagitLogEntry[] = [];
-  for (const line of lines) {
-    if (line.match(graphRe)) { // graph only, ie. the whole line is just graph stuff
-      commits[commits.length - 1]?.graph?.push(prettifyGraph(line));
-      continue;
+  while (i <= lines.length) {
+    const graph = prettifyGraph(prev.graph, current.graph, next.graph);
+
+    if ('refs' in current) {
+      commits.push({
+        graph: graph ? [graph] : undefined,
+        refs: (current.refs ?? '').split(', ').filter((m: string) => m),
+        author: current.author,
+        time: new Date(Number(current.time) * 1000), // convert seconds to milliseconds
+        commit: {
+          hash: current.hash,
+          message: current.message,
+          parents: [],
+          authorEmail: undefined
+        }
+      });
+    } else {
+      commits[commits.length - 1]?.graph?.push(graph);
     }
 
-    const matches = line.matchAll(lineRe).next().value;
-    if (!matches || matches.length === 0) continue;
-
-    const graph = matches[1]; // undefined if graph doesn't exist
-    commits.push({
-      graph: graph ? [prettifyGraph(graph)] : undefined,
-      refs: (matches[4] ?? '').split(', ').filter((m: string) => m),
-      author: matches[6],
-      time: new Date(Number(matches[8]) * 1000), // convert seconds to milliseconds
-      commit: {
-        hash: matches[2],
-        message: matches[9],
-        parents: [],
-        authorEmail: undefined
-      }
-    });
+    i += 1;
+    prev = current;
+    current = next;
+    next = reParse(lines[i]);
   }
 
   return commits;
