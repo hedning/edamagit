@@ -115,7 +115,7 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           current[r] === ascii.star
         ) { out += '╰'; break; }
         if (
-          current[i + 2] === ascii.r &&
+          (current[i + 2] === ascii.r || current[i + 2] === ascii._) &&
           next[i] === ascii.r
         ) { out += '╭'; break; }
         if (
