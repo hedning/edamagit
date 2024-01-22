@@ -54,7 +54,8 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           (next[i] === ascii.pipe || next[i] === ascii.star)
         ) { out += '┿'; break; }
         if (
-          next[r] === ascii.r
+          prev[r] === ascii.r &&
+          (next[i] === ascii.pipe || next[i] === ascii.star)
         ) { out += '┿'; break; }
         if (
           prev[i] === ascii.pipe || prev[i] === ascii.star
