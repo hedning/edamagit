@@ -84,6 +84,12 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           current[r] === ascii.pipe
         ) { out += '╯'; break; }
 
+        if (
+          current[l] === ' ' &&
+          prev[l] === ' ' &&
+          prev[i] === ascii.l
+        ) { out += ' '; break; }
+
         out += '╱'; break;
       }
       case ascii.l: {
@@ -91,25 +97,38 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           prev[l] === ascii.star &&
           prev[i] === ' '
         ) { out += '│'; break; }
+        if (
+          current[l] === ' ' &&
+          next[i] === ascii.r &&
+          next[l] === ' '
+        ) { out += ' '; break; }
+
         out += '╲'; break;
       }
       case ' ': {
-        if ( /** ┿╮
-                  │
-         */
+        if (
           next[i] === ascii.l &&
           current[l] === ascii.star
         ) { out += '╮'; break; }
-
         if (
           prev[i] === ascii.l &&
           current[r] === ascii.star
         ) { out += '╰'; break; }
-
         if (
           current[i + 2] === ascii.r &&
           next[i] === ascii.r
         ) { out += '╭'; break; }
+        if (
+          current[r] === ascii.l &&
+          next[r] === ascii.r &&
+          next[i] === ' '
+        ) { out += '│'; break; }
+        if (
+          prev[r] === ascii.l &&
+          current[r] === ascii.r &&
+          prev[i] === ' '
+        ) { out += '│'; break; }
+
 
         out += ' '; break;
       }
@@ -132,7 +151,6 @@ const lineRe = new RegExp(
 const graphRe = /^[/|\\\\-_* .o]+$/g;
 function reParse(line: string): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
   if (!line) return { graph: '' };
-
   if (line.match(graphRe)) return { graph: line };
 
   const matches: string[] = line.matchAll(lineRe).next().value;
