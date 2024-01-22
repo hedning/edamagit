@@ -24,6 +24,21 @@ U+256x 	╠ 	╡ 	╢ 	╣ 	╤ 	╥ 	╦ 	╧ 	╨ 	╩ 	╪ 	╫ 	╬ 	╭ 	�
 U+257x 	╰ 	╱ 	╲ 	╳ 	╴ 	╵ 	╶ 	╷ 	╸ 	╹ 	╺ 	╻ 	╼ 	╽ 	╾ 	╿
 */
 
+const ascii = {
+  /**
+   * ╮, though ╰ could make sense some times
+   */
+  l: '\\',
+
+  /**
+   * ╯, though ╭ could make sense some times, might have to disambiguate
+   */
+  r: '/',
+  up: '|',
+  star: '*',
+  pipe: '|',
+  _: "_",
+} as const;
 
 function prettifyGraph(prev: string, current: string, next: string): string {
   // Consider using a string replace here
@@ -33,10 +48,69 @@ function prettifyGraph(prev: string, current: string, next: string): string {
     const l = i - 1;
     const r = i + 1;
     switch (c) {
-      case '*': { out += '┿'; break; }
+      case '*': {
+        if ( // check if there something going into
+          prev[l] === ascii.l ||
+          prev[i] === ascii.star ||
+          prev[i] === ascii.pipe ||
+          prev[r] === ascii.r
+        ) {
+          out += '┿'; break;
+        }
+        out += '┯'; break;
+      }
       case '|': { out += '│'; break; }
-      case '/': { out += '╱'; break; }
-      case '\\': { out += '╲'; break; }
+      case ascii.r: {
+        /**
+          │ │╱
+          │╱│
+
+          │_│╱
+          │ │
+
+        */
+        if (
+          (next[i - 2] === ascii.r || current[i - 2] === ascii._) &&
+          next[l] === ascii.pipe &&
+          current[l] === ascii.pipe
+        ) { out += '╯'; break; }
+
+        if (
+          (prev[i + 2] === ascii.r || prev[i + 2] === ascii._) &&
+          prev[r] === ascii.pipe &&
+          current[r] === ascii.pipe
+        ) { out += '╯'; break; }
+
+        out += '╱'; break;
+      }
+      case ascii.l: {
+        if (
+          prev[l] === ascii.star &&
+          prev[i] === ' '
+        ) { out += '│'; break; }
+        out += '╲'; break;
+      }
+      case ' ': {
+        if ( /** ┿╮
+                  │
+         */
+          next[i] === ascii.l &&
+          current[l] === ascii.star
+        ) { out += '╮'; break; }
+
+        if (
+          prev[i] === ascii.l &&
+          current[r] === ascii.star
+        ) { out += '╰'; break; }
+
+        if (
+          current[i + 2] === ascii.r &&
+          next[i] === ascii.r
+        ) { out += '╭'; break; }
+
+        out += ' '; break;
+      }
+      case ascii._: { out += '─'; break; }
       default: { out += c; }
     }
   }
