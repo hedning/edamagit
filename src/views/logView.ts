@@ -155,6 +155,11 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           next[l] === ' '
         ) { out += '╮'; break; }
 
+        if (
+          current[r] === ascii.pipe &&
+          next[i] === ascii.r &&
+          next[r] === ' '
+        ) { out += '╭'; break; }
 
         out += ' '; break;
       }
