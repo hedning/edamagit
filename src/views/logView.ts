@@ -28,7 +28,7 @@ function prettifyGraph(graph: string): string {
   // Consider using a string replace here
   let out: string = '';
   for (const c of graph) switch (c) {
-    case '*': { out += '⏺'; break; }
+    case '*': { out += '●'; break; }
     case '|': { out += '│'; break; }
     case '/': { out += '╱'; break; }
     case '\\': { out += '╲'; break; }
