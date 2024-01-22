@@ -72,24 +72,19 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           next[r] === ascii.l &&
           next[i] === ' '
         ) { out += '╰'; break; }
+        if (
+          next[l] === ascii.r &&
+          next[i] === ' '
+        ) { out += '╯'; break; }
 
         out += '│'; break;
       }
       case ascii.r: {
-        /**
-          │ │╱
-          │╱│
-
-          │_│╱
-          │ │
-
-        */
         if (
           (next[i - 2] === ascii.r || current[i - 2] === ascii._) &&
           next[l] === ascii.pipe &&
           current[l] === ascii.pipe
         ) { out += '╯'; break; }
-
         if (
           (prev[i + 2] === ascii.r || prev[i + 2] === ascii._) &&
           prev[r] === ascii.pipe &&
