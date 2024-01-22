@@ -131,8 +131,8 @@ function prettifyGraph(prev: string, current: string, next: string): string {
         ) { out += '╮'; break; }
         if (
           current[l] === ascii.l &&
-          next[i] === ascii.pipe &&
-          next[l] === ' '
+          next[i] === ascii.pipe
+          // next[l] === ' '
         ) { out += '╮'; break; }
         if (
           current[l] === ascii.l &&
