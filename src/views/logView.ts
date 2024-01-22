@@ -85,10 +85,33 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           next[l] === ascii.pipe &&
           current[l] === ascii.pipe
         ) { out += '╯'; break; }
+
         if (
           (prev[i + 2] === ascii.r || prev[i + 2] === ascii._) &&
           prev[r] === ascii.pipe &&
           current[r] === ascii.pipe
+        ) { out += '╯'; break; }
+
+        if (
+          prev[r] === ascii.pipe &&
+          next[l] === ascii.pipe &&
+          current[r] === ' '
+        ) { out += '╯'; break; }
+        if (
+          prev[r] === ascii.pipe &&
+          next[l] === ascii.r &&
+          current[r] === ' '
+        ) { out += '╯'; break; }
+        if (
+          prev[r] === ascii.r &&
+          next[l] === ascii.pipe &&
+          current[r] === ' '
+        ) { out += '╯'; break; }
+
+        if ( // in-out
+          prev[i] === ascii.l &&
+          next[l] === ascii.pipe &&
+          current[r] === ' '
         ) { out += '╯'; break; }
 
         out += ascii.r; break;
@@ -158,6 +181,16 @@ function prettifyGraph(prev: string, current: string, next: string): string {
         if (
           current[r] === ascii.pipe &&
           next[i] === ascii.r &&
+          next[r] === ' '
+        ) { out += '╭'; break; }
+        if (
+          current[r] === ascii.r &&
+          next[i] === ascii.r &&
+          next[r] === ' '
+        ) { out += '╭'; break; }
+        if (
+          current[r] === ascii.r &&
+          next[i] === ascii.pipe &&
           next[r] === ' '
         ) { out += '╭'; break; }
 
