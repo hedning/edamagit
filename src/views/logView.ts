@@ -107,12 +107,16 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           next[l] === ascii.r &&
           current[r] === ' '
         ) { out += '╯'; break; }
-
         if (
           prev[r] === ascii.r &&
           next[l] === ascii.pipe &&
           current[r] === ' '
         ) { out += '╯'; break; }
+        if (
+          prev[r] === ascii.r &&
+          next[i] === ascii.pipe &&
+          current[r] === ' '
+        ) { out += '│'; break; }
 
         if ( // in-out
           prev[i] === ascii.l &&
@@ -127,6 +131,7 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           prev[l] === ascii.star &&
           prev[i] === ' '
         ) { out += '│'; break; }
+
         if (
           prev[l] === ascii.pipe &&
           next[r] === ascii.pipe &&
@@ -147,6 +152,11 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           next[r] === ascii.pipe &&
           current[r] === ' '
         ) { out += '╰'; break; }
+
+        if ( // in-out
+          (prev[l] === ascii.l || prev[l] === ascii.pipe) &&
+          next[i] === ascii.r
+        ) { out += '│'; break; }
 
         out += '╲'; break;
       }
@@ -168,6 +178,7 @@ function prettifyGraph(prev: string, current: string, next: string): string {
           (current[i + 2] === ascii.r || current[i + 2] === ascii._) &&
           next[i] === ascii.r
         ) { out += '╭'; break; }
+
         if (
           current[l] === ascii.pipe &&
           next[i] === ascii.l &&
