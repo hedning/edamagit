@@ -49,15 +49,18 @@ function prettifyGraph(prev: string, current: string, next: string): string {
     const r = i + 1;
     switch (c) {
       case '*': {
-        if ( // check if there something going into
-          prev[l] === ascii.l ||
-          prev[i] === ascii.star ||
-          prev[i] === ascii.pipe ||
-          prev[r] === ascii.r
-        ) {
-          out += '┿'; break;
-        }
-        out += '┯'; break;
+        if (
+          (prev[i] === ascii.pipe || prev[i] === ascii.star) &&
+          (next[i] === ascii.pipe || next[i] === ascii.star)
+        ) { out += '┿'; break; }
+        if (
+          prev[i] === ascii.pipe || prev[i] === ascii.star
+        ) { out += '┷'; break; }
+        if (
+          next[i] === ascii.pipe || next[i] === ascii.star
+        ) { out += '┯'; break; }
+
+        out += '━'; break;
       }
       case '|': { out += '│'; break; }
       case ascii.r: {
