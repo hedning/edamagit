@@ -26,12 +26,12 @@ U+257x 	╰ 	╱ 	╲ 	╳ 	╴ 	╵ 	╶ 	╷ 	╸ 	╹ 	╺ 	╻ 	╼ 	╽ 	�
 
 const ascii = {
   /**
-   * ╮, though ╰ could make sense some times
+   * defaults to ╰
    */
   l: '\\',
 
   /**
-   * ╯, though ╭ could make sense some times, might have to disambiguate
+   * defaults to ╯
    */
   r: '/',
   up: '|',
