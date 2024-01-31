@@ -328,7 +328,7 @@ export class CommitLongFormItemView extends CommitItemView {
     }
     const truncatedAuthor = truncateText(logEntry.author, maxAuthorWidth, maxAuthorWidth + 1);
     const truncatedTime = truncateText(timeDistance, 9, 9 + 1);
-    const preamble = `${truncatedAuthor}${truncatedTime}${hash}`;
+    const preamble = `${hash}${truncatedAuthor}${truncatedTime}`;
     this.content.push(`${preamble}${graph}`);
     if (logEntry.refs.length) {
       this.content.push(...ViewUtils.generateRefTokensLine(logEntry.commit.hash, refs, headName, defaultBranches));
