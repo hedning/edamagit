@@ -11,6 +11,8 @@ import { TextView } from './general/textView';
 import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
 import { gitRun, LogLevel } from '../utils/gitRawRunner';
+import { Ref } from '../typings/git';
+import ViewUtils from '../utils/viewUtils';
 
 /** Box drawing chars
     0 	1 	2 	3 	4 	5 	6 	7 	8 	9 	A 	B 	C 	D 	E 	F
@@ -267,12 +269,24 @@ export default class LogView extends DocumentView {
   public async update(state: MagitRepository) {
     const repo = state.gitRepository;
     const output = await gitRun(repo, this.args.concat(this.revs, ['--'], this.paths), {}, LogLevel.Error);
+    const refs = state.remotes.reduce((prev, remote) => remote.branches.concat(prev), state.branches.concat(state.tags));
+
+
+    let defaultBranches: { [remoteName: string]: string } = {};
+    for await (const remote of state.remotes) {
+      try {
+        let defaultBranch = await gitRun(state.gitRepository, ['symbolic-ref', `refs/remotes/${remote.name}/HEAD`], undefined, LogLevel.Error);
+        defaultBranches[remote.name] = defaultBranch.stdout.replace(`refs/remotes/${remote.name}/`, '').trimEnd();
+      } catch { } // gitRun will throw an error if remote/HEAD doesn't exist - we do not need to do anything in this case
+    }
+
     const logEntries = parseLog(output.stdout);
     const revName = this.revs.join(' ');
 
     this.subViews = [
       new TextView(`Commits in ${revName}`),
-      ...logEntries.map(entry => new CommitLongFormItemView(entry)),
+      // ...logEntries.map(entry => new CommitLongFormItemView(entry, refs)),
+      ...logEntries.map(entry => new CommitLongFormItemView(entry, refs, state.HEAD?.name, defaultBranches)),
     ];
     // For some reason the fire event can get eaten if fired synchronously
     const trigger = () => {
@@ -292,8 +306,8 @@ export default class LogView extends DocumentView {
 
 export class CommitLongFormItemView extends CommitItemView {
 
-  constructor(public logEntry: MagitLogEntry) {
-    super(logEntry.commit);
+  constructor(public logEntry: MagitLogEntry, refs?: Ref[], headName?: string, defaultBranches?: { [remoteName: string]: string }) {
+    super(logEntry.commit, undefined, refs);
 
     const timeDistance = formatDistanceToNowStrict(logEntry.time);
     const hash = `${GitTextUtils.shortHash(logEntry.commit.hash)} `;
@@ -304,16 +318,8 @@ export class CommitLongFormItemView extends CommitItemView {
     const msg = GitTextUtils.shortCommitMessage(logEntry.commit.message);
     this.content.push(`${hash}${graph}`);
 
-    const refTokens: Token[] = logEntry.refs.map(ref => new Token(ref, SemanticTokenTypes.RefName));
-    if (refTokens.length) {
-
-      this.content.push(' (');
-      refTokens.forEach(refToken => {
-        this.content.push(refToken, ' ');
-      });
-      this.content.pop();
-
-      this.content.push(') ');
+    if (logEntry.refs.length) {
+      this.content.push(...ViewUtils.generateRefTokensLine(logEntry.commit.hash, refs, headName, defaultBranches));
     }
 
     const availableMsgWidth = 70 - this.content.reduce((prev, v) => prev + v.length, 0);
