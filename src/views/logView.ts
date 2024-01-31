@@ -322,7 +322,7 @@ export class CommitLongFormItemView extends CommitItemView {
       this.content.push(...ViewUtils.generateRefTokensLine(logEntry.commit.hash, refs, headName, defaultBranches));
     }
 
-    const availableMsgWidth = 70 - this.content.reduce((prev, v) => prev + v.length, 0);
+    const availableMsgWidth = 120 - this.content.reduce((prev, v) => prev + v.length, 0);
     let maxAuthorWidth = 17;
     // fixme: add setting toggle
     const shortenToInitials = true;
