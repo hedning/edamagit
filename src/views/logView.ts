@@ -316,11 +316,6 @@ export class CommitLongFormItemView extends CommitItemView {
     this.content = [];
 
     const msg = GitTextUtils.shortCommitMessage(logEntry.commit.message);
-    this.content.push(`${hash}${graph}`);
-
-    if (logEntry.refs.length) {
-      this.content.push(...ViewUtils.generateRefTokensLine(logEntry.commit.hash, refs, headName, defaultBranches));
-    }
 
     const availableMsgWidth = 120 - this.content.reduce((prev, v) => prev + v.length, 0);
     let maxAuthorWidth = 17;
@@ -331,16 +326,23 @@ export class CommitLongFormItemView extends CommitItemView {
       logEntry.author = initials;
       maxAuthorWidth = 4;
     }
-
     const truncatedAuthor = truncateText(logEntry.author, maxAuthorWidth, maxAuthorWidth + 1);
-    const truncatedMsg = truncateText(msg, availableMsgWidth, availableMsgWidth + 1);
-    this.content.push(`${truncatedMsg}${truncatedAuthor}${timeDistance}`);
+    const truncatedTime = truncateText(timeDistance, 9, 9 + 1);
+    const preamble = `${truncatedAuthor}${truncatedTime}${hash}`;
+    this.content.push(`${preamble}${graph}`);
+    if (logEntry.refs.length) {
+      this.content.push(...ViewUtils.generateRefTokensLine(logEntry.commit.hash, refs, headName, defaultBranches));
+    }
+
+    const truncatedMsg = msg;
+    // const truncatedMsg = truncateText(msg, availableMsgWidth, availableMsgWidth + 1);
+    this.content.push(truncatedMsg);
 
     // Add the rest of the graph for this commit
     if (logEntry.graph) {
       for (let i = 1; i < logEntry.graph.length; i++) {
         const g = logEntry.graph[i];
-        const emptyHashSpace = ' '.repeat(8);
+        const emptyHashSpace = ' '.repeat(preamble.length);
         this.content.push(`\n${emptyHashSpace}${g}`);
       }
     }
