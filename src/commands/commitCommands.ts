@@ -134,15 +134,15 @@ export async function runCommitLikeCommand(repository: MagitRepository, args: st
 
     if (showStagedChanges) {
       args.splice(1, 0, '-v');
-      // stagedEditorTask = Diffing.showDiffSection(repository, Section.Staged, true);
-
     }
-
-    const env: NodeJS.ProcessEnv = { 'GIT_EDITOR': `"${codePath}" -r --wait` };
-
-    if (editor) {
-      env[editor] = `"${codePath}" -r --wait`;
+    let ozoneArgs = '';
+    if (process.env.WAYLAND_DISPLAY && !process.env.DISPLAY) {
+      // Fix for wayland only compositors like niri
+      ozoneArgs = ' --enable-features=UseOzonePlatform --ozone-platform=wayland ';
     }
+    const editorString = `"${codePath}" ${ozoneArgs} -r --wait`;
+    const env: NodeJS.ProcessEnv = { 'GIT_EDITOR': editorString };
+    if (editor) env[editor] = editorString;
 
     const commitSuccessMessageTask = gitRun(repository.gitRepository, args, { env });
 
