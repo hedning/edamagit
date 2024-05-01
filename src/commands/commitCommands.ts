@@ -53,7 +53,7 @@ export async function commit({ repository, switches }: MenuState, commitArgs: st
 
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
 
-  return runCommitLikeCommand(repo, args, { showStagedChanges: !stageAllSwitch?.activated });
+  return runCommitLikeCommand(repo, args, { showStagedChanges: true });
 }
 
 export async function ammendCommit({ repository, switches }: MenuState, commitArgs: string[] = []) {
@@ -61,7 +61,7 @@ export async function ammendCommit({ repository, switches }: MenuState, commitAr
   if (!repo) return;
 
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
-  return runCommitLikeCommand(repo, args);
+  return runCommitLikeCommand(repo, args, { showStagedChanges: true });
 }
 
 export async function rewordCommit({ repository, switches }: MenuState, commitArgs: string[] = []) {
@@ -69,7 +69,7 @@ export async function rewordCommit({ repository, switches }: MenuState, commitAr
   if (!repo) return;
 
   const args = ['commit', ...MenuUtil.switchesToArgs(switches), ...commitArgs];
-  return runCommitLikeCommand(repo, args, { showStagedChanges: false });
+  return runCommitLikeCommand(repo, args, { showStagedChanges: true });
 }
 
 async function fixup({ repository, switches }: MenuState) {
@@ -123,7 +123,11 @@ export function setCodePath(path?: string) {
   }
 }
 
-export async function runCommitLikeCommand(repository: MagitRepository, args: string[], { showStagedChanges, updatePostCommitTask, editor, propagateErrors }: CommitEditorOptions = { showStagedChanges: true }) {
+export async function runCommitLikeCommand(
+  repository: MagitRepository,
+  args: string[],
+  { showStagedChanges, updatePostCommitTask, editor, propagateErrors, }: CommitEditorOptions = { showStagedChanges: false }
+) {
 
   let stagedEditorTask: Thenable<vscode.TextEditor> | undefined;
   let instructionStatus;

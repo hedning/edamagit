@@ -108,7 +108,7 @@ async function _merge(
   if (editMessage) {
 
     args.push(...['--edit', '--no-ff']);
-    return Commit.runCommitLikeCommand(repository, args, { updatePostCommitTask: true });
+    return Commit.runCommitLikeCommand(repository, args, { updatePostCommitTask: true, showStagedChanges: true });
   } else {
     args.push('--no-edit');
   }
