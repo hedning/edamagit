@@ -28,7 +28,7 @@ const switches: Switch[] = [
 ];
 
 const options: Option[] = [
-  { key: '=n', name: '-n', description: 'Limit number of commits', value: '256', activated: true },
+  { key: '=n', name: '-n', description: 'Limit number of commits', value: '500', activated: true },
 ];
 
 export async function logging(repository: Thenable<MagitRepository | undefined>) {
