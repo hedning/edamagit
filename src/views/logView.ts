@@ -252,6 +252,7 @@ export default class LogView extends DocumentView {
 
   static UriPath: string = 'log.magit';
   needsUpdate = true
+  isFoldable = true;
   args: string[];
   revs: string[];
   paths: string[];
