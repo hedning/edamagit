@@ -37,6 +37,7 @@
     }
   },
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:magit.save-and-close-editor",
     "onCommand:magit.clear-and-abort-editor"
   ],
