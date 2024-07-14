@@ -194,7 +194,7 @@ enum ParseState {
   Message,
 }
 
-const graphChars = [ascii.l, ascii.pipe, ascii.star, ascii.r, ' '];
+const graphChars = [ascii.l, ascii.pipe, ascii.star, ascii.r, ascii._, ' '];
 
 function parseLine(line: string | undefined): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
   if (line === undefined) return { graph: '' };
@@ -225,15 +225,15 @@ function parseLine(line: string | undefined): { graph: string } | { graph: strin
       }
       case ParseState.Hash: {
         state = ParseState.MaybeRefs;
-        hash = line.slice(i, i + 40);
-        i += 40;
+        let stop = line.indexOf(' ', i);
+        hash = line.slice(i, stop);
+        i = stop;
         break;
       }
       case ParseState.MaybeRefs: {
         if (char === '(') state = ParseState.Refs;
         else state = ParseState.Author;
-        continue;
-        break;
+        continue; // Let Refs take care of the current char
       }
       case ParseState.Refs: {
         if (char === ')') state = ParseState.Author;
