@@ -267,13 +267,13 @@ function parseLine(line: string | undefined): { graph: string } | { graph: strin
         break;
       }
       case ParseState.Author: {
-        if (char === ']') state = ParseState.Time;
-        if (char !== '[' && char !== ']') author += char;
+        if (char === '}') state = ParseState.Time;
+        if (char !== '{' && char !== '}') author += char;
         break;
       }
       case ParseState.Time: {
-        if (char === ']') state = ParseState.Message;
-        if (char !== '[' && char !== ']' && char !== ' ') time += char;
+        if (char === '}') state = ParseState.Message;
+        if (char !== '{' && char !== '}' && char !== ' ') time += char;
         break;
       }
       case ParseState.Message: {

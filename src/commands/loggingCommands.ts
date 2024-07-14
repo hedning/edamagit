@@ -124,7 +124,7 @@ function createLogArgs(switches: Switch[], options: Option[]) {
   }, {} as Record<string, Switch>);
 
   const decorateFormat = switchMap['-d'].activated ? '%d' : '';
-  const formatArg = `--format=%H${decorateFormat} [%an] [%at]%s`;
+  const formatArg = `--format=%H${decorateFormat} {%an} {%at}%s`;
   const args = ['log', formatArg, '--use-mailmap', ...MenuUtil.optionsToArgs(options)];
   if (switchMap['-D'].activated) {
     args.push(switchMap['-D'].name);
