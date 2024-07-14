@@ -182,32 +182,6 @@ function prettifyGraph(prev: string, current: string, next: string): string {
   return out;
 }
 
-// regex to parse log lines
-const lineRe = new RegExp(
-  '^([/|\\\\-_* .o]+)?' + // Graph
-  '([a-f0-9]{40})' + // Sha
-  '( \\(([^()]+)\\))?' + // Refs
-  '( \\[([^\\[\\]]+)\\])' + // Author
-  '( \\[([^\\[\\]]+)\\])' + // Time
-  '(.*)$', // Message
-  'g');
-const graphRe = /^[/|\\\\-_* .o]+$/g;
-function reParse(line: string): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
-  if (!line) return { graph: '' };
-  if (line.match(graphRe)) return { graph: line };
-
-  const matches: string[] = line.matchAll(lineRe).next().value;
-  if (!matches) return { graph: '' };
-  return {
-    graph: matches[1]!,
-    refs: matches[4]!,
-    author: matches[6]!,
-    time: matches[8]!, // convert seconds to milliseconds
-    hash: matches[2]!,
-    message: matches[9]!,
-  };
-}
-
 enum ParseState {
   Graph,
   Commit,
