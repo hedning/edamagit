@@ -308,9 +308,9 @@ function parseLog(stdout: string): MagitLogEntry[] {
 
   let prev = { graph: '' };
   let i = 0;
-  let current = reParse(lines[i]);
+  let current = parseLine(lines[i]);
   i += 1;
-  let next = reParse(lines[i]) ?? { graph: '' };
+  let next = parseLine(lines[i]) ?? { graph: '' };
   const commits: MagitLogEntry[] = [];
   while (i <= lines.length) {
     const graph = prettifyGraph(prev.graph, current.graph, next.graph);
@@ -335,7 +335,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
     i += 1;
     prev = current;
     current = next;
-    next = reParse(lines[i]);
+    next = parseLine(lines[i]);
   }
 
   return commits;
