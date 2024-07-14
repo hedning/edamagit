@@ -182,30 +182,96 @@ function prettifyGraph(prev: string, current: string, next: string): string {
   return out;
 }
 
-// regex to parse log lines
-const lineRe = new RegExp(
-  '^([/|\\\\-_* .o]+)?' + // Graph
-  '([a-f0-9]{40})' + // Sha
-  '( \\(([^()]+)\\))?' + // Refs
-  '( \\[([^\\[\\]]+)\\])' + // Author
-  '( \\[([^\\[\\]]+)\\])' + // Time
-  '(.*)$', // Message
-  'g');
-const graphRe = /^[/|\\\\-_* .o]+$/g;
-function reParse(line: string): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
-  if (!line) return { graph: '' };
-  if (line.match(graphRe)) return { graph: line };
+enum ParseState {
+  Graph,
+  Commit,
+  CommitGraph,
+  Hash,
+  MaybeRefs,
+  Refs,
+  Author,
+  Time,
+  Message,
+}
 
-  const matches: string[] = line.matchAll(lineRe).next().value;
-  if (!matches) return { graph: '' };
-  return {
-    graph: matches[1]!,
-    refs: matches[4]!,
-    author: matches[6]!,
-    time: matches[8]!, // convert seconds to milliseconds
-    hash: matches[2]!,
-    message: matches[9]!,
-  };
+const graphChars = [ascii.l, ascii.pipe, ascii.star, ascii.r, ascii._, ' '];
+
+function parseLine(line: string | undefined): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
+  if (line === undefined) return { graph: '' };
+
+  let state = ParseState.Graph; // just assume we're always using the graph option
+  let graph = '';
+  let refs = '';
+  let author = '';
+  let time = '';
+  let hash = '';
+  let message = '';
+
+  let hasCommit = false;
+  let i = 0;
+  while (i < line.length) {
+    const char = line[i];
+
+    switch (state) {
+      case ParseState.Graph: {
+        if (char === '*') hasCommit = true;
+        if (graphChars.includes(char)) {
+          graph += char;
+        } else {
+          state = ParseState.Hash;
+          continue;
+        }
+        break;
+      }
+      case ParseState.Hash: {
+        state = ParseState.MaybeRefs;
+        let stop = line.indexOf('\x1f', i);
+        hash = line.slice(i, stop);
+        i = stop;
+        break;
+      }
+      case ParseState.MaybeRefs: {
+        if (char !== '\x1f') state = ParseState.Refs;
+        else state = ParseState.Author;
+        break;
+      }
+      case ParseState.Refs: {
+        if (char === '\x1f') state = ParseState.Author;
+        refs += char;
+        break;
+      }
+      case ParseState.Author: {
+        if (char === '\x1f') state = ParseState.Time;
+        else author += char;
+        break;
+      }
+      case ParseState.Time: {
+        if (char === '\x1f') state = ParseState.Message;
+        else if (char !== ' ') time += char;
+        break;
+      }
+      case ParseState.Message: {
+        message = line.slice(i);
+        i = line.length;
+        break;
+      }
+    }
+
+    i += 1;
+  }
+
+  if (hasCommit) {
+    return {
+      graph,
+      refs,
+      author,
+      time,
+      hash,
+      message,
+    };
+  } else {
+    return { graph };
+  }
 }
 
 function parseLog(stdout: string): MagitLogEntry[] {
@@ -216,9 +282,9 @@ function parseLog(stdout: string): MagitLogEntry[] {
 
   let prev = { graph: '' };
   let i = 0;
-  let current = reParse(lines[i]);
+  let current = parseLine(lines[i]);
   i += 1;
-  let next = reParse(lines[i]) ?? { graph: '' };
+  let next = parseLine(lines[i]) ?? { graph: '' };
   const commits: MagitLogEntry[] = [];
   while (i <= lines.length) {
     const graph = prettifyGraph(prev.graph, current.graph, next.graph);
@@ -243,7 +309,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
     i += 1;
     prev = current;
     current = next;
-    next = reParse(lines[i]);
+    next = parseLine(lines[i]);
   }
 
   return commits;
