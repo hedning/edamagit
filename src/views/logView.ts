@@ -208,6 +208,98 @@ function reParse(line: string): { graph: string } | { graph: string, refs: strin
   };
 }
 
+enum ParseState {
+  Graph,
+  Commit,
+  CommitGraph,
+  Hash,
+  MaybeRefs,
+  Refs,
+  Author,
+  Time,
+  Message,
+}
+
+const graphChars = [ascii.l, ascii.pipe, ascii.star, ascii.r, ' '];
+
+function parseLine(line: string | undefined): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
+  if (line === undefined) return { graph: '' };
+
+  let state = ParseState.Graph; // just assume we're always using the graph option
+  let graph = '';
+  let refs = '';
+  let author = '';
+  let time = '';
+  let hash = '';
+  let message = '';
+
+  let hasCommit = false;
+  let i = 0;
+  while (i < line.length) {
+    const char = line[i];
+
+    switch (state) {
+      case ParseState.Graph: {
+        if (char === '*') hasCommit = true;
+        if (graphChars.includes(char)) {
+          graph += char;
+        } else {
+          state = ParseState.Hash;
+          continue;
+        }
+        break;
+      }
+      case ParseState.Hash: {
+        state = ParseState.MaybeRefs;
+        hash = line.slice(i, i + 40);
+        i += 40;
+        break;
+      }
+      case ParseState.MaybeRefs: {
+        if (char === '(') state = ParseState.Refs;
+        else state = ParseState.Author;
+        continue;
+        break;
+      }
+      case ParseState.Refs: {
+        if (char === ')') state = ParseState.Author;
+        refs += char;
+        break;
+      }
+      case ParseState.Author: {
+        if (char === ']') state = ParseState.Time;
+        author += char;
+        break;
+      }
+      case ParseState.Time: {
+        if (char === ']') state = ParseState.Message;
+        time += char;
+        break;
+      }
+      case ParseState.Message: {
+        message = line.slice(i);
+        i = line.length;
+        break;
+      }
+    }
+
+    i += 1;
+  }
+
+  if (hasCommit) {
+    return {
+      graph,
+      refs,
+      author,
+      time,
+      hash,
+      message,
+    };
+  } else {
+    return { graph };
+  }
+}
+
 function parseLog(stdout: string): MagitLogEntry[] {
   const lines = stdout.match(/[^\r\n]+/g);
   if (!lines) return [];
