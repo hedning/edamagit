@@ -27,6 +27,7 @@ import { Change, Repository, Status } from '../typings/git';
 import path = require('path');
 import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
+import { MagitChange } from '../models/magitChange';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
 
@@ -210,13 +211,16 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   const commit = await getCommit(repo, ref);
   // We're only interested in the file status, not the sha/message
   const res = await gitRun(repo, ['show', '-z', '--name-status', '--format=', commit.hash]);
-
   const changes = parseNameStatus(repo, res.stdout.split('\x00'));
-  const magitChanges = await Promise.all(changes
-    .map(async change => {
-      const ret = await gitRun(repo, ['show', '--format=', commit.hash, '--', change.uri.fsPath]);
-      return toMagitChange(repo, change, ret.stdout);
-    }));
+  let text = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
+  let magitChanges: MagitChange[] = [];
+  for (let i = 0; i < changes.length; i++) {
+    let change = changes[i];
+    let index = text.indexOf('diff --git', 'diff --git'.length);
+    const diff = text.slice(0, index);
+    magitChanges.push(toMagitChange(repo, change, diff));
+    text = text.slice(index);
+  }
 
   return { commit, changes: magitChanges };
 }
