@@ -23,11 +23,12 @@ import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
 import { toMagitChange } from './statusCommands';
 import { getCommit } from '../utils/commitCache';
-import { Change, Repository, Status } from '../typings/git';
+import { Ref, Repository } from '../typings/git';
 import path = require('path');
 import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
 import { MagitChange } from '../models/magitChange';
+import { getChanges, getMagitChanges } from '../utils/gitUtils';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
 
@@ -131,76 +132,11 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position) {
   } catch { }
 }
 
-function getRepoUri(repo: Repository, file: string) {
+export function getRepoUri(repo: Repository, file: string) {
   const absolutePath = path.isAbsolute(file) ? file : path.join(repo.rootUri.fsPath, file);
   return Uri.file(absolutePath);
 }
 
-function parseNameStatus(repo: Repository, entries: string[]): Change[] {
-  let index = 0;
-  const result: Change[] = [];
-  while (index < entries.length - 1) {
-    entriesLoop:
-    while (index < entries.length - 1) {
-      const change = entries[index++];
-      const resourcePath = entries[index++];
-      if (!change || !resourcePath) {
-        break;
-      }
-
-      const originalUri = getRepoUri(repo, resourcePath);
-      let status: Status = Status.UNTRACKED;
-
-      // Copy or Rename status comes with a number, e.g. 'R100'. We don't need the number, so we use only first character of the status.
-      switch (change[0]) {
-        case 'M':
-          status = Status.MODIFIED;
-          break;
-
-        case 'A':
-          status = Status.INDEX_ADDED;
-          break;
-
-        case 'D':
-          status = Status.DELETED;
-          break;
-
-        // Rename contains two paths, the second one is what the file is renamed/copied to.
-        case 'R': {
-          if (index >= entries.length) {
-            break;
-          }
-
-          const newPath = entries[index++];
-          if (!newPath) {
-            break;
-          }
-
-          const uri = getRepoUri(repo, newPath);
-          result.push({
-            uri,
-            renameUri: uri,
-            originalUri,
-            status: Status.INDEX_RENAMED
-          });
-
-          continue;
-        }
-        default:
-          // Unknown status
-          break entriesLoop;
-      }
-
-      result.push({
-        status,
-        originalUri,
-        uri: originalUri,
-        renameUri: originalUri,
-      });
-    }
-  }
-  return result;
-}
 
 export async function getRef(magitState: MagitRepository, ref?: string) {
   const repo = magitState.gitRepository;
@@ -210,18 +146,9 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   }
   const commit = await getCommit(repo, ref);
   // We're only interested in the file status, not the sha/message
-  const res = await gitRun(repo, ['show', '-z', '--name-status', '--format=', commit.hash]);
-  const changes = parseNameStatus(repo, res.stdout.split('\x00'));
+  const changes = await getChanges(repo, commit.hash);
   let text = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
-  let magitChanges: MagitChange[] = [];
-  for (let i = 0; i < changes.length; i++) {
-    let change = changes[i];
-    let index = text.indexOf('diff --git', 'diff --git'.length);
-    const diff = text.slice(0, index);
-    magitChanges.push(toMagitChange(repo, change, diff));
-    text = text.slice(index);
-  }
-
+  let magitChanges: MagitChange[] = getMagitChanges(repo, text, changes);
   return { commit, changes: magitChanges };
 }
 
