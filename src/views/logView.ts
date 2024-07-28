@@ -225,29 +225,29 @@ function parseLine(line: string | undefined): { graph: string } | { graph: strin
       }
       case ParseState.Hash: {
         state = ParseState.MaybeRefs;
-        let stop = line.indexOf(' ', i);
+        let stop = line.indexOf('\x1f', i);
         hash = line.slice(i, stop);
         i = stop;
         break;
       }
       case ParseState.MaybeRefs: {
-        if (char === '(') state = ParseState.Refs;
+        if (char !== '\x1f') state = ParseState.Refs;
         else state = ParseState.Author;
-        continue; // Let Refs take care of the current char
+        break;
       }
       case ParseState.Refs: {
-        if (char === ')') state = ParseState.Author;
+        if (char === '\x1f') state = ParseState.Author;
         refs += char;
         break;
       }
       case ParseState.Author: {
-        if (char === '}') state = ParseState.Time;
-        if (char !== '{' && char !== '}') author += char;
+        if (char === '\x1f') state = ParseState.Time;
+        else author += char;
         break;
       }
       case ParseState.Time: {
-        if (char === '}') state = ParseState.Message;
-        if (char !== '{' && char !== '}' && char !== ' ') time += char;
+        if (char === '\x1f') state = ParseState.Message;
+        else if (char !== ' ') time += char;
         break;
       }
       case ParseState.Message: {
