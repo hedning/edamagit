@@ -13,6 +13,7 @@ import { SemanticTokenTypes } from '../common/constants';
 import { gitRun, LogLevel } from '../utils/gitRawRunner';
 import { Ref } from '../typings/git';
 import ViewUtils from '../utils/viewUtils';
+import assert = require('assert');
 
 /** Box drawing chars
     0 	1 	2 	3 	4 	5 	6 	7 	8 	9 	A 	B 	C 	D 	E 	F
@@ -290,11 +291,13 @@ function parseLog(stdout: string): MagitLogEntry[] {
     const graph = prettifyGraph(prev.graph, current.graph, next.graph);
 
     if ('refs' in current) {
+      const time = new Date(Number(current.time) * 1000);
+      assert(!isNaN(Number(time))); // Make sure we're getting a valid date
       commits.push({
         graph: graph ? [graph] : undefined,
         refs: (current.refs ?? '').split(', ').filter((m: string) => m),
         author: current.author,
-        time: new Date(Number(current.time) * 1000), // convert seconds to milliseconds
+        time: time, // convert seconds to milliseconds
         commit: {
           hash: current.hash,
           message: current.message,
