@@ -108,17 +108,13 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
           };
         }) : [];
 
-  const workingTreeChangesTasks = Promise.all(workingTreeChanges_NoUntracked
-    .map(async change => {
-      const diff = await repository.diffWithHEAD(change.uri.fsPath);
-      return toMagitChange(repository, change, diff);
-    }));
+  const workingTreeChangesTasks = gitRun(repository, ['diff']).then(res => {
+    return getMagitChanges(repository, res.stdout, workingTreeChanges_NoUntracked);
+  });
 
-  const indexChangesTasks = Promise.all(repository.state.indexChanges
-    .map(async change => {
-      const diff = await repository.diffIndexWithHEAD(change.uri.fsPath);
-      return toMagitChange(repository, change, diff);
-    }));
+  const indexChangesTasks = gitRun(repository, ['diff', '--staged']).then(res => {
+    return getMagitChanges(repository, res.stdout, repository.state.indexChanges);
+  });
 
   const mergeChangesTasks = Promise.all(repository.state.mergeChanges
     .map(async change => {
@@ -414,7 +410,7 @@ async function getStashes(repository: Repository): Promise<Stash[]> {
 }
 
 async function getRefs(repository: Repository): Promise<Ref[]> {
-  // `repository.getRefs` is not available on older versions and we should 
+  // `repository.getRefs` is not available on older versions and we should
   // just use `repository.state.refs` on those versions.
   if (typeof repository.getRefs !== 'function') {
     return repository.state.refs;
