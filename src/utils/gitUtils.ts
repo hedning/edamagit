@@ -23,8 +23,10 @@ export function getMagitChanges(repo: Repository, text: string, changes: Change[
     const diff = text.slice(0, index);
     magitChanges.push(toMagitChange(repo, change, diff));
     text = text.slice(index);
+    // toMagitChange expects an newline at the end, else the last goes non-interactive
+    if (!text.endsWith('\n')) text += '\n';
   }
-  return magitChanges
+  return magitChanges;
 }
 
 export async function getChanges(repo: Repository, ref: string) {
