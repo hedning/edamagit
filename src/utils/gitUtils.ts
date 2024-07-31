@@ -19,7 +19,7 @@ export function getMagitChanges(repo: Repository, text: string, changes: Change[
   let magitChanges: MagitChange[] = [];
   for (let i = 0; i < changes.length; i++) {
     let change = changes[i];
-    let index = text.indexOf('diff --git', 'diff --git'.length);
+    let index = text.indexOf('\ndiff --git', 'diff --git'.length);
     const diff = text.slice(0, index);
     magitChanges.push(toMagitChange(repo, change, diff));
     text = text.slice(index);
