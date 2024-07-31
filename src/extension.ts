@@ -43,6 +43,7 @@ import { copyBufferRevisionCommands } from './commands/copyBufferRevisionCommand
 import { submodules } from './commands/submodulesCommands';
 import { forgeRefreshInterval } from './forge';
 import { View } from './views/general/view';
+import { SymbolProvider } from './providers/symbolProvider';
 
 class MagitFolding implements vscode.FoldingRangeProvider {
   onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
@@ -149,6 +150,7 @@ export async function activate(context: ExtensionContext) {
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
+    languages.registerDocumentSymbolProvider(Constants.MagitDocumentSelector, new SymbolProvider())
   );
   context.subscriptions.push(providerRegistrations);
 

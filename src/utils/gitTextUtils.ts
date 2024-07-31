@@ -1,8 +1,18 @@
 import { MagitChangeHunk } from '../models/magitChangeHunk';
 import { Uri, Selection } from 'vscode';
 import * as Constants from '../common/constants';
-import { Commit } from '../typings/git';
+import { Commit, Status } from '../typings/git';
 import { HunkView } from '../views/changes/hunkView';
+
+export function getStatusText(status: Status): string {
+  switch (status) {
+    case Status.MODIFIED: return 'unstaged';
+    case Status.INDEX_MODIFIED:
+    case Status.INDEX_ADDED: return 'staged';
+    case Status.UNTRACKED: return 'untracked';
+  }
+  return `${status}`;
+}
 
 export default class GitTextUtils {
 
