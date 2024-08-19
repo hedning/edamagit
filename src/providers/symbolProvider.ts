@@ -36,6 +36,7 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
                 symbols.push(createSymbol(view));
                 return;
             }
+            // todo: add branch symbols in the log view
             for (const sub of view.subViews) iter(sub);
         }
         iter(currentView);
