@@ -359,14 +359,8 @@ export default class LogView extends DocumentView {
       ...logEntries.map(entry => new CommitLongFormItemView(entry, refs, state.HEAD?.name, defaultBranches)),
     ];
     // For some reason the fire event can get eaten if fired synchronously
-    const trigger = () => {
-      if (!this.emitter) {
-        setTimeout(trigger, 0);
-      } else {
-        setTimeout(this.triggerUpdate.bind(this), 0);
-      }
-    };
-    trigger();
+
+    this.triggerUpdate();
   }
 
   static encodeLocation(repository: MagitRepository, revs: string[]): Uri {
