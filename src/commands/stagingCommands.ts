@@ -17,8 +17,9 @@ import ViewUtils from '../utils/viewUtils';
 
 export async function magitStage(repository: MagitRepository, currentView: DocumentView): Promise<any> {
 
-  const selection = window.activeTextEditor!.selection;
-  return ViewUtils.applyActionForSelection(repository, currentView, selection, [ChangeSectionView, ChangeView], stage);
+  for (const selection of window.activeTextEditor!.selections) {
+    await ViewUtils.applyActionForSelection(repository, currentView, selection, [ChangeSectionView, ChangeView], stage);
+  }
 }
 
 async function stage(repository: MagitRepository, selection: Selection, selectedView?: View): Promise<any> {
@@ -71,8 +72,9 @@ async function stageAllTracked(repository: MagitRepository) {
 
 export async function magitUnstage(repository: MagitRepository, currentView: DocumentView): Promise<any> {
 
-  const selection = window.activeTextEditor!.selection;
-  return ViewUtils.applyActionForSelection(repository, currentView, selection, [ChangeSectionView, ChangeView], unstage);
+  for (const selection of window.activeTextEditor!.selections) {
+    await ViewUtils.applyActionForSelection(repository, currentView, selection, [ChangeSectionView, ChangeView], unstage);
+  }
 }
 
 async function unstage(repository: MagitRepository, selection: Selection, selectedView?: View): Promise<any> {
