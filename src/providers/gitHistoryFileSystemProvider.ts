@@ -30,13 +30,15 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-        const { commit, filePath } = this.parseUri(uri);
-        const gitCommand = `git show ${commit}:${filePath}`;
+        // dummy uri that vscodes uri tools understands
+        const dummy = uri.with({ scheme: 'file', authority: '' });
+        const root = vscode.workspace.getWorkspaceFolder(dummy);
+        if (!root) throw vscode.FileSystemError.FileNotFound('Could not find workspace root');
 
-        const root = vscode.workspace.getWorkspaceFolder(uri)
-        if (root == null) throw vscode.FileSystemError.FileNotFound("Could not find workspace root");
-
-        const { stdout, exitCode, stderr } = await gitRunInUri(root.uri, ['show', `${uri.fragment}:${uri.path}`])
+        const commit = uri.authority;
+        // git expects a relative path
+        const path = vscode.workspace.asRelativePath(dummy, false);
+        const { stdout, exitCode, stderr } = await gitRunInUri(root.uri, ['show', `${commit}:${path}`], { log: true });
         if (exitCode !== 0) throw vscode.FileSystemError.FileNotFound(stderr);
 
         return Buffer.from(stdout, 'utf8');

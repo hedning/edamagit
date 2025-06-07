@@ -147,7 +147,7 @@ export async function activate(context: ExtensionContext) {
 
   const semanticTokensProvider = new SemanticTokensProvider();
   const providerRegistrations = Disposable.from(
-    workspace.registerFileSystemProvider(Constants.MagitHistoryUriScheme, new GitHistoryFileSystemProvider()),
+    workspace.registerFileSystemProvider(Constants.MagitHistoryUriScheme, new GitHistoryFileSystemProvider(), { isReadonly: true }),
     workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, new ContentProvider()),
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
