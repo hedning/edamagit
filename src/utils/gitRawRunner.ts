@@ -1,3 +1,4 @@
+import { Uri } from 'vscode';
 import { Repository } from '../typings/git';
 import { run, SpawnOptions } from './commandRunner/command';
 import GitProcessLogger from './gitProcessLogger';
@@ -9,6 +10,10 @@ export enum LogLevel {
 }
 
 export async function gitRun(repository: Repository, args: string[], spawnOptions?: SpawnOptions, logLevel = LogLevel.Detailed) {
+  return await gitRunInUri(repository.rootUri, args, spawnOptions, logLevel);
+}
+
+export async function gitRunInUri(rootUri: Uri, args: string[], spawnOptions?: SpawnOptions, logLevel = LogLevel.Detailed) {
 
   let logEntry;
   if (logLevel > LogLevel.None) {
@@ -18,7 +23,7 @@ export async function gitRun(repository: Repository, args: string[], spawnOption
   try {
     let spawnOptionsWCwd = { ...spawnOptions };
     if (!spawnOptionsWCwd.cwd) {
-      spawnOptionsWCwd.cwd = repository.rootUri;
+      spawnOptionsWCwd.cwd = rootUri;
     }
     let result = await run(args, spawnOptionsWCwd);
 

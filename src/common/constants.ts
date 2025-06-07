@@ -7,6 +7,7 @@ export const FinalLineBreakRegex: RegExp = /\r?\n$/g;
 export const StatusMessageDisplayTimeout: number = 10000;
 
 export const MagitUriScheme: string = 'magit';
+export const MagitHistoryUriScheme: string = 'magit-history';
 
 export const MagitDocumentSelector: DocumentSelector = { scheme: MagitUriScheme, language: 'magit' };
 
