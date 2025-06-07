@@ -44,6 +44,7 @@ import { submodules } from './commands/submodulesCommands';
 import { forgeRefreshInterval } from './forge';
 import { View } from './views/general/view';
 import { SymbolProvider } from './providers/symbolProvider';
+import { GitHistoryFileSystemProvider } from './providers/gitHistoryFileSystemProvider';
 
 class MagitFolding implements vscode.FoldingRangeProvider {
   onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
@@ -146,6 +147,7 @@ export async function activate(context: ExtensionContext) {
 
   const semanticTokensProvider = new SemanticTokensProvider();
   const providerRegistrations = Disposable.from(
+    workspace.registerFileSystemProvider(Constants.MagitHistoryUriScheme, new GitHistoryFileSystemProvider()),
     workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, new ContentProvider()),
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
