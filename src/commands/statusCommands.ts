@@ -73,7 +73,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   const stashTask = getStashes(repository);
 
   const logTask = repository.state.HEAD?.commit ? repository.log({ maxEntries: 100 }) : Promise.resolve([]);
-  const headRef = repository.state.HEAD
+  const headRef = repository.state.HEAD;
 
   if (repository.state.HEAD?.commit) {
     getCommit(repository, repository.state.HEAD?.commit);
