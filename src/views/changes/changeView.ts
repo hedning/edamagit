@@ -14,7 +14,7 @@ export class ChangeView extends View {
     super();
     this.addSubview(new ChangeHeaderView(change));
     if (this.change.hunks) {
-      this.addSubview(...this.change.hunks.map(hunk => new HunkView(section, hunk)));
+      this.addSubview(...this.change.hunks.map(hunk => new HunkView(section, hunk, change.ref)));
     }
   }
 }
