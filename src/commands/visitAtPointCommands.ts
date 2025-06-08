@@ -31,6 +31,14 @@ import { MagitChange } from '../models/magitChange';
 import { getChanges, getMagitChanges } from '../utils/gitUtils';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
+  return await magitVisitAtPointInternal(repository, currentView, true);
+}
+
+export async function magitVisitAtPointInref(repository: MagitRepository, currentView: DocumentView) {
+  return await magitVisitAtPointInternal(repository, currentView, false);
+}
+
+async function magitVisitAtPointInternal(repository: MagitRepository, currentView: DocumentView, worktree: boolean) {
 
   const activePosition = window.activeTextEditor?.selection.active;
   if (!activePosition) return;
@@ -39,7 +47,7 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
 
   if (selectedView instanceof ChangeView) {
     const change = selectedView.change;
-    if (change.hunks?.length) return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView);
+    if (change.hunks?.length) return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView, undefined, worktree);
 
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
@@ -48,7 +56,7 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
     return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
 
   } else if (selectedView instanceof HunkView) {
-    return visitHunk(selectedView, activePosition);
+    return visitHunk(selectedView, activePosition, worktree);
 
   } else if (selectedView instanceof CommitItemView) {
     return visitCommit(repository, selectedView.commit.hash);
@@ -86,13 +94,13 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
   }
 }
 
-async function visitHunk(selectedView: HunkView, activePosition?: Position) {
+async function visitHunk(selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
 
   const changeHunk = selectedView.changeHunk;
   const ref = selectedView.ref;
 
   const doc = await workspace.openTextDocument(changeHunk.uri.with({
-    scheme: Constants.MagitHistoryUriScheme, authority: ref.commit!, query: '{"ref": "foobar"}',
+    scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : ref.commit!, query: '{"ref": "(foobar)"}',
   }));
   const editor = await window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
 
