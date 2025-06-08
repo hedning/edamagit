@@ -90,7 +90,6 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position) {
 
   const changeHunk = selectedView.changeHunk;
 
-  console.log("regular", changeHunk.uri);
   const doc = await workspace.openTextDocument(changeHunk.uri.with({
     scheme: Constants.MagitHistoryUriScheme, authority: 'f5e0a43f178c41ba6fb5c11a9f222658ebe38286', query: '{"ref": "foobar"}',
   }));
