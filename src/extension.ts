@@ -6,7 +6,7 @@ import { pushing } from './commands/pushingCommands';
 import { branching, showRefs } from './commands/branchingCommands';
 import { magitDispatch, magitHelp } from './commands/helpCommands';
 import { magitStatus, magitRefresh } from './commands/statusCommands';
-import { magitVisitAtPoint } from './commands/visitAtPointCommands';
+import { magitVisitAtPoint, magitVisitAtPointInref } from './commands/visitAtPointCommands';
 import { MagitRepository } from './models/magitRepository';
 import { magitCommit, setCodePath } from './commands/commitCommands';
 import { magitStage, magitStageAll, magitUnstageAll, magitUnstage, stageFile, unstageFile } from './commands/stagingCommands';
@@ -189,6 +189,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.unstage-all', CommandPrimer.primeRepo(magitUnstageAll)),
 
     commands.registerTextEditorCommand('magit.visit-at-point', CommandPrimer.primeRepoAndView(magitVisitAtPoint, false)),
+    commands.registerTextEditorCommand('magit.visit-at-point-in-ref', CommandPrimer.primeRepoAndView(magitVisitAtPointInref, false)),
     commands.registerTextEditorCommand('magit.apply-at-point', CommandPrimer.primeRepoAndView(magitApplyEntityAtPoint)),
     commands.registerTextEditorCommand('magit.discard-at-point', CommandPrimer.primeRepoAndView(magitDiscardAtPoint)),
     commands.registerTextEditorCommand('magit.reverse-at-point', CommandPrimer.primeRepoAndView(reverseAtPoint)),

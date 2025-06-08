@@ -62,6 +62,10 @@
         "title": "Magit Visit-at-point"
       },
       {
+        "command": "magit.visit-at-point-in-ref",
+        "title": "Magit Visit-at-point in ref"
+      },
+      {
         "command": "magit.apply-at-point",
         "title": "Magit Apply-at-point"
       },
@@ -525,6 +529,11 @@
       {
         "command": "magit.visit-at-point",
         "key": "enter",
+        "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
+      },
+      {
+        "command": "magit.visit-at-point-in-ref",
+        "key": "ctrl+enter",
         "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
       },
       {
