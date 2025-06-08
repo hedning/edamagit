@@ -44,7 +44,8 @@ export async function magitVisitAtPoint(repository: MagitRepository, currentView
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
-    return workspace.openTextDocument(change.uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
+    const uri = change.uri.with({ scheme: Constants.MagitHistoryUriScheme, authority: 'f5e0a43f178c41ba6fb5c11a9f222658ebe38286' })
+    return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
 
   } else if (selectedView instanceof HunkView) {
     return visitHunk(selectedView, activePosition);
@@ -89,7 +90,10 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position) {
 
   const changeHunk = selectedView.changeHunk;
 
-  const doc = await workspace.openTextDocument(changeHunk.uri);
+  console.log("regular", changeHunk.uri);
+  const doc = await workspace.openTextDocument(changeHunk.uri.with({
+    scheme: Constants.MagitHistoryUriScheme, authority: 'f5e0a43f178c41ba6fb5c11a9f222658ebe38286', query: '{"ref": "foobar"}',
+  }));
   const editor = await window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
 
   try {
