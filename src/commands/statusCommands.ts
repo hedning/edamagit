@@ -73,6 +73,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   const stashTask = getStashes(repository);
 
   const logTask = repository.state.HEAD?.commit ? repository.log({ maxEntries: 100 }) : Promise.resolve([]);
+  const headRef = repository.state.HEAD
 
   if (repository.state.HEAD?.commit) {
     getCommit(repository, repository.state.HEAD?.commit);
@@ -92,7 +93,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     .filter(c => (c.status !== Status.UNTRACKED));
 
   const untrackedFiles: MagitChange[] =
-    repository.state.workingTreeChanges.length > workingTreeChanges_NoUntracked.length ?
+    (repository.state.workingTreeChanges.length > workingTreeChanges_NoUntracked.length) && headRef ?
       (await gitRun(repository, ['ls-files', '--others', '--exclude-standard', '--directory', '--no-empty-directory'], {}, LogLevel.None))
         .stdout
         .replace(Constants.FinalLineBreakRegex, '')
@@ -104,23 +105,25 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
             renameUri: uri,
             uri: uri,
             status: Status.UNTRACKED,
+            ref: headRef,
             relativePath: FilePathUtils.uriPathRelativeTo(uri, repository.rootUri)
           };
         }) : [];
 
-  const workingTreeChangesTasks = gitRun(repository, ['diff']).then(res => {
-    return getMagitChanges(repository, res.stdout, workingTreeChanges_NoUntracked);
-  });
+  const workingTreeChangesTasks = headRef ? gitRun(repository, ['diff']).then(res => {
+    return getMagitChanges(repository, res.stdout, workingTreeChanges_NoUntracked, headRef);
+  }) : [];
 
-  const indexChangesTasks = gitRun(repository, ['diff', '--staged']).then(res => {
-    return getMagitChanges(repository, res.stdout, repository.state.indexChanges);
-  });
+  const indexChangesTasks = headRef ? gitRun(repository, ['diff', '--staged']).then(res => {
+    return getMagitChanges(repository, res.stdout, repository.state.indexChanges, headRef);
+  }) : [];
 
-  const mergeChangesTasks = Promise.all(repository.state.mergeChanges
+  const mergeChangesTasks = headRef ? Promise.all(repository.state.mergeChanges
     .map(async change => {
       const diff = await repository.diffWithHEAD(change.uri.fsPath);
-      return toMagitChange(repository, change, diff);
-    }));
+
+      return toMagitChange(repository, change, headRef, diff);
+    })) : [];
 
   const sequencerTodoPath = Uri.parse(dotGitPath + 'sequencer/todo');
   const sequencerHeadPath = Uri.parse(dotGitPath + 'sequencer/head');
@@ -193,8 +196,10 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   };
 }
 
-export function toMagitChange(repository: Repository, change: Change, diff?: string): MagitChange {
-  const magitChange: MagitChange = change;
+export function toMagitChange(repository: Repository, change: Change, ref: Ref, diff?: string): MagitChange {
+  // Ugh, `...change` is not typesafe, and fails to give `uri`, but typescript thinks it's fine...
+  const magitChange: MagitChange = change as MagitChange;
+  magitChange.ref = ref;
   magitChange.relativePath = FilePathUtils.uriPathRelativeTo(change.uri, repository.rootUri);
   magitChange.diff = diff;
   magitChange.hunks = diff ? GitTextUtils.diffToHunks(diff, change.uri) : undefined;
