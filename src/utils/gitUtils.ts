@@ -2,7 +2,7 @@ import { toMagitChange } from '../commands/statusCommands';
 import { getRepoUri } from '../commands/visitAtPointCommands';
 import { MagitChange } from '../models/magitChange';
 import { MagitRepository } from '../models/magitRepository';
-import { Repository, Change, Status } from '../typings/git';
+import { Repository, Change, Status, Ref } from '../typings/git';
 import { IExecutionResult } from './commandRunner/command';
 import { gitRun } from './gitRawRunner';
 
@@ -15,13 +15,13 @@ export default class GitUtils {
 }
 
 
-export function getMagitChanges(repo: Repository, text: string, changes: Change[]) {
+export function getMagitChanges(repo: Repository, text: string, changes: Change[], ref: Ref) {
   let magitChanges: MagitChange[] = [];
   for (let i = 0; i < changes.length; i++) {
     let change = changes[i];
     let index = text.indexOf('\ndiff ', '\ndiff '.length);
     const diff = text.slice(0, index);
-    magitChanges.push(toMagitChange(repo, change, diff));
+    magitChanges.push(toMagitChange(repo, change, ref, diff));
     text = text.slice(index);
     // toMagitChange expects an newline at the end, else the last goes non-interactive
     if (!text.endsWith('\n')) text += '\n';

@@ -23,7 +23,7 @@ import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
 import { toMagitChange } from './statusCommands';
 import { getCommit } from '../utils/commitCache';
-import { Ref, Repository } from '../typings/git';
+import { Ref, RefType, Repository } from '../typings/git';
 import path = require('path');
 import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
@@ -148,7 +148,7 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   // We're only interested in the file status, not the sha/message
   const changes = await getChanges(repo, commit.hash);
   let text = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
-  let magitChanges: MagitChange[] = getMagitChanges(repo, text, changes);
+  let magitChanges: MagitChange[] = getMagitChanges(repo, text, changes, { commit: ref, type: RefType.Head });
   return { commit, changes: magitChanges };
 }
 
