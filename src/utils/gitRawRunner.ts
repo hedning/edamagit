@@ -9,7 +9,7 @@ export enum LogLevel {
   Detailed
 }
 
-export async function gitRun(repository: Repository, args: string[], spawnOptions?: SpawnOptions, logLevel = LogLevel.Detailed) {
+export async function gitRun(repository: { rootUri: Uri }, args: string[], spawnOptions?: SpawnOptions, logLevel = LogLevel.Detailed) {
   return await gitRunInUri(repository.rootUri, args, spawnOptions, logLevel);
 }
 
