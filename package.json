@@ -39,7 +39,8 @@
   "activationEvents": [
     "onStartupFinished",
     "onCommand:magit.save-and-close-editor",
-    "onCommand:magit.clear-and-abort-editor"
+    "onCommand:magit.clear-and-abort-editor",
+    "onFileSystem:magit-history"
   ],
   "main": "./dist/extension",
   "contributes": {
