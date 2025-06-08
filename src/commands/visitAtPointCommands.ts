@@ -52,7 +52,7 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
-    const uri = change.uri.with({ scheme: Constants.MagitHistoryUriScheme, authority: change.ref.commit ?? '' })
+    const uri = change.uri.with({ scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : change.ref.commit })
     return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
 
   } else if (selectedView instanceof HunkView) {
@@ -100,7 +100,7 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
   const ref = selectedView.ref;
 
   const doc = await workspace.openTextDocument(changeHunk.uri.with({
-    scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : ref.commit!, query: '{"ref": "(foobar)"}',
+    scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : ref.commit!
   }));
   const editor = await window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
 
