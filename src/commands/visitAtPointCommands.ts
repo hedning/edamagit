@@ -29,6 +29,7 @@ import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
 import { MagitChange } from '../models/magitChange';
 import { getChanges, getMagitChanges } from '../utils/gitUtils';
+import MagitUtils from '../utils/magitUtils';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
   return await magitVisitAtPointInternal(repository, currentView, true);
@@ -91,6 +92,16 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     window.setStatusBarMessage('There is no thing at point that could be visited', Constants.StatusMessageDisplayTimeout);
 
   }
+}
+
+
+export async function magitOpenFileAtRevision(repository: MagitRepository) {
+  if (!window.activeTextEditor) return;
+
+  const ref = await MagitUtils.chooseRef(repository, 'Open file at revision');
+  const hash = await gitRun(repository.gitRepository, ["rev-parse", ref]);
+
+  return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, commit: hash.stdout.trimEnd() })
 }
 
 export async function openUriAtRevision(uri: Uri, ref: Ref) {
