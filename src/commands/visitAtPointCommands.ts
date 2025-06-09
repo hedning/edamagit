@@ -1,4 +1,4 @@
-import { window, workspace, TextEditorRevealType, Range, Position, Selection, commands, Uri } from 'vscode';
+import { window, workspace, TextEditorRevealType, Range, Position, Selection, commands, Uri, TextEditor } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
@@ -52,8 +52,7 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
-    const uri = change.uri.with({ scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : change.ref.commit })
-    return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
+    return openUriAtRevision(change.uri, change.ref);
 
   } else if (selectedView instanceof HunkView) {
     return visitHunk(selectedView, activePosition, worktree);
@@ -94,15 +93,26 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
   }
 }
 
+export async function openUriAtRevision(uri: Uri, ref: Ref) {
+  uri = uri.with({
+    scheme: Constants.MagitHistoryUriScheme, authority: ref.commit!,
+    query: `{"ref": ${ref.commit!}}`
+  });
+  return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
+}
+
 async function visitHunk(selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
 
   const changeHunk = selectedView.changeHunk;
   const ref = selectedView.ref;
 
-  const doc = await workspace.openTextDocument(changeHunk.uri.with({
-    scheme: worktree ? 'file' : Constants.MagitHistoryUriScheme, authority: worktree ? '' : ref.commit!
-  }));
-  const editor = await window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
+  let editor: TextEditor;
+  if (worktree) {
+    editor = await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
+  } else {
+    editor = await openUriAtRevision(changeHunk.uri, ref);
+  }
+
 
   try {
     const startLineMatches = changeHunk.diff.match(/(?<=\+)\d+(?=,)/g);
