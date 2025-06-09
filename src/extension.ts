@@ -6,7 +6,7 @@ import { pushing } from './commands/pushingCommands';
 import { branching, showRefs } from './commands/branchingCommands';
 import { magitDispatch, magitHelp } from './commands/helpCommands';
 import { magitStatus, magitRefresh } from './commands/statusCommands';
-import { magitVisitAtPoint, magitVisitAtPointInref } from './commands/visitAtPointCommands';
+import { magitOpenFileAtRevision, magitVisitAtPoint, magitVisitAtPointInref } from './commands/visitAtPointCommands';
 import { MagitRepository } from './models/magitRepository';
 import { magitCommit, setCodePath } from './commands/commitCommands';
 import { magitStage, magitStageAll, magitUnstageAll, magitUnstage, stageFile, unstageFile } from './commands/stagingCommands';
@@ -187,6 +187,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.process-log', CommandPrimer.primeRepo(processView, false)),
     commands.registerTextEditorCommand('magit.stage-all', CommandPrimer.primeRepo(magitStageAll)),
     commands.registerTextEditorCommand('magit.unstage-all', CommandPrimer.primeRepo(magitUnstageAll)),
+    commands.registerTextEditorCommand('magit.visit-file-at-rev', CommandPrimer.primeRepo(magitOpenFileAtRevision)),
 
     commands.registerTextEditorCommand('magit.visit-at-point', CommandPrimer.primeRepoAndView(magitVisitAtPoint, false)),
     commands.registerTextEditorCommand('magit.visit-at-point-in-ref', CommandPrimer.primeRepoAndView(magitVisitAtPointInref, false)),
