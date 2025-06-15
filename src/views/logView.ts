@@ -200,7 +200,7 @@ const graphChars = [ascii.l, ascii.pipe, ascii.star, ascii.r, ascii._, ' '];
 function parseLine(line: string | undefined): { graph: string } | { graph: string, refs: string, author: string, time: string, hash: string, message: string } {
   if (line === undefined) return { graph: '' };
 
-  let state = ParseState.Graph; // just assume we're always using the graph option
+  let state = ParseState.Graph;
   let graph = '';
   let refs = '';
   let author = '';
@@ -208,14 +208,12 @@ function parseLine(line: string | undefined): { graph: string } | { graph: strin
   let hash = '';
   let message = '';
 
-  let hasCommit = false;
   let i = 0;
   while (i < line.length) {
     const char = line[i];
 
     switch (state) {
       case ParseState.Graph: {
-        if (char === '*') hasCommit = true;
         if (graphChars.includes(char)) {
           graph += char;
         } else {
@@ -261,7 +259,7 @@ function parseLine(line: string | undefined): { graph: string } | { graph: strin
     i += 1;
   }
 
-  if (hasCommit) {
+  if (hash) {
     return {
       graph,
       refs,
@@ -363,8 +361,8 @@ export default class LogView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository, revs: string[]): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${LogView.UriPath}?${repository.uri.fsPath}#${revs.join(':')}`);
+  static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
+    return Uri.parse(`${Constants.MagitUriScheme}:${LogView.UriPath}?${repository.uri.fsPath}#${revs.join(':')}:${args.join('&')}`);
   }
 }
 

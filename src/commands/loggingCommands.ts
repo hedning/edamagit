@@ -95,7 +95,7 @@ export async function logFile(repository: MagitRepository, fileUri: Uri) {
 
 async function log(repository: MagitRepository, args: string[], revs: string[], paths: string[] = []) {
 
-  const uri = LogView.encodeLocation(repository, revs);
+  const uri = LogView.encodeLocation(repository, revs, args);
   const view = ViewUtils.createOrUpdateView(
       repository,
       uri,
