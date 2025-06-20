@@ -202,13 +202,14 @@ export default class MagitUtils {
 
   public static async chooseCommit(repository: MagitRepository, prompt: string): Promise<string> {
 
+    const hash = this.getCursorCommitHash()?.meta;
     const commitPicker = repository.log.map(commit => ({
       label: GitTextUtils.shortHash(commit.hash),
       description: commit.message,
       meta: commit.hash
     })) ?? [];
 
-    return PickMenuUtil.showMenuWithFreeform(commitPicker, prompt);
+    return PickMenuUtil.showMenuWithFreeform(commitPicker, prompt, hash);
   }
 
   public static async chooseTag(repository: MagitRepository, prompt: string) {

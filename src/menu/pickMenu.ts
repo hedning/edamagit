@@ -6,7 +6,7 @@ export interface PickMenuItem<T> extends QuickPickItem {
 
 export class PickMenuUtil {
 
-  static showMenu<T>(pickItems: PickMenuItem<T>[], placeholder?: string, freeformResolver?: (s: string) => T): Promise<T> {
+  static showMenu<T>(pickItems: PickMenuItem<T>[], placeholder?: string, freeformResolver?: (s: string) => T, value?: string): Promise<T> {
 
     return new Promise((resolve, reject) => {
 
@@ -16,6 +16,7 @@ export class PickMenuUtil {
       _quickPick.items = pickItems;
       _quickPick.matchOnDescription = true;
       _quickPick.placeholder = placeholder;
+      if (value) _quickPick.value = value;
 
       const eventListenerDisposable = _quickPick.onDidAccept(async () => {
 
@@ -45,7 +46,7 @@ export class PickMenuUtil {
     });
   }
 
-  static showMenuWithFreeform(pickItems: PickMenuItem<string>[], placeholder?: string): Promise<string> {
-    return PickMenuUtil.showMenu<string>(pickItems, placeholder, s => s);
+  static showMenuWithFreeform(pickItems: PickMenuItem<string>[], placeholder?: string, value?: string): Promise<string> {
+    return PickMenuUtil.showMenu<string>(pickItems, placeholder, s => s, value);
   }
 }
