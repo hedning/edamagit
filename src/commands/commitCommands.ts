@@ -207,9 +207,10 @@ function findCodePath(): string {
     codePath += '-insiders';
   }
 
-  if (isCursor && isRemote) {
+  if (isCursor) {
     // Cursor remote-server does not symlink to code but to cursor.
     codePath = 'cursor';
+    return codePath;
   }
 
   if (isWindows && isRemote) {
