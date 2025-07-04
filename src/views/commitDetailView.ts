@@ -50,7 +50,10 @@ export class CommitDetailView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, commitHash: string): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${CommitDetailView.UriPath}?${repository.uri.fsPath}#${commitHash}${CommitDetailView.index++}`);
+  static encodeLocation(repository: MagitRepository, commit: Commit): Uri {
+    const summary = encodeURIComponent(GitTextUtils.shortCommitMessage(commit.message));
+    const shortHash = GitTextUtils.shortHash(commit.hash);
+
+    return Uri.parse(`${Constants.MagitUriScheme}:Commit: ${summary} (${shortHash}).magit?${repository.uri.fsPath}#${commit.hash}${CommitDetailView.index++}`);
   }
 }
