@@ -76,6 +76,58 @@ class MagitFolding implements vscode.FoldingRangeProvider {
   }
 }
 
+class GitCommitFolding implements vscode.FoldingRangeProvider {
+  onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
+
+  provideFoldingRanges(
+    document: vscode.TextDocument,
+    context: vscode.FoldingContext,
+    token: vscode.CancellationToken,
+  ): vscode.ProviderResult<vscode.FoldingRange[]> {
+    const ranges: vscode.FoldingRange[] = [];
+    const text = document.getText();
+    const lines = text.split('\n');
+
+    let inDiff = false;
+    let diffStart = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Check for diff start markers (common patterns in git commit -v output)
+      if (line.startsWith('diff --git ') ||
+        line.startsWith('--- ') ||
+        line.startsWith('+++ ') ||
+        line.startsWith('@@ ') ||
+        line.startsWith('index ')) {
+
+        if (!inDiff) {
+          inDiff = true;
+          diffStart = i;
+        }
+      } else if (inDiff && line.trim() === '') {
+        // Empty line might indicate end of diff section, but continue checking
+        continue;
+      } else if (inDiff && !line.startsWith(' ') && !line.startsWith('+') && !line.startsWith('-') && !line.startsWith('@@')) {
+        // If we're in a diff and encounter a line that doesn't look like diff content,
+        // it might be the end of the diff section
+        if (i > diffStart + 1) { // Ensure we have at least some diff content
+          ranges.push(new vscode.FoldingRange(diffStart, i - 1));
+        }
+        inDiff = false;
+      }
+    }
+
+    // Handle case where diff extends to end of file
+    if (inDiff && diffStart < lines.length - 1) {
+      ranges.push(new vscode.FoldingRange(diffStart, lines.length - 1));
+    }
+
+    return ranges;
+  }
+}
+
+
 export const magitRepositories: Map<string, MagitRepository> = new Map<string, MagitRepository>();
 export const views: Map<string, DocumentView> = new Map<string, DocumentView>();
 export const processLog: MagitProcessLogEntry[] = [];
@@ -152,7 +204,8 @@ export async function activate(context: ExtensionContext) {
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
-    languages.registerDocumentSymbolProvider(Constants.MagitDocumentSelector, new SymbolProvider())
+    languages.registerDocumentSymbolProvider(Constants.MagitDocumentSelector, new SymbolProvider()),
+    languages.registerFoldingRangeProvider({ pattern: '**/.git/COMMIT_EDITMSG' }, new GitCommitFolding())
   );
   context.subscriptions.push(providerRegistrations);
 
