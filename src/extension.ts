@@ -88,39 +88,142 @@ class GitCommitFolding implements vscode.FoldingRangeProvider {
     const text = document.getText();
     const lines = text.split('\n');
 
-    let inDiff = false;
-    let diffStart = 0;
+    enum ParseState {
+      COMMIT_MESSAGE,
+      DIFF_HEADER,
+      FILE_HEADER,
+      HUNK_HEADER,
+      HUNK_CONTENT
+    }
+
+    let state = ParseState.COMMIT_MESSAGE;
+    let fileStart = -1;
+    let hunkStart = -1;
+    let currentLine = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      currentLine = i;
 
-      // Check for diff start markers (common patterns in git commit -v output)
-      if (line.startsWith('diff --git ') ||
-        line.startsWith('--- ') ||
-        line.startsWith('+++ ') ||
-        line.startsWith('@@ ') ||
-        line.startsWith('index ')) {
+      switch (state) {
+        case ParseState.COMMIT_MESSAGE:
+          if (line.startsWith('diff --git ')) {
+            state = ParseState.DIFF_HEADER;
+            fileStart = i;
+          }
+          break;
 
-        if (!inDiff) {
-          inDiff = true;
-          diffStart = i;
-        }
-      } else if (inDiff && line.trim() === '') {
-        // Empty line might indicate end of diff section, but continue checking
-        continue;
-      } else if (inDiff && !line.startsWith(' ') && !line.startsWith('+') && !line.startsWith('-') && !line.startsWith('@@')) {
-        // If we're in a diff and encounter a line that doesn't look like diff content,
-        // it might be the end of the diff section
-        if (i > diffStart + 1) { // Ensure we have at least some diff content
-          ranges.push(new vscode.FoldingRange(diffStart, i - 1));
-        }
-        inDiff = false;
+        case ParseState.DIFF_HEADER:
+          if (line.startsWith('index ')) {
+            // Continue in diff header
+          } else if (line.startsWith('--- ') || line.startsWith('+++ ')) {
+            state = ParseState.FILE_HEADER;
+          } else if (line.startsWith('@@ ')) {
+            // Direct jump to hunk (no file header)
+            state = ParseState.HUNK_HEADER;
+            hunkStart = i;
+          } else if (line.trim() === '') {
+            // End of diff section
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.COMMIT_MESSAGE;
+            fileStart = -1;
+          }
+          break;
+
+        case ParseState.FILE_HEADER:
+          if (line.startsWith('@@ ')) {
+            state = ParseState.HUNK_HEADER;
+            hunkStart = i;
+          } else if (line.trim() === '') {
+            // End of diff section
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.COMMIT_MESSAGE;
+            fileStart = -1;
+          }
+          break;
+
+        case ParseState.HUNK_HEADER:
+          if (line.startsWith('@@ ')) {
+            // End previous hunk, start new one
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            hunkStart = i;
+          } else if (line.startsWith('diff --git ')) {
+            // End current file and start new one
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.DIFF_HEADER;
+            fileStart = i;
+            hunkStart = -1;
+          } else if (line.trim() === '') {
+            // End of diff section
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.COMMIT_MESSAGE;
+            fileStart = -1;
+            hunkStart = -1;
+          } else {
+            // Hunk content
+            state = ParseState.HUNK_CONTENT;
+          }
+          break;
+
+        case ParseState.HUNK_CONTENT:
+          if (line.startsWith('@@ ')) {
+            // End previous hunk, start new one
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            hunkStart = i;
+            state = ParseState.HUNK_HEADER;
+          } else if (line.startsWith('diff --git ')) {
+            // End current file and start new one
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.DIFF_HEADER;
+            fileStart = i;
+            hunkStart = -1;
+          } else if (line.trim() === '') {
+            // End of diff section
+            if (hunkStart >= 0 && i > hunkStart) {
+              ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+            }
+            if (fileStart >= 0 && i > fileStart) {
+              ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+            }
+            state = ParseState.COMMIT_MESSAGE;
+            fileStart = -1;
+            hunkStart = -1;
+          }
+          break;
       }
     }
 
-    // Handle case where diff extends to end of file
-    if (inDiff && diffStart < lines.length - 1) {
-      ranges.push(new vscode.FoldingRange(diffStart, lines.length - 1));
+    // Handle end of file
+    if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
+      if (hunkStart >= 0 && currentLine > hunkStart) {
+        ranges.push(new vscode.FoldingRange(hunkStart, currentLine));
+      }
+    }
+    if (fileStart >= 0 && currentLine > fileStart) {
+      ranges.push(new vscode.FoldingRange(fileStart, currentLine));
     }
 
     return ranges;
