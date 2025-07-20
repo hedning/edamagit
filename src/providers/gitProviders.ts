@@ -30,14 +30,15 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
             currentLine = i;
 
             switch (state) {
-                case ParseState.COMMIT_MESSAGE:
+                case ParseState.COMMIT_MESSAGE: {
                     if (line.startsWith('diff --git ')) {
                         state = ParseState.DIFF_HEADER;
                         fileStart = i;
                     }
                     break;
+                }
 
-                case ParseState.DIFF_HEADER:
+                case ParseState.DIFF_HEADER: {
                     if (line.startsWith('index ')) {
                         // Continue in diff header
                     } else if (line.startsWith('--- ') || line.startsWith('+++ ')) {
@@ -55,8 +56,9 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
                         fileStart = -1;
                     }
                     break;
+                }
 
-                case ParseState.FILE_HEADER:
+                case ParseState.FILE_HEADER: {
                     if (line.startsWith('@@ ')) {
                         state = ParseState.HUNK_HEADER;
                         hunkStart = i;
@@ -69,8 +71,9 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
                         fileStart = -1;
                     }
                     break;
+                }
 
-                case ParseState.HUNK_HEADER:
+                case ParseState.HUNK_HEADER: {
                     if (line.startsWith('@@ ')) {
                         // End previous hunk, start new one
                         if (hunkStart >= 0 && i > hunkStart) {
@@ -104,8 +107,9 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
                         state = ParseState.HUNK_CONTENT;
                     }
                     break;
+                }
 
-                case ParseState.HUNK_CONTENT:
+                case ParseState.HUNK_CONTENT: {
                     if (line.startsWith('@@ ')) {
                         // End previous hunk, start new one
                         if (hunkStart >= 0 && i > hunkStart) {
@@ -137,6 +141,7 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
                         hunkStart = -1;
                     }
                     break;
+                }
             }
         }
 
