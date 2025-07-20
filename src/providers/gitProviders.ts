@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 
-function parse(text: string) {
-    const ranges: vscode.FoldingRange[] = [];
-    const lines = text.split('\n');
+enum ParseState {
+    COMMIT_MESSAGE,
+    DIFF_HEADER,
+    FILE_HEADER,
+    HUNK_HEADER,
+    HUNK_CONTENT
+}
 
-    enum ParseState {
-        COMMIT_MESSAGE,
-        DIFF_HEADER,
-        FILE_HEADER,
-        HUNK_HEADER,
-        HUNK_CONTENT
-    }
+function parse(text: string) {
+    const ranges: { r: vscode.FoldingRange, t: ParseState }[] = [];
+    const lines = text.split('\n');
 
     let state = ParseState.COMMIT_MESSAGE;
     let fileStart = -1;
@@ -42,7 +42,7 @@ function parse(text: string) {
                 } else if (line.trim() === '') {
                     // End of diff section
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.COMMIT_MESSAGE;
                     fileStart = -1;
@@ -57,7 +57,7 @@ function parse(text: string) {
                 } else if (line.trim() === '') {
                     // End of diff section
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.COMMIT_MESSAGE;
                     fileStart = -1;
@@ -69,16 +69,16 @@ function parse(text: string) {
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     hunkStart = i;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.DIFF_HEADER;
                     fileStart = i;
@@ -86,10 +86,10 @@ function parse(text: string) {
                 } else if (line.trim() === '') {
                     // End of diff section
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.COMMIT_MESSAGE;
                     fileStart = -1;
@@ -105,17 +105,17 @@ function parse(text: string) {
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     hunkStart = i;
                     state = ParseState.HUNK_HEADER;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.DIFF_HEADER;
                     fileStart = i;
@@ -123,10 +123,10 @@ function parse(text: string) {
                 } else if (line.trim() === '') {
                     // End of diff section
                     if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
-                        ranges.push(new vscode.FoldingRange(fileStart, i - 1));
+                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
                     }
                     state = ParseState.COMMIT_MESSAGE;
                     fileStart = -1;
@@ -140,11 +140,11 @@ function parse(text: string) {
     // Handle end of file
     if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
         if (hunkStart !== -1 && currentLine > hunkStart) {
-            ranges.push(new vscode.FoldingRange(hunkStart, currentLine));
+            ranges.push({ r: new vscode.FoldingRange(hunkStart, currentLine), t: ParseState.HUNK_HEADER });
         }
     }
     if (fileStart !== -1 && currentLine > fileStart) {
-        ranges.push(new vscode.FoldingRange(fileStart, currentLine));
+        ranges.push({ r: new vscode.FoldingRange(fileStart, currentLine), t: ParseState.FILE_HEADER });
     }
 
     return ranges;
@@ -158,6 +158,16 @@ export class GitCommitFolding implements vscode.FoldingRangeProvider {
         context: vscode.FoldingContext,
         token: vscode.CancellationToken,
     ): vscode.ProviderResult<vscode.FoldingRange[]> {
-        return parse(document.getText())
+        return parse(document.getText()).map(r => r.r)
+    }
+}
+
+export class GitSymbolProvider implements vscode.DocumentSymbolProvider {
+    provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken) {
+        return parse(document.getText()).map(r => {
+            const start = document.lineAt(r.r.start)
+            const end = document.lineAt(r.r.end)
+            return new vscode.DocumentSymbol(start.text, '', vscode.SymbolKind.File, start.range.union(end.range), start.range)
+        })
     }
 }

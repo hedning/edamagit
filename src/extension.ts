@@ -45,7 +45,7 @@ import { forgeRefreshInterval } from './forge';
 import { View } from './views/general/view';
 import { SymbolProvider } from './providers/symbolProvider';
 import { GitHistoryFileSystemProvider } from './providers/gitHistoryFileSystemProvider';
-import { GitCommitFolding } from './providers/gitProviders';
+import { GitCommitFolding, GitSymbolProvider } from './providers/gitProviders';
 
 class MagitFolding implements vscode.FoldingRangeProvider {
   onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
@@ -155,6 +155,7 @@ export async function activate(context: ExtensionContext) {
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
     languages.registerDocumentSymbolProvider(Constants.MagitDocumentSelector, new SymbolProvider()),
+    languages.registerDocumentSymbolProvider({ pattern: '**/.git/COMMIT_EDITMSG' }, new GitSymbolProvider()),
     languages.registerFoldingRangeProvider({ pattern: '**/.git/COMMIT_EDITMSG' }, new GitCommitFolding()),
   );
   context.subscriptions.push(providerRegistrations);
