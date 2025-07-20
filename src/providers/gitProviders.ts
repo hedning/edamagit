@@ -41,7 +41,7 @@ function parse(text: string) {
                     hunkStart = i;
                 } else if (line.trim() === '') {
                     // End of diff section
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.COMMIT_MESSAGE;
@@ -56,7 +56,7 @@ function parse(text: string) {
                     hunkStart = i;
                 } else if (line.trim() === '') {
                     // End of diff section
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.COMMIT_MESSAGE;
@@ -68,16 +68,16 @@ function parse(text: string) {
             case ParseState.HUNK_HEADER: {
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
                     hunkStart = i;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.DIFF_HEADER;
@@ -85,10 +85,10 @@ function parse(text: string) {
                     hunkStart = -1;
                 } else if (line.trim() === '') {
                     // End of diff section
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.COMMIT_MESSAGE;
@@ -104,17 +104,17 @@ function parse(text: string) {
             case ParseState.HUNK_CONTENT: {
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
                     hunkStart = i;
                     state = ParseState.HUNK_HEADER;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.DIFF_HEADER;
@@ -122,10 +122,10 @@ function parse(text: string) {
                     hunkStart = -1;
                 } else if (line.trim() === '') {
                     // End of diff section
-                    if (hunkStart >= 0 && i > hunkStart) {
+                    if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push(new vscode.FoldingRange(hunkStart, i - 1));
                     }
-                    if (fileStart >= 0 && i > fileStart) {
+                    if (fileStart !== -1 && i > fileStart) {
                         ranges.push(new vscode.FoldingRange(fileStart, i - 1));
                     }
                     state = ParseState.COMMIT_MESSAGE;
@@ -139,11 +139,11 @@ function parse(text: string) {
 
     // Handle end of file
     if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
-        if (hunkStart >= 0 && currentLine > hunkStart) {
+        if (hunkStart !== -1 && currentLine > hunkStart) {
             ranges.push(new vscode.FoldingRange(hunkStart, currentLine));
         }
     }
-    if (fileStart >= 0 && currentLine > fileStart) {
+    if (fileStart !== -1 && currentLine > fileStart) {
         ranges.push(new vscode.FoldingRange(fileStart, currentLine));
     }
 
