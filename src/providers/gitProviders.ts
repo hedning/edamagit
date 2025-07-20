@@ -168,7 +168,8 @@ export class GitSymbolProvider implements vscode.DocumentSymbolProvider {
         return parse(document.getText()).map(r => {
             const start = document.lineAt(r.r.start)
             const end = document.lineAt(r.r.end)
-            return new vscode.DocumentSymbol(start.text, '', vscode.SymbolKind.File, start.range.union(end.range), start.range)
+            const k = r.t === ParseState.FILE_HEADER ? vscode.SymbolKind.File : vscode.SymbolKind.Object;
+            return new vscode.DocumentSymbol(start.text, '', k, start.range.union(end.range), start.range)
         })
     }
 }
