@@ -15,7 +15,7 @@ export default class GitUtils {
 }
 
 
-export function getMagitChanges(repo: Repository, text: string, changes: Change[], ref: Ref) {
+export function getMagitChanges(repo: Repository, text: string, changes: Change[], ref?: Ref) {
   let magitChanges: MagitChange[] = [];
   for (let i = 0; i < changes.length; i++) {
     let change = changes[i];

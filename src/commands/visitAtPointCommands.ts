@@ -53,7 +53,7 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
-    if (worktree) {
+    if (worktree || !change.ref) {
       return window.showTextDocument(change.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
     } else return openUriAtRevision(change.uri, change.ref);
 
@@ -120,7 +120,7 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
   const ref = selectedView.ref;
 
   let editor: TextEditor;
-  if (worktree) {
+  if (worktree || !ref) {
     editor = await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
   } else {
     editor = await openUriAtRevision(changeHunk.uri, ref);

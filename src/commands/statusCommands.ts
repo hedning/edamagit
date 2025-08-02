@@ -196,7 +196,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   };
 }
 
-export function toMagitChange(repository: Repository, change: Change, ref: Ref, diff?: string): MagitChange {
+export function toMagitChange(repository: Repository, change: Change, ref?: Ref, diff?: string): MagitChange {
   // Ugh, `...change` is not typesafe, and fails to give `uri`, but typescript thinks it's fine...
   const magitChange: MagitChange = change as MagitChange;
   magitChange.ref = ref;
