@@ -172,7 +172,6 @@ export function getRepoUri(repo: Repository, file: string) {
   return Uri.file(absolutePath);
 }
 
-
 export async function getRef(magitState: MagitRepository, ref?: string) {
   const repo = magitState.gitRepository;
   ref = ref ?? magitState.HEAD?.name;
