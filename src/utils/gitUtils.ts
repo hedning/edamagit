@@ -117,7 +117,7 @@ export async function getChanges(repo: Repository, ref: string) {
   return parseChanges(repo, entries);
 }
 
-export async function parseChanges(repo: Repository, entries: string[]) {
+export function parseChanges(repo: Repository, entries: string[]) {
   let index = 0;
   const result: Change[] = [];
   while (index < entries.length - 1) {

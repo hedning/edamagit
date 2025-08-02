@@ -14,7 +14,7 @@ import { Status } from '../typings/git';
 import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
-import { toMagitChange } from './statusCommands';
+import { diffToMagitChanges } from '../utils/gitUtils';
 
 const diffingMenu = {
   title: 'Diffing',
@@ -82,9 +82,11 @@ async function diffWorktree({ repository }: MenuState) {
 
 async function diff(repository: MagitRepository, id: string, args: string[] = []) {
   const diffResult = await gitRun(repository.gitRepository, ['diff', ...args]);
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
 
   const uri = DiffView.encodeLocation(repository, id);
-  return ViewUtils.showView(uri, new DiffView(uri, diffResult.stdout));
+
+  return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
 }
 
 export async function showDiffSection(repository: MagitRepository, section: Section, preserveFocus = false) {
@@ -135,7 +137,6 @@ async function showCommit({ repository }: MenuState) {
 export async function diffFile(repository: MagitRepository, fileUri: Uri, index = false) {
 
   const args = ['diff'];
-
   if (index) {
     args.push('--cached');
   }
@@ -143,7 +144,8 @@ export async function diffFile(repository: MagitRepository, fileUri: Uri, index 
   args.push(fileUri.fsPath);
 
   const diffResult = await gitRun(repository.gitRepository, args);
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
 
   const uri = DiffView.encodeLocation(repository, fileUri.path);
-  return ViewUtils.showView(uri, new DiffView(uri, diffResult.stdout));
+  return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
 }
