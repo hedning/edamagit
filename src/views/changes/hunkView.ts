@@ -8,7 +8,7 @@ export class HunkView extends TextView {
 
   get id() { return this.changeHunk.diff; }
 
-  constructor(public section: Section, public changeHunk: MagitChangeHunk, public ref: Ref) {
+  constructor(public section: Section, public changeHunk: MagitChangeHunk, public ref?: Ref) {
     super(changeHunk.diff);
   }
 }
