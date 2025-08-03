@@ -18,7 +18,7 @@ import { Stash } from '../models/stash';
 import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
-import { getMagitChanges } from '../utils/gitUtils';
+import { diffToMagitChanges } from '../utils/gitUtils';
 
 export async function magitRefresh() { }
 
@@ -110,13 +110,13 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
           };
         }) : [];
 
-  const workingTreeChangesTasks = headRef ? gitRun(repository, ['diff']).then(res => {
-    return getMagitChanges(repository, res.stdout, workingTreeChanges_NoUntracked, headRef);
-  }) : [];
+  const workingTreeChangesTasks = gitRun(repository, ['diff']).then(res => {
+    return diffToMagitChanges(res.stdout, repository.rootUri, headRef);
+  });
 
-  const indexChangesTasks = headRef ? gitRun(repository, ['diff', '--staged']).then(res => {
-    return getMagitChanges(repository, res.stdout, repository.state.indexChanges, headRef);
-  }) : [];
+  const indexChangesTasks = gitRun(repository, ['diff', '--staged']).then(res => {
+    return diffToMagitChanges(res.stdout, repository.rootUri, headRef);
+  });
 
   const mergeChangesTasks = headRef ? Promise.all(repository.state.mergeChanges
     .map(async change => {
