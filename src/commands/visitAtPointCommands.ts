@@ -28,7 +28,7 @@ import path = require('path');
 import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
 import { MagitChange } from '../models/magitChange';
-import { getChanges, getMagitChanges } from '../utils/gitUtils';
+import { diffToMagitChanges } from '../utils/gitUtils';
 import MagitUtils from '../utils/magitUtils';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {
@@ -178,11 +178,9 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   if (!ref) {
     throw new Error('No ref to get');
   }
-  const commit = await getCommit(repo, ref);
-  // We're only interested in the file status, not the sha/message
-  const changes = await getChanges(repo, commit.hash);
-  let text = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
-  let magitChanges: MagitChange[] = getMagitChanges(repo, text, changes, { commit: ref, type: RefType.Head });
+  const commit = await getCommit(repo, ref); // Todo: parse this too
+  let diff = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
+  let magitChanges: MagitChange[] = diffToMagitChanges(diff, repo.rootUri, { commit: ref, type: RefType.Head });
   return { commit, changes: magitChanges };
 }
 

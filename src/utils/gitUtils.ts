@@ -97,20 +97,6 @@ export function diffToMagitChanges(text: string, root: Uri, ref?: Ref): MagitCha
   return changes;
 }
 
-export function getMagitChanges(repo: Repository, text: string, changes: Change[], ref?: Ref) {
-  let magitChanges: MagitChange[] = [];
-  for (let i = 0; i < changes.length; i++) {
-    let change = changes[i];
-    let index = text.indexOf('\ndiff ', '\ndiff '.length);
-    const diff = text.slice(0, index);
-    magitChanges.push(toMagitChange(repo, change, ref, diff));
-    text = text.slice(index);
-    // toMagitChange expects an newline at the end, else the last goes non-interactive
-    if (!text.endsWith('\n')) text += '\n';
-  }
-  return magitChanges;
-}
-
 export async function getChanges(repo: Repository, ref: string) {
   const res = await gitRun(repo, ['show', '-z', '--name-status', '--format=', ref]);
   const entries = res.stdout.split('\x00');
