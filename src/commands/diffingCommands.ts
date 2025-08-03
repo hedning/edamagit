@@ -82,7 +82,7 @@ async function diffWorktree({ repository }: MenuState) {
 
 async function diff(repository: MagitRepository, id: string, args: string[] = []) {
   const diffResult = await gitRun(repository.gitRepository, ['diff', ...args]);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri)
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
 
   const uri = DiffView.encodeLocation(repository, id);
 
@@ -144,7 +144,7 @@ export async function diffFile(repository: MagitRepository, fileUri: Uri, index 
   args.push(fileUri.fsPath);
 
   const diffResult = await gitRun(repository.gitRepository, args);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri)
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
 
   const uri = DiffView.encodeLocation(repository, fileUri.path);
   return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
