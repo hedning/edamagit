@@ -26,11 +26,12 @@ export class HelpView extends DocumentView {
     return Uri.parse(`${Constants.MagitUriScheme}:${HelpView.UriPath}?${repository.uri.path}#help`);
   }
 
-  private static joinTexts(spacing: number, texts: string[]) {
-    let joinedText = texts.length > 0 ? texts[0] : '';
+  private static joinTexts(spacing: number, texts: (string | undefined)[]) {
+    texts = texts.filter(t => t !== undefined);
+    let joinedText = texts[0] ?? '';
     for (let i = 1; i < texts.length; i++) {
-      const prev = texts[i - 1];
-      const current = texts[i];
+      const prev = texts[i - 1]!;
+      const current = texts[i]!;
 
       const remainingSpacing = prev.length <= spacing ? spacing - prev.length : 0;
       joinedText += ' '.repeat(remainingSpacing) + current;
