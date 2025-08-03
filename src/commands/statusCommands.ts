@@ -216,14 +216,17 @@ async function pushRemoteStatus(repository: Repository): Promise<MagitUpstreamRe
       const args = ['rev-list', '--left-right', `${HEAD.name}...${pushRemote}/${HEAD.name}`];
       const res = (await gitRun(repository, args, {}, LogLevel.None)).stdout;
       const [commitsAheadPushRemote, commitsBehindPushRemote] = GitTextUtils.parseRevListLeftRight(res);
-      const commitsAhead = await Promise.all(commitsAheadPushRemote.map(c => getCommit(repository, c)));
-      const commitsBehind = await Promise.all(commitsBehindPushRemote.map(c => getCommit(repository, c)));
+
+      // FIXME: This can grind everything to a halt
+      // If we want to do this we need to do one fetch, and then parse `git log Foo...Bar` output
+      // const commitsAhead = await Promise.all(commitsAheadPushRemote.map(c => getCommit(repository, c)));
+      // const commitsBehind = await Promise.all(commitsBehindPushRemote.map(c => getCommit(repository, c)));
 
       const refs = await getRefs(repository);
       const pushRemoteCommit = refs.find(ref => ref.remote === pushRemote && ref.name === `${pushRemote}/${HEAD.name}`)?.commit;
       const pushRemoteCommitDetails = pushRemoteCommit ? getCommit(repository, pushRemoteCommit) : Promise.resolve(undefined);
 
-      return { remote: pushRemote, name: HEAD.name, commit: await pushRemoteCommitDetails, commitsAhead, commitsBehind };
+      return { remote: pushRemote, name: HEAD.name, commit: await pushRemoteCommitDetails };
     }
   } catch { }
 }
