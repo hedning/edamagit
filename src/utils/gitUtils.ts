@@ -43,7 +43,7 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
   assert(text.endsWith('\n'));
 
   const startOfHunks = text.indexOf('\n@@');
-  assert(startOfHunks !== -1); // Lets assume there's at least one hunk
+  // Note, we should really do +1 here, and special -1 to handle \r correctly
   const header = text.slice(0, startOfHunks);
   const headerLines = header.split(LineSplitterRegex);
 
@@ -55,7 +55,14 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
     const line = headerLines[i];
     if (line.startsWith('new file mode')) status = Status.INDEX_ADDED;
     else if (line.startsWith('deleted file mode')) status = Status.DELETED;
-    else if (line.startsWith('rename ')) status = Status.INDEX_RENAMED; // this will happen twice
+    else if (line.startsWith('rename from')) {
+      oldFile = line.slice('rename from '.length);
+      status = Status.INDEX_RENAMED;
+    }
+    else if (line.startsWith('rename to')) {
+      newFile = line.slice('rename to '.length);
+      status = Status.INDEX_RENAMED;
+    }
     else if (line.startsWith('---')) oldFile = line.slice('--- a/'.length);
     else if (line.startsWith('+++')) newFile = line.slice('+++ a/'.length);
   }
