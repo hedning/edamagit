@@ -92,9 +92,16 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
 
 export function diffToMagitChanges(text: string, root: Uri, ref?: Ref): MagitChange[] {
   const changes: MagitChange[] = [];
+  // Handle conflicts in diff --staged
+  while (text.startsWith('*')) {
+    // This should work with both \r\n and \n
+    const i = text.indexOf('\n');
+    text = text.slice(i + 1);
+  }
   while (text.length > 0) {
     let index = text.indexOf('\ndiff ', '\ndiff '.length);
     let changeDiff = text.slice(0, index);
+    changeDiff = changeDiff.replace(/^\*.*/, '');
     if (!changeDiff.endsWith('\n')) changeDiff += '\n';
     changes.push(diffToMagitChange(changeDiff, root, ref));
 
