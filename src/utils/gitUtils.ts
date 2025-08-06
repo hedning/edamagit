@@ -39,8 +39,17 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
   // This should be pretty fast, as 
   // we try to handle \r by treating it as any other character, ie. we simply search for \n
   // Perhaps just search for \r\n and use that as the splitter if found?
-  assert(text.startsWith('diff '));
-  assert(text.endsWith('\n'));
+  assert(text.startsWith('diff '), text);
+  // if (!text.startsWith('* Unmerged path')) {
+  //   assert(text.startsWith('diff '), text);
+  // }
+  assert(text.endsWith('\n'), text);
+
+
+  // todo: handle this form of new file mode
+  // diff --git a/src/commands/mergingCommands.ts b/src/commands/mergingCommands.ts
+  // new file mode 100644
+  // index 0000000..e69de29
 
   const startOfHunks = text.indexOf('\n@@');
   // Note, we should really do +1 here, and special -1 to handle \r correctly
@@ -92,9 +101,16 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
 
 export function diffToMagitChanges(text: string, root: Uri, ref?: Ref): MagitChange[] {
   const changes: MagitChange[] = [];
+  // Handle conflicts in diff --staged
+  while (text.startsWith('*')) {
+    // This should work with both \r\n and \n
+    const i = text.indexOf('\n');
+    text = text.slice(i + 1);
+  }
   while (text.length > 0) {
     let index = text.indexOf('\ndiff ', '\ndiff '.length);
     let changeDiff = text.slice(0, index);
+    changeDiff = changeDiff.replace(/^\*.*/, '');
     if (!changeDiff.endsWith('\n')) changeDiff += '\n';
     changes.push(diffToMagitChange(changeDiff, root, ref));
 
