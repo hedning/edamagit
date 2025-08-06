@@ -106,12 +106,12 @@ export async function magitOpenFileAtRevision(repository: MagitRepository) {
   return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, commit: hash.stdout.trimEnd() });
 }
 
-export async function openUriAtRevision(uri: Uri, ref: Ref) {
+export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
   uri = uri.with({
     scheme: Constants.MagitHistoryUriScheme, authority: ref.commit!,
     query: `{"ref": ${ref.commit!}}`
   });
-  return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
+  return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: selection });
 }
 
 async function visitHunk(selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
@@ -119,14 +119,7 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
   const changeHunk = selectedView.changeHunk;
   const ref = selectedView.ref;
 
-  let editor: TextEditor;
-  if (worktree || !ref) {
-    editor = await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
-  } else {
-    editor = await openUriAtRevision(changeHunk.uri, ref);
-  }
-
-
+  let relevantSelection: Selection | undefined = undefined;
   try {
     const startLineMatches = changeHunk.diff.match(/(?<=\+)\d+(?=,)/g);
 
@@ -159,12 +152,18 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
       const numDeletedLinesAboveActiveLine = changeHunk.diff.split(Constants.LineSplitterRegex).slice(0, activeLineRelativeToDiff + 1).filter(line => line.charAt(0) === '-').length;
       const relevantPositionInFile = new Position(diffStartLineInFile + activeLineRelativeToDiff - numDeletedLinesAboveActiveLine, relevantCharacterSelection);
 
-      let relevantSelection = new Selection(relevantPositionInFile, relevantPositionInFile);
+      relevantSelection = new Selection(relevantPositionInFile, relevantPositionInFile);
 
-      editor.revealRange(new Range(relevantPositionInFile, relevantPositionInFile), TextEditorRevealType.InCenterIfOutsideViewport);
-      editor.selection = relevantSelection;
+
     }
   } catch { }
+
+  if (worktree || !ref) {
+    await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: relevantSelection});
+  } else {
+    await openUriAtRevision(changeHunk.uri, ref, relevantSelection);
+  }
+
 }
 
 export function getRepoUri(repo: Repository, file: string) {
