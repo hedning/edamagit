@@ -54,6 +54,6 @@ export class CommitDetailView extends DocumentView {
     const summary = encodeURIComponent(GitTextUtils.shortCommitMessage(commit.message));
     const shortHash = GitTextUtils.shortHash(commit.hash);
 
-    return Uri.parse(`${Constants.MagitUriScheme}:Commit: ${summary} (${shortHash}).magit?${repository.uri.fsPath}#${commit.hash}${CommitDetailView.index++}`);
+    return Uri.parse(`${Constants.MagitUriScheme}:Commit: ${summary} (${shortHash}).magit?${repository.uri.fsPath}#${commit.hash}`);
   }
 }
