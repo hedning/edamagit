@@ -3,6 +3,7 @@ import { views } from '../extension';
 import * as Constants from '../common/constants';
 import FilePathUtils from '../utils/filePathUtils';
 import MagitUtils from '../utils/magitUtils';
+import { MagitRepository } from '../models/magitRepository';
 
 export default class ContentProvider implements vscode.TextDocumentContentProvider {
 
@@ -15,6 +16,27 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
 
     this.onDidChange = this.viewUpdatedEmitter.event;
 
+    let changed: vscode.Uri[] = [];
+    let timeout: NodeJS.Timeout | undefined = undefined;
+    async function update() {
+      const seen = new Set<string>()
+      // Note, this only triggers if there's a visible 
+      for (const visibleEditor of vscode.window.visibleTextEditors) {
+        if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
+        for (const uri of changed) {
+          if (!FilePathUtils.isDescendant(visibleEditor.document.uri.query, uri.fsPath)) continue;
+
+          const repository = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
+          if (!repository) continue;
+          if (seen.has(repository.uri.fsPath)) continue;
+
+          seen.add(repository.uri.fsPath);
+          MagitUtils.magitStatusAndUpdate(repository);
+        }
+      }
+      changed = []
+    }
+
     this._subscriptions = vscode.Disposable.from(
       vscode.workspace.onDidCloseTextDocument(
         (doc) => {
@@ -25,15 +47,9 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
       ),
       vscode.workspace.onDidSaveTextDocument(
         async (doc) => {
-          for (const visibleEditor of vscode.window.visibleTextEditors) {
-            if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
-            if (!FilePathUtils.isDescendant(visibleEditor.document.uri.query, doc.uri.fsPath)) continue;
-
-            const repository = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
-            if (!repository) return;
-
-            return MagitUtils.magitStatusAndUpdate(repository);
-          }
+          changed.push(doc.uri);
+          if (timeout) clearTimeout(timeout);
+          timeout = setTimeout(update, 20);
         }
       ),
     );
