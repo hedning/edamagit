@@ -17,7 +17,7 @@ export interface MagitRepository {
   readonly HEAD?: MagitBranch;
   readonly workingTreeChanges: MagitChange[];
   readonly indexChanges: MagitChange[];
-  readonly mergeChanges: MagitChange[];
+  // readonly mergeChanges: MagitChange[];
   readonly untrackedFiles: MagitChange[];
   readonly stashes: Stash[];
   readonly log: Commit[];

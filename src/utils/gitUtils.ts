@@ -57,7 +57,13 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
   const headerLines = header.split(LineSplitterRegex);
 
   // We might want to know if we're in combined mode or in --git mode?
-  let status: Status = Status.MODIFIED;
+  let status: Status;
+  if (text.startsWith('diff --cc')) {
+    status = Status.BOTH_MODIFIED;
+  } else {
+    status = Status.MODIFIED;
+  }
+
   let oldFile: string | null = null;
   let newFile: string | null = null;
   for (let i = 1; i < headerLines.length; i++) {

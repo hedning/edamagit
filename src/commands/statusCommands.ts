@@ -118,13 +118,6 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     return diffToMagitChanges(res.stdout, repository.rootUri, headRef);
   });
 
-  const mergeChangesTasks = headRef ? Promise.all(repository.state.mergeChanges
-    .map(async change => {
-      const diff = await repository.diffWithHEAD(change.uri.fsPath);
-
-      return toMagitChange(repository, change, headRef, diff);
-    })) : [];
-
   const sequencerTodoPath = Uri.parse(dotGitPath + 'sequencer/todo');
   const sequencerHeadPath = Uri.parse(dotGitPath + 'sequencer/head');
 
@@ -180,7 +173,6 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     log: await logTask,
     workingTreeChanges: await workingTreeChangesTasks,
     indexChanges: await indexChangesTasks,
-    mergeChanges: await mergeChangesTasks,
     untrackedFiles,
     rebasingState: await rebasingStateTask,
     mergingState: await mergingStateTask,

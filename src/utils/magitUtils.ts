@@ -138,9 +138,10 @@ export default class MagitUtils {
   }
 
   public static magitAnythingModified(repository: MagitRepository): boolean {
-    return (repository.indexChanges.length > 0 ||
-      repository.workingTreeChanges.length > 0 ||
-      (repository.mergeChanges?.length ?? 0) > 0);
+    return (
+      repository.indexChanges.length > 0 ||
+      repository.workingTreeChanges.length > 0
+    );
   }
 
   public static getCursorCommitHash(): PickMenuItem<string> | undefined {

@@ -64,8 +64,8 @@ export default class MagitStatusView extends DocumentView {
       this.addSubview(new LineBreakView());
     }
 
-    if ((magitState.workingTreeChanges.length || magitState.mergeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
-      this.addSubview(new ChangeSectionView(Section.Unstaged, [...magitState.mergeChanges, ...magitState.workingTreeChanges]));
+    if ((magitState.workingTreeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
+      this.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
       this.addSubview(new LineBreakView());
     }
 
