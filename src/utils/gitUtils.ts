@@ -18,6 +18,17 @@ export default class GitUtils {
   }
 }
 
+function findFileFromHeader(text: string) {
+  assert(text.startsWith('diff '), text);
+
+  const rest = text.slice(text.indexOf('--git a/') + '--git a/'.length);
+  // todo: iterate and close in on the odd ` b/`, using the assumption
+  if (rest.indexOf(' b/') === rest.lastIndexOf(' b/')) {
+    return rest.slice(0, rest.indexOf(' b/'));
+  }
+  assert(false, text);
+}
+
 
 /**   
  * old mode<mode>
@@ -68,8 +79,17 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
   let newFile: string | null = null;
   for (let i = 1; i < headerLines.length; i++) {
     const line = headerLines[i];
-    if (line.startsWith('new file mode')) status = Status.INDEX_ADDED;
-    else if (line.startsWith('deleted file mode')) status = Status.DELETED;
+    if (line.startsWith('new file mode')) {
+      // If the file is empty we don't get `---/+++` lines
+      newFile = findFileFromHeader(headerLines[0]);
+      oldFile = '/dev/null';
+      status = Status.INDEX_ADDED;
+    }
+    else if (line.startsWith('deleted file mode')) {
+      oldFile = findFileFromHeader(headerLines[0]);
+      newFile = '/dev/null';
+      status = Status.DELETED;
+    }
     else if (line.startsWith('rename from')) {
       oldFile = line.slice('rename from '.length);
       status = Status.INDEX_RENAMED;
