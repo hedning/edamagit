@@ -47,9 +47,11 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
       ),
       vscode.workspace.onDidSaveTextDocument(
         async (doc) => {
+          return
           changed.push(doc.uri);
           if (timeout) clearTimeout(timeout);
-          timeout = setTimeout(update, 20);
+          // Ughh, 20ms is actually too low...
+          timeout = setTimeout(update, 200);
         }
       ),
     );

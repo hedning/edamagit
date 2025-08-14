@@ -136,20 +136,20 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     HEAD.tag = refs.find(r => HEAD?.commit === r.commit && r.type === RefType.Tag);
 
     try {
-      if (HEAD.upstream?.remote) {
-        const upstreamRemote = HEAD.upstream.remote;
+      // if (HEAD.upstream?.remote) {
+      //   const upstreamRemote = HEAD.upstream.remote;
 
-        const upstreamRemoteCommit = refs.find(ref => ref.remote === upstreamRemote && ref.name === `${upstreamRemote}/${HEAD.upstream?.name}`)?.commit;
-        const upstreamRemoteCommitDetails = upstreamRemoteCommit ? getCommit(repository, upstreamRemoteCommit) : undefined;
+      //   const upstreamRemoteCommit = refs.find(ref => ref.remote === upstreamRemote && ref.name === `${upstreamRemote}/${HEAD.upstream?.name}`)?.commit;
+      //   const upstreamRemoteCommitDetails = upstreamRemoteCommit ? getCommit(repository, upstreamRemoteCommit) : undefined;
 
-        const isRebaseUpstream = repository.getConfig(`branch.${HEAD.upstream.name}.rebase`);
+      //   const isRebaseUpstream = repository.getConfig(`branch.${HEAD.upstream.name}.rebase`);
 
-        HEAD.upstreamRemote = HEAD.upstream;
-        HEAD.upstreamRemote.commit = await upstreamRemoteCommitDetails;
-        HEAD.upstreamRemote.commitsAhead = await Promise.all(commitsAheadUpstream.map(hash => getCommit(repository, hash)));
-        HEAD.upstreamRemote.commitsBehind = await Promise.all(commitsBehindUpstream.map(hash => getCommit(repository, hash)));
-        HEAD.upstreamRemote.rebase = (await isRebaseUpstream) === 'true';
-      }
+      //   HEAD.upstreamRemote = HEAD.upstream;
+      //   HEAD.upstreamRemote.commit = await upstreamRemoteCommitDetails;
+      //   HEAD.upstreamRemote.commitsAhead = await Promise.all(commitsAheadUpstream.map(hash => getCommit(repository, hash)));
+      //   HEAD.upstreamRemote.commitsBehind = await Promise.all(commitsBehindUpstream.map(hash => getCommit(repository, hash)));
+      //   HEAD.upstreamRemote.rebase = (await isRebaseUpstream) === 'true';
+      // }
     } catch { }
 
     HEAD.pushRemote = await pushRemoteStatus(repository);
