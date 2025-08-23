@@ -370,13 +370,13 @@ export default class LogView extends DocumentView {
 export class CommitLongFormItemView extends CommitItemView {
 
   constructor(public logEntry: MagitLogEntry, refs?: Ref[], headName?: string, defaultBranches?: { [remoteName: string]: string }) {
-    super(logEntry.commit, undefined, refs);
+    super(logEntry.commit, undefined, undefined); // Don't pass refs, we're not using the content anyways
+    this.content = [];
 
     const timeDistance = formatDistanceToNowStrict(logEntry.time);
     const hash = `${GitTextUtils.shortHash(logEntry.commit.hash)} `;
     const graph = logEntry.graph?.[0] ?? '';
 
-    this.content = [];
 
     const msg = GitTextUtils.shortCommitMessage(logEntry.commit.message);
 
