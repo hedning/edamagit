@@ -79,15 +79,16 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     getCommit(repository, repository.state.HEAD?.commit);
   }
 
-  let commitsAheadUpstream: string[] = [], commitsBehindUpstream: string[] = [];
-  if (repository.state.HEAD?.ahead || repository.state.HEAD?.behind) {
-    const ref = repository.state.HEAD.name;
-    const args = ['rev-list', '--left-right', `${ref}...${ref}@{u}`];
-    const res = (await gitRun(repository, args, {}, LogLevel.None)).stdout;
-    [commitsAheadUpstream, commitsBehindUpstream] = GitTextUtils.parseRevListLeftRight(res);
-    commitsAheadUpstream.map(c => getCommit(repository, c));
-    commitsBehindUpstream.map(c => getCommit(repository, c));
-  }
+  /*  This is slow and needs to be replaced with someting like one call to git log + parsing the output into commits */
+  // let commitsAheadUpstream: string[] = [], commitsBehindUpstream: string[] = [];
+  // if (repository.state.HEAD?.ahead || repository.state.HEAD?.behind) {
+  //   const ref = repository.state.HEAD.name;
+  //   const args = ['rev-list', '--left-right', `${ref}...${ref}@{u}`];
+  //   const res = (await gitRun(repository, args, {}, LogLevel.None)).stdout;
+  //   [commitsAheadUpstream, commitsBehindUpstream] = GitTextUtils.parseRevListLeftRight(res);
+  //   commitsAheadUpstream.map(c => getCommit(repository, c));
+  //   commitsBehindUpstream.map(c => getCommit(repository, c));
+  // }
 
   const workingTreeChanges_NoUntracked = repository.state.workingTreeChanges
     .filter(c => (c.status !== Status.UNTRACKED));
