@@ -13,7 +13,7 @@ export class StashSectionView extends View {
     super();
     this.subViews = [
       new SectionHeaderView(Section.Stashes, stashes.length),
-      ...stashes.slice(0, 7).map(stash => new StashItemView(stash)),
+      ...stashes.map(stash => new StashItemView(stash)),
     ];
   }
 }

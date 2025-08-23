@@ -388,9 +388,9 @@ async function revertingStatus(repository: Repository, dotGitPath: string, seque
   } catch { }
 }
 
-async function getStashes(repository: Repository): Promise<Stash[]> {
+async function getStashes(repository: Repository, n: number = 10): Promise<Stash[]> {
 
-  let args = ['stash', 'list'];
+  let args = ['stash', 'list', '-n', n.toFixed(0)];
 
   try {
     let stashesList = await gitRun(repository, args, {}, LogLevel.None);
