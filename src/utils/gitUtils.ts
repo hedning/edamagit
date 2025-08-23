@@ -109,7 +109,11 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
     else if (line.startsWith('---')) oldFile = line.slice('--- a/'.length);
     else if (line.startsWith('+++')) newFile = line.slice('+++ a/'.length);
   }
-  assert(newFile); assert(oldFile);
+  if (oldFile === null || newFile === null) { // Fallback for stuff like binary files
+    // This will fail if the header doesn't repeat the filename
+    newFile = findFileFromHeader(headerLines[0]);
+    oldFile = newFile;
+  }
 
   const original = status === Status.DELETED ? oldFile : newFile;
   const rename = status === Status.INDEX_RENAMED ? newFile : undefined;
