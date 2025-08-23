@@ -351,10 +351,18 @@ export default class LogView extends DocumentView {
     const logEntries = parseLog(output.stdout);
     const revName = this.revs.join(' ');
 
+    const refMap: { [commit: string]: Ref[] } = {};
+
+    for (const ref of refs) {
+      if (!ref.commit) continue;
+      if (!refMap[ref.commit]) refMap[ref.commit] = [];
+      refMap[ref.commit].push(ref);
+    }
+
     this.subViews = [
       new TextView(`Commits in ${revName}`),
       // ...logEntries.map(entry => new CommitLongFormItemView(entry, refs)),
-      ...logEntries.map(entry => new CommitLongFormItemView(entry, refs, state.HEAD?.name, defaultBranches)),
+      ...logEntries.map(entry => new CommitLongFormItemView(entry, refMap[entry.commit.hash], state.HEAD?.name, defaultBranches)),
     ];
     // For some reason the fire event can get eaten if fired synchronously
 
