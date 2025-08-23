@@ -18,15 +18,23 @@ export default class GitUtils {
   }
 }
 
+/**
+ * Only handles repeating filenames, since it's not possible to parse if the name is not repeating
+ * 
+ * This is asserted
+ */
 function findFileFromHeader(text: string) {
-  assert(text.startsWith('diff '), text);
+  // Might need to support --cc too?
+  const prefix = 'diff --git';
+  assert(text.startsWith(prefix), text);
 
-  const rest = text.slice(text.indexOf('--git a/') + '--git a/'.length);
-  // todo: iterate and close in on the odd ` b/`, using the assumption
-  if (rest.indexOf(' b/') === rest.lastIndexOf(' b/')) {
-    return rest.slice(0, rest.indexOf(' b/'));
-  }
-  assert(false, text);
+  const double_string = text.slice('diff --git'.length)
+  assert(double_string.length % 2 === 0) // should be 2*(' a|b/'.length + file_name.length)
+  const to = double_string.length >> 1;
+  const first = double_string.slice(' a/'.length, to);
+  const second = double_string.slice(to + ' b/'.length);
+  assert(first === second);
+  return first;
 }
 
 
