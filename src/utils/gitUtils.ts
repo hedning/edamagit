@@ -28,11 +28,11 @@ function findFileFromHeader(text: string) {
   const prefix = 'diff --git';
   assert(text.startsWith(prefix), text);
 
-  const double_string = text.slice('diff --git'.length)
+  const double_string = text.slice(prefix.length)
   assert(double_string.length % 2 === 0) // should be 2*(' a|b/'.length + file_name.length)
-  const to = double_string.length >> 1;
-  const first = double_string.slice(' a/'.length, to);
-  const second = double_string.slice(to + ' b/'.length);
+  const to = double_string.length >> 1; // /2, we've already paid for modulo
+  const first = double_string.slice(3, to); // ' a/`.length === 3
+  const second = double_string.slice(to + 3);
   assert(first === second);
   return first;
 }
