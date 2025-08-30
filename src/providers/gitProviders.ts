@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 enum ParseState {
     COMMIT_MESSAGE,
+    COMMENT,
     DIFF_HEADER,
     FILE_HEADER,
     HUNK_HEADER,
@@ -14,6 +15,7 @@ function parse(text: string) {
 
     let state = ParseState.COMMIT_MESSAGE;
     let fileStart = -1;
+    let commentStart = -1;
     let hunkStart = -1;
     let currentLine = 0;
 
@@ -23,13 +25,20 @@ function parse(text: string) {
 
         switch (state) {
             case ParseState.COMMIT_MESSAGE: {
+                if (line.startsWith('#')) {
+                    state = ParseState.COMMENT;
+                    commentStart = i;
+                }
+                break;
+            }
+            case ParseState.COMMENT: {
                 if (line.startsWith('diff --git ')) {
+                    ranges.push({ r: new vscode.FoldingRange(commentStart, i - 1), t: ParseState.COMMENT });
                     state = ParseState.DIFF_HEADER;
                     fileStart = i;
                 }
                 break;
             }
-
             case ParseState.DIFF_HEADER: {
                 if (line.startsWith('index ')) {
                     // Continue in diff header
