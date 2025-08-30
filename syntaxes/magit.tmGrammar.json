@@ -6,6 +6,12 @@
     },
     {
       "include": "#diff"
+    },
+    {
+      "include": "#wordinserted"
+    },
+    {
+      "include": "#worddeleted"
     }
   ],
   "repository": {
@@ -64,6 +70,14 @@
     "modified": {
       "match": "^(modified|new file|deleted|renamed|copied|unmerged)   .*$",
       "name": "strong magit.subheader"
+    },
+    "wordinserted": {
+      "match": "{\\+.*\\+}",
+      "name": "markup.inserted.diff"
+    },
+    "worddeleted": {
+      "match": "\\[-.*-\\]",
+      "name": "markup.deleted.diff"
     },
     "diff": {
       "begin": "(?=^@@)",
