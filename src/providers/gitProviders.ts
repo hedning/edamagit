@@ -91,8 +91,8 @@ function parse(text: string) {
                     if (hunkStart !== -1 && i > hunkStart) {
                         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
-                    hunkStart = i;
                     state = ParseState.HUNK_HEADER;
+                    hunkStart = i;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
                     if (hunkStart !== -1 && i > hunkStart) {
@@ -110,12 +110,10 @@ function parse(text: string) {
         }
     }
 
-    // Handle end of file
-    // if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
+    // Finish any folds in progress
     if (hunkStart !== -1 && currentLine > hunkStart) {
         ranges.push({ r: new vscode.FoldingRange(hunkStart, currentLine), t: ParseState.HUNK_HEADER });
     }
-    // }
     if (fileStart !== -1 && currentLine > fileStart) {
         ranges.push({ r: new vscode.FoldingRange(fileStart, currentLine), t: ParseState.FILE_HEADER });
     }
