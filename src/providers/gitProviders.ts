@@ -1,3 +1,4 @@
+import assert = require('assert');
 import * as vscode from 'vscode';
 
 enum ParseState {
@@ -61,15 +62,16 @@ function parse(text: string) {
             }
 
             case ParseState.HUNK_HEADER: {
+                assert(hunkStart !== -1) // 
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
-                    if (hunkStart !== -1 && i > hunkStart) {
+                    if (i > hunkStart) {
                         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     hunkStart = i;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
-                    if (hunkStart !== -1 && i > hunkStart) {
+                    if (i > hunkStart) {
                         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
@@ -86,16 +88,17 @@ function parse(text: string) {
             }
 
             case ParseState.HUNK_CONTENT: {
+                assert(hunkStart !== -1) // We know we're inside a hunk
                 if (line.startsWith('@@ ')) {
                     // End previous hunk, start new one
-                    if (hunkStart !== -1 && i > hunkStart) {
+                    if (i > hunkStart) {
                         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     state = ParseState.HUNK_HEADER;
                     hunkStart = i;
                 } else if (line.startsWith('diff --git ')) {
                     // End current file and start new one
-                    if (hunkStart !== -1 && i > hunkStart) {
+                    if (i > hunkStart) {
                         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
                     }
                     if (fileStart !== -1 && i > fileStart) {
