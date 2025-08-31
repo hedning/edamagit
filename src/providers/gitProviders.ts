@@ -48,13 +48,6 @@ function parse(text: string) {
                     // Direct jump to hunk (no file header)
                     state = ParseState.HUNK_HEADER;
                     hunkStart = i;
-                } else if (line.trim() === '') {
-                    // End of diff section
-                    if (fileStart !== -1 && i > fileStart) {
-                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
-                    }
-                    state = ParseState.COMMIT_MESSAGE;
-                    fileStart = -1;
                 }
                 break;
             }
@@ -63,13 +56,6 @@ function parse(text: string) {
                 if (line.startsWith('@@ ')) {
                     state = ParseState.HUNK_HEADER;
                     hunkStart = i;
-                } else if (line.trim() === '') {
-                    // End of diff section
-                    if (fileStart !== -1 && i > fileStart) {
-                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
-                    }
-                    state = ParseState.COMMIT_MESSAGE;
-                    fileStart = -1;
                 }
                 break;
             }
@@ -91,17 +77,6 @@ function parse(text: string) {
                     }
                     state = ParseState.DIFF_HEADER;
                     fileStart = i;
-                    hunkStart = -1;
-                } else if (line.trim() === '') {
-                    // End of diff section
-                    if (hunkStart !== -1 && i > hunkStart) {
-                        ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
-                    }
-                    if (fileStart !== -1 && i > fileStart) {
-                        ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
-                    }
-                    state = ParseState.COMMIT_MESSAGE;
-                    fileStart = -1;
                     hunkStart = -1;
                 } else {
                     // Hunk content
@@ -130,29 +105,17 @@ function parse(text: string) {
                     fileStart = i;
                     hunkStart = -1;
                 }
-                // else if (line.trim() === '') {
-                //     // End of diff section
-                //     if (hunkStart !== -1 && i > hunkStart) {
-                //         ranges.push({ r: new vscode.FoldingRange(hunkStart, i - 1), t: ParseState.HUNK_HEADER });
-                //     }
-                //     if (fileStart !== -1 && i > fileStart) {
-                //         ranges.push({ r: new vscode.FoldingRange(fileStart, i - 1), t: ParseState.FILE_HEADER });
-                //     }
-                //     state = ParseState.COMMIT_MESSAGE;
-                //     fileStart = -1;
-                //     hunkStart = -1;
-                // }
                 break;
             }
         }
     }
 
     // Handle end of file
-    if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
-        if (hunkStart !== -1 && currentLine > hunkStart) {
-            ranges.push({ r: new vscode.FoldingRange(hunkStart, currentLine), t: ParseState.HUNK_HEADER });
-        }
+    // if (state === ParseState.HUNK_CONTENT || state === ParseState.HUNK_HEADER) {
+    if (hunkStart !== -1 && currentLine > hunkStart) {
+        ranges.push({ r: new vscode.FoldingRange(hunkStart, currentLine), t: ParseState.HUNK_HEADER });
     }
+    // }
     if (fileStart !== -1 && currentLine > fileStart) {
         ranges.push({ r: new vscode.FoldingRange(fileStart, currentLine), t: ParseState.FILE_HEADER });
     }
