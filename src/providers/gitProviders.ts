@@ -121,6 +121,9 @@ function parse(text: string) {
         ranges.push({ r: new vscode.FoldingRange(fileStart, currentLine), t: ParseState.FILE_HEADER });
     }
 
+    // Add a fold for everything, that way we get the commit message in the sticky scroll
+    ranges.push({ r: new vscode.FoldingRange(0, currentLine), t: ParseState.COMMIT_MESSAGE });
+
     return ranges;
 }
 
