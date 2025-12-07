@@ -39,69 +39,70 @@ export default class MagitStatusView extends DocumentView {
       this.addSubview(new ErrorMessageView(latestGitError));
     }
 
-    this.addSubview(new BranchHeaderSectionView(magitState.HEAD));
+    const header = new BranchHeaderSectionView(magitState.HEAD)
+    this.addSubview(header);
 
-    this.addSubview(new LineBreakView());
+    header.addSubview(new LineBreakView());
 
     if (magitState.mergingState) {
-      this.addSubview(new MergingSectionView(magitState.mergingState));
+      header.addSubview(new MergingSectionView(magitState.mergingState));
     }
 
     if (magitState.rebasingState) {
-      this.addSubview(new RebasingSectionView(magitState.rebasingState));
+      header.addSubview(new RebasingSectionView(magitState.rebasingState));
     }
 
     if (magitState.cherryPickingState) {
-      this.addSubview(new CherryPickingSectionView(magitState.cherryPickingState, magitState.log));
+      header.addSubview(new CherryPickingSectionView(magitState.cherryPickingState, magitState.log));
     }
 
     if (magitState.revertingState) {
-      this.addSubview(new RevertingSectionView(magitState.revertingState, magitState.log));
+      header.addSubview(new RevertingSectionView(magitState.revertingState, magitState.log));
     }
 
     if ((magitState.workingTreeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
-      this.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
-      this.addSubview(new LineBreakView());
+      header.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
+      header.addSubview(new LineBreakView());
     }
 
     if (magitState.indexChanges.length && !magitConfig.hiddenStatusSections.has('staged')) {
-      this.addSubview(new ChangeSectionView(Section.Staged, magitState.indexChanges));
-      this.addSubview(new LineBreakView());
+      header.addSubview(new ChangeSectionView(Section.Staged, magitState.indexChanges));
+      header.addSubview(new LineBreakView());
     }
 
     if (magitState.stashes?.length && !magitConfig.hiddenStatusSections.has('stashes')) {
-      this.addSubview(new StashSectionView(magitState.stashes));
-      this.addSubview(new LineBreakView());
+      header.addSubview(new StashSectionView(magitState.stashes));
+      header.addSubview(new LineBreakView());
     }
 
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
-      this.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
-      this.addSubview(new LineBreakView());
+      header.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
+      header.addSubview(new LineBreakView());
     }
 
     const refs = magitState.remotes.reduce((prev, remote) => remote.branches.concat(prev), magitState.branches.concat(magitState.tags));
 
     if (magitState.HEAD?.upstreamRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('unmerged')) {
-      this.addSubview(new UnsourcedCommitSectionView(Section.UnmergedInto, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsAhead, refs));
+      header.addSubview(new UnsourcedCommitSectionView(Section.UnmergedInto, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsAhead, refs));
     } else if (magitState.HEAD?.pushRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('unpushed')) {
-      this.addSubview(new UnsourcedCommitSectionView(Section.UnpushedTo, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsAhead, refs));
+      header.addSubview(new UnsourcedCommitSectionView(Section.UnpushedTo, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsAhead, refs));
     }
     if (magitState.log.length > 0 && !magitState.HEAD?.upstreamRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('recent commits')) {
-      this.addSubview(new CommitSectionView(Section.RecentCommits, magitState.log.slice(0, 10), refs));
+      header.addSubview(new CommitSectionView(Section.RecentCommits, magitState.log.slice(0, 10), refs));
     }
 
     if (magitState.HEAD?.upstreamRemote?.commitsBehind?.length && !magitConfig.hiddenStatusSections.has('unpulled')) {
-      this.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsBehind, refs));
+      header.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsBehind, refs));
     } else if (magitState.HEAD?.pushRemote?.commitsBehind?.length) {
-      this.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsBehind, refs));
+      header.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsBehind, refs));
     }
 
     if (magitState.forgeState?.pullRequests?.length && !magitConfig.hiddenStatusSections.has('pull requests')) {
-      this.addSubview(new PullRequestSectionView(magitState.forgeState?.pullRequests));
+      header.addSubview(new PullRequestSectionView(magitState.forgeState?.pullRequests));
     }
 
     if (magitState.forgeState?.issues?.length && !magitConfig.hiddenStatusSections.has('issues')) {
-      this.addSubview(new IssueSectionView(magitState.forgeState?.issues));
+      header.addSubview(new IssueSectionView(magitState.forgeState?.issues));
     }
   }
 
