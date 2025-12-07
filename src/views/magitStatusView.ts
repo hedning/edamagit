@@ -59,11 +59,6 @@ export default class MagitStatusView extends DocumentView {
       this.addSubview(new RevertingSectionView(magitState.revertingState, magitState.log));
     }
 
-    if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
-      this.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
-      this.addSubview(new LineBreakView());
-    }
-
     if ((magitState.workingTreeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
       this.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
       this.addSubview(new LineBreakView());
@@ -76,6 +71,11 @@ export default class MagitStatusView extends DocumentView {
 
     if (magitState.stashes?.length && !magitConfig.hiddenStatusSections.has('stashes')) {
       this.addSubview(new StashSectionView(magitState.stashes));
+      this.addSubview(new LineBreakView());
+    }
+
+    if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
+      this.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
       this.addSubview(new LineBreakView());
     }
 
