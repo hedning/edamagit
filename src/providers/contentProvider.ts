@@ -37,6 +37,18 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
       changed = []
     }
 
+    const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*');
+
+    const debounceChange = (uri: vscode.Uri) => {
+      changed.push(uri);
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(update, 200);
+    };
+
+    fsWatcher.onDidChange(debounceChange);
+    fsWatcher.onDidCreate(debounceChange);
+    fsWatcher.onDidDelete(debounceChange);
+
     this._subscriptions = vscode.Disposable.from(
       vscode.workspace.onDidCloseTextDocument(
         (doc) => {
@@ -45,15 +57,7 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
           views.delete(doc.uri.toString());
         }
       ),
-      vscode.workspace.onDidSaveTextDocument(
-        async (doc) => {
-          return
-          changed.push(doc.uri);
-          if (timeout) clearTimeout(timeout);
-          // Ughh, 20ms is actually too low...
-          timeout = setTimeout(update, 200);
-        }
-      ),
+      fsWatcher,
     );
   }
 
