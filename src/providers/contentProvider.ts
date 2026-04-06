@@ -19,8 +19,8 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
     let changed: vscode.Uri[] = [];
     let timeout: NodeJS.Timeout | undefined = undefined;
     async function update() {
-      const seen = new Set<string>()
-      // Note, this only triggers if there's a visible 
+      const repositories = new Map<string, MagitRepository>();
+      // Note, this only triggers if there's a visible
       for (const visibleEditor of vscode.window.visibleTextEditors) {
         if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
         for (const uri of changed) {
@@ -28,13 +28,15 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
 
           const repository = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
           if (!repository) continue;
-          if (seen.has(repository.uri.fsPath)) continue;
 
-          seen.add(repository.uri.fsPath);
-          MagitUtils.magitStatusAndUpdate(repository);
+          repositories.set(repository.uri.fsPath, repository);
         }
       }
-      changed = []
+      changed = [];
+
+      for (const repository of repositories.values()) {
+        MagitUtils.magitStatusAndUpdate(repository);
+      }
     }
 
     const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*');
