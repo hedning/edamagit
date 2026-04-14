@@ -18,7 +18,7 @@ export class CommitDetailView extends DocumentView {
   isHighlightable = true;
   needsUpdate = false;
 
-  constructor(uri: Uri, public commit: MagitCommit, changes: MagitChange[], parents: Commit[], refs: Ref[]) {
+  constructor(uri: Uri, public commit: MagitCommit, changes: MagitChange[], parents: Commit[], refs: Ref[], shortstat?: string) {
     super(uri);
 
 
@@ -44,6 +44,10 @@ export class CommitDetailView extends DocumentView {
         return view;
       }),
     );
+
+    if (shortstat) {
+      this.addSubview(new LineBreakView(), new TextView(shortstat));
+    }
 
   }
 

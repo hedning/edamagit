@@ -180,7 +180,8 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   const commit = await getCommit(repo, ref); // Todo: parse this too
   let diff = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
   let magitChanges: MagitChange[] = diffToMagitChanges(diff, repo.rootUri, { commit: ref, type: RefType.Head });
-  return { commit, changes: magitChanges };
+  let shortstat = (await gitRun(repo, ['show', '--format=', '--shortstat', commit.hash])).stdout.trim();
+  return { commit, changes: magitChanges, shortstat };
 }
 
 export async function visitCommit(magitState: MagitRepository, commitHash: string) {
@@ -191,10 +192,10 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
     magitState.branches.concat(magitState.tags)
   );
 
-  const { commit, changes } = await getRef(magitState, commitHash);
+  const { commit, changes, shortstat } = await getRef(magitState, commitHash);
   const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.gitRepository, p)));
 
   const uri = CommitDetailView.encodeLocation(magitState, commit);
-  const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs))
+  const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs, shortstat))
   return ViewUtils.showView(uri, view);
 }
