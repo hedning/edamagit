@@ -8,8 +8,10 @@
     "name": "Kristian Andersen Hole"
   },
   "version": "0.7.40",
+  "packageManager": "npm@11.11.1",
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "^1.95.0",
+    "npm": ">=11.10.0"
   },
   "icon": "images/edamagit_logo.png",
   "categories": [
