@@ -44,7 +44,7 @@ export default class ContentProvider implements vscode.TextDocumentContentProvid
     const debounceChange = (uri: vscode.Uri) => {
       changed.push(uri);
       if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(update, 200);
+      timeout = setTimeout(update, 700);
     };
 
     fsWatcher.onDidChange(debounceChange);
