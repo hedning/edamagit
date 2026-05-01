@@ -741,6 +741,7 @@
     "test-compile": "tsc -p ./"
   },
   "devDependencies": {
+    "@vscode/vsce": "^3.0.0",
     "@types/glob": "^7.1.3",
     "@types/mocha": "^8.2.0",
     "@types/node": "^18.14.2",
