@@ -740,7 +740,7 @@
     "watch": "webpack --mode development --watch",
     "test-compile": "tsc -p ./",
     "pretest": "tsc -p ./",
-    "test": "VSCODE_TEST_PATH=/usr/share/code/code node ./out/src/test/runTest.js",
+    "test": "vscode-test",
     "pretest:unit": "tsc -p ./",
     "test:unit": "mocha --ui tdd --require ./out/src/test/unit/setup.js \"./out/src/test/unit/**/*.test.js\""
   },

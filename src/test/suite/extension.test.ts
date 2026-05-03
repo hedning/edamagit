@@ -10,6 +10,10 @@ const TEST_REPO_FILE2 = '/another.txt';
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.');
 
+  test('vscode API is available in the test host', () => {
+    assert.ok(vscode.version);
+  });
+
   test('Magit Status View render test', async () => {
 
     // const expected = `Head:     somebranch ok\n`;
