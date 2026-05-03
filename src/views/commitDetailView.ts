@@ -37,6 +37,10 @@ export class CommitDetailView extends DocumentView {
     const messageView = new TextView(commit.message);
     this.addSubview(new LineBreakView(), messageView, new LineBreakView());
 
+    if (shortstat) {
+      this.addSubview(new LineBreakView(), new TextView(shortstat));
+    }
+
     this.addSubview(
       ...changes.map(change => {
         const view = new ChangeView(Section.Changes, change, commit.hash);
@@ -45,9 +49,6 @@ export class CommitDetailView extends DocumentView {
       }),
     );
 
-    if (shortstat) {
-      this.addSubview(new LineBreakView(), new TextView(shortstat));
-    }
 
   }
 
