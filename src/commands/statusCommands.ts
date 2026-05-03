@@ -18,7 +18,7 @@ import { Stash } from '../models/stash';
 import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
-import { diffToMagitChanges } from '../utils/gitUtils';
+import { diffToMagitChanges } from '../utils/diffParser';
 
 export async function magitRefresh() { }
 

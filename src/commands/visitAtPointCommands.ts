@@ -28,7 +28,7 @@ import path = require('path');
 import { ca } from 'date-fns/locale';
 import { BranchHeaderView } from '../views/branches/branchHeaderView';
 import { MagitChange } from '../models/magitChange';
-import { diffToMagitChanges } from '../utils/gitUtils';
+import { diffToMagitChanges } from '../utils/diffParser';
 import MagitUtils from '../utils/magitUtils';
 
 export async function magitVisitAtPoint(repository: MagitRepository, currentView: DocumentView) {

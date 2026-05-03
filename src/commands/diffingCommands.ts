@@ -14,7 +14,7 @@ import { Status } from '../typings/git';
 import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
-import { diffToMagitChanges } from '../utils/gitUtils';
+import { diffToMagitChanges } from '../utils/diffParser';
 
 const diffingMenu = {
   title: 'Diffing',
