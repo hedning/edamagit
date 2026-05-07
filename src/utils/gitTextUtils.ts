@@ -32,6 +32,41 @@ export default class GitTextUtils {
       .map(hunkText => ({ diff: hunkText, diffHeader, uri }));
   }
 
+  /**
+   * Parse `git status --porcelain -z` output into a map of unmerged paths to
+   * their conflict status. Non-conflict entries are ignored.
+   *
+   * Each `-z` record is `XY <space> path\0`, except renames/copies which have
+   * the form `XY <space> newpath\0oldpath\0`. We skip the trailing oldpath when
+   * the leading byte indicates a rename or copy.
+   */
+  public static parseConflictStatuses(porcelainOutput: string): Map<string, Status> {
+    const conflicts = new Map<string, Status>();
+    let i = 0;
+    while (i < porcelainOutput.length) {
+      const nullIdx = porcelainOutput.indexOf('\0', i);
+      if (nullIdx === -1) break;
+      const entry = porcelainOutput.slice(i, nullIdx);
+      i = nullIdx + 1;
+      if (entry.length < 3) continue;
+      const x = entry.charAt(0);
+      const y = entry.charAt(1);
+      // Renames/copies are followed by an extra \0-terminated old path
+      if (x === 'R' || x === 'C' || y === 'R' || y === 'C') {
+        const next = porcelainOutput.indexOf('\0', i);
+        if (next === -1) break;
+        i = next + 1;
+        continue;
+      }
+      const path = entry.slice(3);
+      const status = xyToConflictStatus(x, y);
+      if (status !== undefined) {
+        conflicts.set(path, status);
+      }
+    }
+    return conflicts;
+  }
+
   public static parseMergeStatus(mergeHead: string, mergeMessage: string): [string, string[]] | undefined {
 
     const mergingBranches = mergeMessage.match(/'(.*?)'/g)
@@ -217,5 +252,19 @@ export default class GitTextUtils {
     let errorMsg: string = error.friendlyMessage ?? error.stderr ?? error.message;
     errorMsg = errorMsg.replace('error: ', '');
     return GitTextUtils.truncate(errorMsg, 350);
+  }
+}
+
+function xyToConflictStatus(x: string, y: string): Status | undefined {
+  const xy = x + y;
+  switch (xy) {
+    case 'DD': return Status.BOTH_DELETED;
+    case 'AU': return Status.ADDED_BY_US;
+    case 'UD': return Status.DELETED_BY_THEM;
+    case 'UA': return Status.ADDED_BY_THEM;
+    case 'DU': return Status.DELETED_BY_US;
+    case 'AA': return Status.BOTH_ADDED;
+    case 'UU': return Status.BOTH_MODIFIED;
+    default: return undefined;
   }
 }

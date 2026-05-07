@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { suite, test } from 'mocha';
 import { Uri } from 'vscode';
 import GitTextUtils, { getStatusText } from '../../utils/gitTextUtils';
 import { Status } from '../../typings/git';
@@ -80,6 +81,55 @@ suite('gitTextUtils', () => {
       assert.ok(hunks[1].diff.startsWith('@@ -10,3 +10,3 @@'));
       // Both share the same diff header
       assert.strictEqual(hunks[0].diffHeader, hunks[1].diffHeader);
+    });
+  });
+
+  suite('parseConflictStatuses', () => {
+    test('parses each XY conflict code to the right Status', () => {
+      const input = [
+        'DD a',
+        'AU b',
+        'UD c',
+        'UA d',
+        'DU e',
+        'AA f',
+        'UU g',
+      ].join('\0') + '\0';
+      const map = GitTextUtils.parseConflictStatuses(input);
+      assert.strictEqual(map.size, 7);
+      assert.strictEqual(map.get('a'), Status.BOTH_DELETED);
+      assert.strictEqual(map.get('b'), Status.ADDED_BY_US);
+      assert.strictEqual(map.get('c'), Status.DELETED_BY_THEM);
+      assert.strictEqual(map.get('d'), Status.ADDED_BY_THEM);
+      assert.strictEqual(map.get('e'), Status.DELETED_BY_US);
+      assert.strictEqual(map.get('f'), Status.BOTH_ADDED);
+      assert.strictEqual(map.get('g'), Status.BOTH_MODIFIED);
+    });
+
+    test('ignores non-conflict porcelain entries', () => {
+      const input = ' M file.ts\0M  staged.ts\0?? new.ts\0DU conflict.ts\0';
+      const map = GitTextUtils.parseConflictStatuses(input);
+      assert.strictEqual(map.size, 1);
+      assert.strictEqual(map.get('conflict.ts'), Status.DELETED_BY_US);
+    });
+
+    test('skips the trailing old path of a rename entry', () => {
+      // R staged rename: "R  newname\0oldname\0", followed by a conflict entry
+      const input = 'R  new.ts\0old.ts\0DU conflict.ts\0';
+      const map = GitTextUtils.parseConflictStatuses(input);
+      assert.strictEqual(map.size, 1);
+      assert.strictEqual(map.get('conflict.ts'), Status.DELETED_BY_US);
+      assert.strictEqual(map.has('old.ts'), false);
+    });
+
+    test('handles paths containing spaces', () => {
+      const input = 'DU path with spaces.ts\0';
+      const map = GitTextUtils.parseConflictStatuses(input);
+      assert.strictEqual(map.get('path with spaces.ts'), Status.DELETED_BY_US);
+    });
+
+    test('returns empty map for empty input', () => {
+      assert.strictEqual(GitTextUtils.parseConflictStatuses('').size, 0);
     });
   });
 

@@ -119,6 +119,9 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
     return diffToMagitChanges(res.stdout, repository.rootUri, headRef);
   });
 
+  const conflictsTask = gitRun(repository, ['status', '--porcelain', '-z'], {}, LogLevel.None)
+    .then(res => GitTextUtils.parseConflictStatuses(res.stdout), () => new Map<string, Status>());
+
   const sequencerTodoPath = Uri.parse(dotGitPath + 'sequencer/todo');
   const sequencerHeadPath = Uri.parse(dotGitPath + 'sequencer/head');
 
@@ -167,13 +170,17 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
 
   const forgeState = forgeStatusCached(remotes);
 
+  const workingTreeChanges = await workingTreeChangesTasks;
+  const indexChanges = await indexChangesTasks;
+  reconcileConflicts(await conflictsTask, workingTreeChanges, indexChanges, repository.rootUri, headRef);
+
   return {
     uri: repository.rootUri,
     HEAD,
     stashes: await stashTask,
     log: await logTask,
-    workingTreeChanges: await workingTreeChangesTasks,
-    indexChanges: await indexChangesTasks,
+    workingTreeChanges,
+    indexChanges,
     untrackedFiles,
     rebasingState: await rebasingStateTask,
     mergingState: await mergingStateTask,
@@ -418,4 +425,51 @@ async function getRefs(repository: Repository): Promise<Ref[]> {
   }
 
   return await repository.getRefs({});
+}
+
+/**
+ * Ensure every unmerged path appears in the change lists with the precise
+ * conflict status from `git status --porcelain`. `git diff` only emits real
+ * blocks for `BOTH_MODIFIED`; the rest (DU/UD/AU/UA/DD/AA) collapse to
+ * `* Unmerged path X` lines that the diff parser drops, so we synthesize
+ * stub entries for those and correct the status on existing ones.
+ */
+function reconcileConflicts(
+  conflicts: Map<string, Status>,
+  workingTreeChanges: MagitChange[],
+  indexChanges: MagitChange[],
+  rootUri: Uri,
+  headRef: Ref | undefined,
+): void {
+  if (conflicts.size === 0) return;
+
+  for (const list of [workingTreeChanges, indexChanges]) {
+    for (const change of list) {
+      if (change.relativePath !== undefined) {
+        const status = conflicts.get(change.relativePath);
+        if (status !== undefined) {
+          (change as { status: Status }).status = status;
+        }
+      }
+    }
+  }
+
+  const known = new Set<string>();
+  for (const c of workingTreeChanges) if (c.relativePath) known.add(c.relativePath);
+  for (const c of indexChanges) if (c.relativePath) known.add(c.relativePath);
+
+  for (const [path, status] of conflicts) {
+    if (known.has(path)) continue;
+    const uri = Uri.joinPath(rootUri, path);
+    workingTreeChanges.push({
+      status,
+      uri,
+      originalUri: uri,
+      renameUri: undefined,
+      relativePath: path,
+      diff: undefined,
+      hunks: undefined,
+      ref: headRef,
+    });
+  }
 }
