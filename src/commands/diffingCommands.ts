@@ -44,7 +44,10 @@ export async function diffing(repository: MagitRepository) {
 
 async function diffRange({ repository }: MenuState) {
 
-  let range = await window.showInputBox({ prompt: `Diff for range (${repository.HEAD?.name})` });
+  let range = await window.showInputBox({
+    prompt: `Diff for range (${repository.HEAD?.name})`,
+    value: MagitUtils.getCursorCommitHash()?.meta,
+  });
 
   if (!range) {
     range = repository.HEAD?.name;
