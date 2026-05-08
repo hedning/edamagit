@@ -34,7 +34,7 @@ export async function reverseAtPoint(repository: MagitRepository, currentView: D
     //   const stash = (selectedView as StashItemView).stash;
 
     //   const args = ['stash', 'apply', '--index', `stash@{${stash.index}}`];
-    //   return gitRun(repository.gitRepository, args);
+    //   return gitRunInUri(repository.uri, args);
   } else {
     const ref = await MagitUtils.chooseRef(repository, 'Revert changes', true, true);
 

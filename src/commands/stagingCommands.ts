@@ -7,7 +7,7 @@ import { ChangeSectionView } from '../views/changes/changesSectionView';
 import { Section } from '../views/general/sectionHeader';
 import { MagitRepository } from '../models/magitRepository';
 import { DocumentView } from '../views/general/documentView';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import * as ApplyAtPoint from './applyAtPointCommands';
 import GitTextUtils from '../utils/gitTextUtils';
@@ -63,11 +63,11 @@ export async function magitStageAll(repository: MagitRepository) {
 }
 
 async function stageAllUntracked(repository: MagitRepository) {
-  return gitRun(repository.gitRepository, ['add', ...repository.untrackedFiles.map(f => f.relativePath ?? '')]);
+  return gitRunInUri(repository.uri, ['add', ...repository.untrackedFiles.map(f => f.relativePath ?? '')]);
 }
 
 async function stageAllTracked(repository: MagitRepository) {
-  return gitRun(repository.gitRepository, ['add', '-u']);
+  return gitRunInUri(repository.uri, ['add', '-u']);
 }
 
 export async function magitUnstage(repository: MagitRepository, currentView: DocumentView): Promise<any> {
@@ -124,7 +124,7 @@ export async function magitUnstageAll(repository: MagitRepository) {
 }
 
 async function unstageAll(repository: MagitRepository) {
-  return gitRun(repository.gitRepository, ['reset']);
+  return gitRunInUri(repository.uri, ['reset']);
 }
 
 export async function stageFile(repository: MagitRepository, fileUri: Uri, update = false) {
@@ -138,10 +138,10 @@ export async function stageFile(repository: MagitRepository, fileUri: Uri, updat
 
   args.push('--', fileUri.fsPath);
 
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 export async function unstageFile(repository: MagitRepository, fileUri: Uri) {
   const args = ['reset', '--', fileUri.fsPath];
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }

@@ -2,7 +2,7 @@ import { window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import * as CherryPicking from './cherryPickingCommands';
 import { BranchListingView } from '../views/branches/branchListingView';
@@ -29,7 +29,7 @@ export async function magitApplyEntityAtPoint(repository: MagitRepository, curre
   } else if (selectedView instanceof StashItemView) {
     const stash = selectedView.stash;
     const args = ['stash', 'apply', '--index', `stash@{${stash.index}}`];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
 
   } else {
     const ref = await MagitUtils.chooseRef(repository, 'Apply changes from commit');
@@ -55,5 +55,5 @@ export async function apply(repository: MagitRepository, patch: string, { index,
     args.push('--reverse');
   }
 
-  return gitRun(repository.gitRepository, args, { input: patch });
+  return gitRunInUri(repository.uri, args, { input: patch });
 }

@@ -1,7 +1,7 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { window, workspace, Uri } from 'vscode';
-import { gitRun, LogLevel } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri, LogLevel } from '../utils/gitRawRunner';
 import * as ProcessCommands from './processCommands';
 import { SpawnOptions } from '../utils/commandRunner/command';
 
@@ -29,7 +29,7 @@ async function run(repository: MagitRepository, directory?: Uri) {
 
   if (userCommand) {
     const args = userCommand.replace('git ', '').split(' ');
-    await gitRun(repository.gitRepository, args, spawnOptions, LogLevel.Detailed);
+    await gitRunInUri(repository.uri, args, spawnOptions, LogLevel.Detailed);
 
     await ProcessCommands.processView(repository);
 

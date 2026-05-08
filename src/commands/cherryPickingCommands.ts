@@ -1,4 +1,4 @@
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { MagitRepository } from '../models/magitRepository';
 import { MenuState, MenuUtil } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
@@ -75,7 +75,7 @@ export async function cherryPick(repository: MagitRepository, target: string, { 
   }
 
   args.push(target);
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 async function continueCherryPick({ repository }: MenuState) {
@@ -85,5 +85,5 @@ async function continueCherryPick({ repository }: MenuState) {
 
 async function cherryPickControlCommand({ repository }: MenuState, command: string) {
   const args = ['cherry-pick', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }

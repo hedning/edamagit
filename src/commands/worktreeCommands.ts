@@ -1,6 +1,6 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
 
@@ -27,7 +27,7 @@ async function createWorktree({ repository }: MenuState) {
 
     if (worktreePath) {
       const args = ['worktree', 'add', worktreePath, ref];
-      return await gitRun(repository.gitRepository, args);
+      return await gitRunInUri(repository.uri, args);
     }
   }
 }
@@ -46,7 +46,7 @@ async function createWorktreeAndBranch({ repository }: MenuState) {
 
       if (branchName) {
         const args = ['worktree', 'add', '-b', branchName, worktreePath, ref];
-        return await gitRun(repository.gitRepository, args);
+        return await gitRunInUri(repository.uri, args);
       }
     }
   }

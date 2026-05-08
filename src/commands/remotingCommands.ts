@@ -1,7 +1,7 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { commands, window } from 'vscode';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 
 const remotingMenu = {
   title: 'Remoting',
@@ -30,7 +30,7 @@ async function renameRemote({ repository }: MenuState) {
 
     if (newName) {
       const args = ['remote', 'rename', remote, newName];
-      gitRun(repository.gitRepository, args);
+      gitRunInUri(repository.uri, args);
     }
   }
 }

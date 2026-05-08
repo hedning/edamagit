@@ -2,7 +2,7 @@ import { window, workspace, TextEditorRevealType, Range, Position, Selection, co
 import { MagitRepository } from '../models/magitRepository';
 import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { ChangeView } from '../views/changes/changeView';
@@ -101,7 +101,7 @@ export async function magitOpenFileAtRevision(repository: MagitRepository) {
   if (!window.activeTextEditor) return;
 
   const ref = await MagitUtils.chooseRef(repository, 'Open file at revision');
-  const hash = await gitRun(repository.gitRepository, ['rev-parse', ref]);
+  const hash = await gitRunInUri(repository.uri, ['rev-parse', ref]);
 
   return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, commit: hash.stdout.trimEnd() });
 }
@@ -172,15 +172,15 @@ export function getRepoUri(repo: Repository, file: string) {
 }
 
 export async function getRef(magitState: MagitRepository, ref?: string) {
-  const repo = magitState.gitRepository;
+  const rootUri = magitState.uri;
   ref = ref ?? magitState.HEAD?.name;
   if (!ref) {
     throw new Error('No ref to get');
   }
-  const commit = await getCommit(repo.rootUri, ref); // Todo: parse this too
-  let diff = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
-  let magitChanges: MagitChange[] = diffToMagitChanges(diff, repo.rootUri, { commit: ref, type: RefType.Head });
-  let shortstat = (await gitRun(repo, ['show', '--format=', '--shortstat', commit.hash])).stdout.trim();
+  const commit = await getCommit(rootUri, ref); // Todo: parse this too
+  let diff = (await gitRunInUri(rootUri, ['show', '--format=', commit.hash])).stdout;
+  let magitChanges: MagitChange[] = diffToMagitChanges(diff, rootUri, { commit: ref, type: RefType.Head });
+  let shortstat = (await gitRunInUri(rootUri, ['show', '--format=', '--shortstat', commit.hash])).stdout.trim();
   return { commit, changes: magitChanges, shortstat };
 }
 

@@ -1,6 +1,6 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { window } from 'vscode';
 import * as Fetching from './fetchingCommands';
 import SubmoduleListView from '../views/submoduleListView';
@@ -43,7 +43,7 @@ async function add({ repository, switches }: MenuState) {
   if (submoduleRemote) {
 
     const args = ['submodule', 'add', ...MenuUtil.switchesToArgs(switches), submoduleRemote];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -53,7 +53,7 @@ async function init({ repository, switches }: MenuState) {
 
   if (submodule) {
     const args = ['submodule', 'init', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -63,7 +63,7 @@ async function populate({ repository, switches }: MenuState) {
 
   if (submodule) {
     const args = ['submodule', 'update', '--init', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -73,7 +73,7 @@ async function update({ repository, switches }: MenuState) {
 
   if (submodule) {
     const args = ['submodule', 'update', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -83,7 +83,7 @@ async function sync({ repository, switches }: MenuState) {
 
   if (submodule) {
     const args = ['submodule', 'sync', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -93,7 +93,7 @@ async function unpopulate({ repository, switches }: MenuState) {
 
   if (submodule) {
     const args = ['submodule', 'deinit', ...MenuUtil.switchesToArgs(switches), '--', submodule];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -107,9 +107,9 @@ async function remove({ repository, switches }: MenuState) {
     const deinitArgs = ['submodule', 'deinit', '--', submodule];
     const removeArgs = ['rm', '--', submodule];
 
-    await gitRun(repository.gitRepository, absorbArgs);
-    await gitRun(repository.gitRepository, deinitArgs);
-    return await gitRun(repository.gitRepository, removeArgs);
+    await gitRunInUri(repository.uri, absorbArgs);
+    await gitRunInUri(repository.uri, deinitArgs);
+    return await gitRunInUri(repository.uri, removeArgs);
   }
 }
 

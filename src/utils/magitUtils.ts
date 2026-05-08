@@ -49,7 +49,7 @@ export default class MagitUtils {
     if (!magitRepository) {
       let repository = await this.discoverRepo(uri);
       if (repository) {
-        magitRepository = await Status.internalMagitStatus(repository);
+        magitRepository = await Status.internalMagitStatus(repository.rootUri, repository);
         magitRepositories.set(magitRepository.uri.fsPath, magitRepository);
       }
     }
@@ -132,7 +132,7 @@ export default class MagitUtils {
   }
 
   public static async magitStatusAndUpdate(repository: MagitRepository) {
-    let updatedRepository = await Status.internalMagitStatus(repository.gitRepository);
+    let updatedRepository = await Status.internalMagitStatus(repository.uri, repository.gitRepository);
     magitRepositories.set(updatedRepository.uri.fsPath, updatedRepository);
     views.forEach(view => view.needsUpdate && view.uri.query === updatedRepository.uri.fsPath ? view.update(updatedRepository) : undefined);
   }

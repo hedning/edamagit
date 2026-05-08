@@ -1,7 +1,7 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { commands, window } from 'vscode';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import GitTextUtils from '../utils/gitTextUtils';
 
 const stashingMenu = {
@@ -45,7 +45,7 @@ async function _stash({ repository, switches }: MenuState, message: string, stas
       args.push('--message');
       args.push(message);
     }
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -62,12 +62,12 @@ async function stashWorktree({ repository, switches }: MenuState) {
 
       try {
         try {
-          await gitRun(repository.gitRepository, intermediaryCommitArgs);
+          await gitRunInUri(repository.uri, intermediaryCommitArgs);
         } catch { }
         await _stash({ repository, switches }, message);
-        return gitRun(repository.gitRepository, resetCommitArgs);
+        return gitRunInUri(repository.uri, resetCommitArgs);
       } catch (error) {
-        await gitRun(repository.gitRepository, resetCommitArgs);
+        await gitRunInUri(repository.uri, resetCommitArgs);
         throw error;
       }
     }
@@ -89,14 +89,14 @@ async function stashIndex({ repository, switches }: MenuState) {
 
       try {
         try {
-          await gitRun(repository.gitRepository, intermediaryCommitArgs);
-          await gitRun(repository.gitRepository, stashWorktree);
-          await gitRun(repository.gitRepository, resetCommitArgs);
+          await gitRunInUri(repository.uri, intermediaryCommitArgs);
+          await gitRunInUri(repository.uri, stashWorktree);
+          await gitRunInUri(repository.uri, resetCommitArgs);
         } catch { }
         await _stash({ repository, switches }, message);
-        return gitRun(repository.gitRepository, popIntermediateStashArgs);
+        return gitRunInUri(repository.uri, popIntermediateStashArgs);
       } catch (error) {
-        await gitRun(repository.gitRepository, popIntermediateStashArgs);
+        await gitRunInUri(repository.uri, popIntermediateStashArgs);
         throw error;
       }
     }

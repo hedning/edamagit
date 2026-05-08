@@ -1,6 +1,6 @@
 import { MagitRepository } from '../models/magitRepository';
 import { MenuUtil, MenuState } from '../menu/menu';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
 import * as Commit from '../commands/commitCommands';
@@ -45,7 +45,7 @@ async function createTag({ repository, switches }: MenuState) {
         });
       }
 
-      return await gitRun(repository.gitRepository, args);
+      return await gitRunInUri(repository.uri, args);
     }
   }
 }
@@ -58,6 +58,6 @@ async function deleteTag({ repository, switches }: MenuState) {
 
     const args = ['tag', '-d', ...MenuUtil.switchesToArgs(switches), tagRef];
 
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }

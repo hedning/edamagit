@@ -1,6 +1,6 @@
 import { Uri, window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { DiffView } from '../views/diffView';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
@@ -84,8 +84,8 @@ async function diffWorktree({ repository }: MenuState) {
 }
 
 async function diff(repository: MagitRepository, id: string, args: string[] = []) {
-  const diffResult = await gitRun(repository.gitRepository, ['diff', ...args]);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
+  const diffResult = await gitRunInUri(repository.uri, ['diff', ...args]);
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
 
   const uri = DiffView.encodeLocation(repository, id);
 
@@ -146,8 +146,8 @@ export async function diffFile(repository: MagitRepository, fileUri: Uri, index 
 
   args.push(fileUri.fsPath);
 
-  const diffResult = await gitRun(repository.gitRepository, args);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.gitRepository.rootUri);
+  const diffResult = await gitRunInUri(repository.uri, args);
+  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
 
   const uri = DiffView.encodeLocation(repository, fileUri.path);
   return ViewUtils.showView(uri, new DiffView(uri, magitChanges));

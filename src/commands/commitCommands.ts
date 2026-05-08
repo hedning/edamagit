@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as Constants from '../common/constants';
 import { execPath } from 'process';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { MenuUtil, MenuState } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
 import * as Diffing from './diffingCommands';
@@ -70,7 +70,7 @@ async function fixup({ repository, switches }: MenuState) {
   if (sha) {
     const args = ['commit', ...MenuUtil.switchesToArgs(switches), '--fixup', sha];
 
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   } else {
     throw new Error('No commit chosen to fixup');
   }
@@ -82,11 +82,11 @@ async function instantFixup({ repository, switches = [] }: MenuState) {
   if (sha) {
     let shortHash = GitTextUtils.shortHash(sha);
 
-    await gitRun(repository.gitRepository, ['commit', '--no-gpg-sign', '--no-edit', ...MenuUtil.switchesToArgs(switches), `--fixup=${shortHash}`, '--']);
+    await gitRunInUri(repository.uri, ['commit', '--no-gpg-sign', '--no-edit', ...MenuUtil.switchesToArgs(switches), `--fixup=${shortHash}`, '--']);
 
     const args = ['rebase', '-i', '--autosquash', '--autostash', shortHash + '~'];
 
-    return await gitRun(repository.gitRepository, args, { env: { 'GIT_SEQUENCE_EDITOR': 'true' } });
+    return await gitRunInUri(repository.uri, args, { env: { 'GIT_SEQUENCE_EDITOR': 'true' } });
   } else {
     throw new Error('No commit chosen to fixup');
   }
@@ -134,7 +134,7 @@ export async function runCommitLikeCommand(
     const env: NodeJS.ProcessEnv = { 'GIT_EDITOR': editorString };
     if (editor) env[editor] = editorString;
 
-    const commitSuccessMessageTask = gitRun(repository.gitRepository, args, { env });
+    const commitSuccessMessageTask = gitRunInUri(repository.uri, args, { env });
 
     editorListener = vscode.window.onDidChangeActiveTextEditor(editor => {
       if (

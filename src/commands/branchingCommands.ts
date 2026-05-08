@@ -3,7 +3,7 @@ import { MenuState, MenuUtil } from '../menu/menu';
 import { PickMenuUtil } from '../menu/pickMenu';
 import { MagitRepository } from '../models/magitRepository';
 import { GitErrorCodes, Ref, RefType } from '../typings/git';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
 import ShowRefsView from '../views/showRefsView';
@@ -74,8 +74,8 @@ async function checkoutPullRequest(menuState: MenuState) {
   const prIdx = await PickMenuUtil.showMenu(prItems, 'Checkout pull request');
   if (prIdx) {
     const pr = prs[prIdx];
-    await gitRun(state.gitRepository, ['fetch', state.forgeState?.forgeRemote, `${pr.remoteRef}:pr-${pr.number}`]);
-    return gitRun(state.gitRepository, ['checkout', `pr-${pr.number}`]);
+    await gitRunInUri(state.uri, ['fetch', state.forgeState?.forgeRemote, `${pr.remoteRef}:pr-${pr.number}`]);
+    return gitRunInUri(state.uri, ['checkout', `pr-${pr.number}`]);
   }
 }
 
@@ -101,7 +101,7 @@ async function renameBranch({ repository }: MenuState) {
     if (newName && newName.length > 0) {
 
       const args = ['branch', '--move', ref, newName];
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
 
     } else {
       throw new Error('No name given for branch rename');
@@ -115,11 +115,11 @@ async function deleteBranch({ repository }: MenuState) {
 
   if (ref) {
     try {
-      await gitRun(repository.gitRepository, ['branch', '--delete', ref]);
+      await gitRunInUri(repository.uri, ['branch', '--delete', ref]);
     } catch (error: any) {
       if (error.gitErrorCode === GitErrorCodes.BranchNotFullyMerged) {
         if (await MagitUtils.confirmAction(`Delete unmerged branch ${ref}?`)) {
-          return await gitRun(repository.gitRepository, ['branch', '--delete', '--force', ref]);
+          return await gitRunInUri(repository.uri, ['branch', '--delete', '--force', ref]);
         }
       }
     }
@@ -132,7 +132,7 @@ async function resetBranch({ repository }: MenuState) {
 
   const resetToRefString = await MagitUtils.chooseRef(repository, `Reset ${ref} to`);
 
-  const resetToRef = await repository.gitRepository.getBranch(resetToRefString);
+  const resetToRef = repository.refs.find(r => r.name === resetToRefString);
 
   if (ref && resetToRef) {
 
@@ -142,19 +142,19 @@ async function resetBranch({ repository }: MenuState) {
       if (MagitUtils.magitAnythingModified(repository)) {
 
         if (await MagitUtils.confirmAction(`Uncommitted changes will be lost. Proceed?`)) {
-          return await gitRun(repository.gitRepository, args);
+          return await gitRunInUri(repository.uri, args);
         }
       } else {
-        return await gitRun(repository.gitRepository, args);
+        return await gitRunInUri(repository.uri, args);
       }
     } else {
       const args = ['update-ref', `refs/heads/${ref}`];
       if (resetToRef.remote) {
         args.push(`${resetToRefString}`);
       } else {
-        args.push(`refs/heads/${resetToRef}`);
+        args.push(`refs/heads/${resetToRefString}`);
       }
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
     }
   }
 }
@@ -165,7 +165,7 @@ async function _checkout({ repository }: MenuState, refs: Ref[]) {
 
   if (ref) {
     const args = ['checkout', ref];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -199,7 +199,7 @@ async function _createBranch({ repository }: MenuState, checkout: boolean) {
       }
 
       args.push(newBranchName, ref);
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
 
     } else {
       throw new Error('No name given for new branch');

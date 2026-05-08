@@ -2,13 +2,13 @@ import { getRepoUri } from '../commands/visitAtPointCommands';
 import { MagitRepository } from '../models/magitRepository';
 import { Repository, Change, Status } from '../typings/git';
 import { IExecutionResult } from './commandRunner/command';
-import { gitRun } from './gitRawRunner';
+import { gitRun, gitRunInUri } from './gitRawRunner';
 
 export default class GitUtils {
 
   public static setConfigVariable(repository: MagitRepository, key: string, val: string): Promise<IExecutionResult<string>> {
     let args = ['config', '--local', key, val];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 

@@ -1,6 +1,6 @@
 import { MenuState, MenuUtil, Switch } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import * as Commit from '../commands/commitCommands';
 import MagitUtils from '../utils/magitUtils';
 
@@ -67,7 +67,7 @@ async function absorb({ repository }: MenuState) {
 
   if (ref) {
     await _merge(repository, ref);
-    return await gitRun(repository.gitRepository, ['branch', '--delete', ref]);
+    return await gitRunInUri(repository.uri, ['branch', '--delete', ref]);
   }
 }
 
@@ -104,7 +104,7 @@ async function _merge(
     args.push('--no-edit');
   }
 
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 async function commitMerge(menuState: MenuState) {
@@ -114,6 +114,6 @@ async function commitMerge(menuState: MenuState) {
 async function abortMerge({ repository }: MenuState) {
   if (await MagitUtils.confirmAction(`Abort merge?`)) {
     const args = ['merge', '--abort'];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }

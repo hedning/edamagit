@@ -30,7 +30,7 @@ export interface MagitRepository {
   readonly tags: Ref[];
   readonly refs: Ref[];
   readonly submodules: Submodule[];
-  readonly gitRepository: Repository;
+  readonly gitRepository?: Repository;
 
   readonly forgeState?: ForgeState;
 }

@@ -1,6 +1,6 @@
 import { MenuState, MenuUtil, Switch } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { MagitError } from '../models/magitError';
 import * as Commit from '../commands/commitCommands';
@@ -78,7 +78,7 @@ async function _rebase(repository: MagitRepository, ref: string, switches: Switc
       return Commit.runCommitLikeCommand(repository, args, { editor: 'GIT_SEQUENCE_EDITOR' });
     }
 
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
   catch (e) {
     throw new MagitError('Failed to merge in the changes.', e);
@@ -87,7 +87,7 @@ async function _rebase(repository: MagitRepository, ref: string, switches: Switc
 
 async function rebaseControlCommand({ repository }: MenuState, command: string) {
   const args = ['rebase', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 async function rebaseContinue({ repository }: MenuState) {

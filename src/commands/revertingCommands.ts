@@ -1,4 +1,4 @@
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { MagitRepository } from '../models/magitRepository';
 import { MenuState, MenuUtil } from '../menu/menu';
 import MagitUtils from '../utils/magitUtils';
@@ -73,7 +73,7 @@ export async function revert(repository: MagitRepository, target: string, { noCo
 
   args.push('--no-edit');
   args.push(target);
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 async function continueRevert({ repository }: MenuState) {
@@ -83,5 +83,5 @@ async function continueRevert({ repository }: MenuState) {
 
 async function revertControlCommand({ repository }: MenuState, command: string) {
   const args = ['revert', command];
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }

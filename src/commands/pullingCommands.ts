@@ -1,7 +1,7 @@
 import { MenuItem, MenuState, MenuUtil } from '../menu/menu';
 import { PickMenuUtil } from '../menu/pickMenu';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 
 function generatePullingMenu(repository: MagitRepository) {
   const pullingMenuItems: MenuItem[] = [];
@@ -32,13 +32,13 @@ async function pullFromPushRemote({ repository, switches }: MenuState) {
   const pushRemote = repository.HEAD?.pushRemote;
   if (pushRemote) {
     const args = ['pull', ...MenuUtil.switchesToArgs(switches), pushRemote.remote, pushRemote.name];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
 function pullFromUpstream({ repository, switches }: MenuState) {
   const args = ['pull', ...MenuUtil.switchesToArgs(switches)];
-  return gitRun(repository.gitRepository, args);
+  return gitRunInUri(repository.uri, args);
 }
 
 async function pullFromElsewhere({ repository, switches }: MenuState) {
@@ -56,6 +56,6 @@ async function pullFromElsewhere({ repository, switches }: MenuState) {
     const remote = chosenElse.slice(0, idx);
     const branch = chosenElse.slice(idx + 1);
     const args = ['pull', ...MenuUtil.switchesToArgs(switches), remote, branch];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }

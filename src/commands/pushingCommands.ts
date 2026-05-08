@@ -4,7 +4,7 @@ import { MenuUtil, MenuState, MenuItem } from '../menu/menu';
 import { RefType } from '../typings/git';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import GitTextUtils from '../utils/gitTextUtils';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import GitUtils from '../utils/gitUtils';
 
@@ -53,7 +53,7 @@ async function pushToPushRemote({ repository, switches }: MenuState) {
   if (pushRemote?.remote && ref) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), pushRemote.remote, ref];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -81,7 +81,7 @@ async function pushUpstream({ repository, switches }: MenuState) {
   if (upstreamRemote?.remote && ref) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), upstreamRemote.remote, ref];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -140,7 +140,7 @@ async function pushOther({ repository, switches }: MenuState) {
 
   if (remote && ref) {
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remoteName, `${ref}:${remoteBranchName}`];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -152,7 +152,7 @@ async function pushTag({ repository, switches }: MenuState) {
   if (remote && tag) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remote, tag];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }
 
@@ -162,6 +162,6 @@ async function pushAllTags({ repository, switches }: MenuState) {
   if (remote) {
 
     const args = ['push', ...MenuUtil.switchesToArgs(switches), remote, '--tags'];
-    return gitRun(repository.gitRepository, args);
+    return gitRunInUri(repository.uri, args);
   }
 }

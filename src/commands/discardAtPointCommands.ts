@@ -1,7 +1,7 @@
 import { window, commands, workspace, Selection } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { DocumentView } from '../views/general/documentView';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { StashItemView, StashSectionView } from '../views/stashes/stashSectionView';
 import { ChangeView } from '../views/changes/changeView';
 import { HunkView } from '../views/changes/hunkView';
@@ -54,7 +54,7 @@ async function discard(repository: MagitRepository, selection: Selection, select
 
         if (changeView.section === Section.Unstaged) {
           const args = ['checkout', '--', change.uri.fsPath];
-          return gitRun(repository.gitRepository, args);
+          return gitRunInUri(repository.uri, args);
         } else {
           if (!changeView.change.diff) {
             return;
@@ -88,7 +88,7 @@ async function discard(repository: MagitRepository, selection: Selection, select
       case Section.Staged:
         if (await MagitUtils.confirmAction('Discard all staged changes?')) {
           const args = ['checkout', 'HEAD', '--', ...changeSectionView.changes.map(change => change.uri.fsPath)];
-          return gitRun(repository.gitRepository, args);
+          return gitRunInUri(repository.uri, args);
         }
         break;
       default:
@@ -99,7 +99,7 @@ async function discard(repository: MagitRepository, selection: Selection, select
 
     if (await MagitUtils.confirmAction('Drop all stashes in ref/stash?')) {
       const args = ['stash', 'clear'];
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
     }
   } else if (selectedView instanceof StashItemView) {
 
@@ -107,7 +107,7 @@ async function discard(repository: MagitRepository, selection: Selection, select
 
     if (await MagitUtils.confirmAction(`Drop stash stash@{${stash.index}}?`)) {
       const args = ['stash', 'drop', `stash@{${stash.index}}`];
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
     }
   } else if (selectedView instanceof BranchListingView) {
 
@@ -117,11 +117,11 @@ async function discard(repository: MagitRepository, selection: Selection, select
 
       if (await MagitUtils.confirmAction(`Delete branch ${branch.name}?`)) {
         try {
-          await gitRun(repository.gitRepository, ['branch', '--delete', branch.name]);
+          await gitRunInUri(repository.uri, ['branch', '--delete', branch.name]);
         } catch (error: any) {
           if (error.gitErrorCode === GitErrorCodes.BranchNotFullyMerged) {
             if (await MagitUtils.confirmAction(`Delete unmerged branch ${branch.name}?`)) {
-              return gitRun(repository.gitRepository, ['branch', '--delete', '--force', branch.name]);
+              return gitRunInUri(repository.uri, ['branch', '--delete', '--force', branch.name]);
             }
           }
         }
@@ -136,11 +136,11 @@ async function discard(repository: MagitRepository, selection: Selection, select
       const [remote, name] = GitTextUtils.remoteBranchFullNameToSegments(branch.name);
       if (await MagitUtils.confirmAction(`Delete branch ${branch.name} at REMOTE ${remote} (push --delete)?`)) {
         try {
-          await gitRun(repository.gitRepository, ['push', '--delete', remote, name]);
+          await gitRunInUri(repository.uri, ['push', '--delete', remote, name]);
         } catch (error: any) {
           if (error.gitErrorCode === GitErrorCodes.BranchNotFullyMerged) {
             if (await MagitUtils.confirmAction(`Delete unmerged branch ${branch.name}?`)) {
-              return gitRun(repository.gitRepository, ['push', '--delete', remote, name]);
+              return gitRunInUri(repository.uri, ['push', '--delete', remote, name]);
             }
           }
         }
@@ -152,7 +152,7 @@ async function discard(repository: MagitRepository, selection: Selection, select
 
     if (await MagitUtils.confirmAction(`Delete tag ${tag.name}?`)) {
       const args = ['tag', '--delete', `${tag.name}`];
-      return gitRun(repository.gitRepository, args);
+      return gitRunInUri(repository.uri, args);
     }
   } else {
     window.setStatusBarMessage('There is no thing at point that could be deleted', Constants.StatusMessageDisplayTimeout);

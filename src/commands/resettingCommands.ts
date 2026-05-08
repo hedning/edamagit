@@ -1,6 +1,6 @@
 import { MenuState, MenuUtil } from '../menu/menu';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
+import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
 
@@ -34,7 +34,7 @@ async function resetWorktree({ repository }: MenuState) {
 
   if (ref) {
     const args = ['checkout-index', '--all', '--force'];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
 
@@ -45,6 +45,6 @@ async function _reset(repository: MagitRepository, switches: string[], prompt: s
   if (ref) {
 
     const args = ['reset', ...switches, ref];
-    return await gitRun(repository.gitRepository, args);
+    return await gitRunInUri(repository.uri, args);
   }
 }
