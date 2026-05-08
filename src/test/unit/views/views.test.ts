@@ -53,7 +53,7 @@ suite('views (text snapshot)', () => {
 
       assert.strictEqual(
         renderView(view),
-`Head:     main Initial commit
+        `Head:     main Initial commit
 Merge:    origin/main Upstream tip
 Push:     fork/main Pushed tip`
       );
@@ -70,7 +70,7 @@ Push:     fork/main Pushed tip`
       const view = new ChangeSectionView(Section.Unstaged, [change]);
       assert.strictEqual(
         renderView(view),
-`Unstaged changes (1)
+        `Unstaged changes (1)
 modified   src/foo.ts
 @@ -1,2 +1,2 @@
  line one
@@ -86,7 +86,7 @@ modified   src/foo.ts
       ]);
       assert.strictEqual(
         renderView(view),
-`Untracked files (2)
+        `Untracked files (2)
 a.txt
 b.txt`
       );
@@ -100,7 +100,7 @@ b.txt`
       ]);
       assert.strictEqual(
         renderView(view),
-`Staged changes (3)
+        `Staged changes (3)
 new file   added.ts
 modified   changed.ts
 deleted    gone.ts`
@@ -113,7 +113,7 @@ deleted    gone.ts`
       ]);
       assert.strictEqual(
         renderView(view),
-`Unstaged changes (1)
+        `Unstaged changes (1)
 unmerged   conflict.ts (both modified)`
       );
     });
@@ -132,7 +132,7 @@ unmerged   conflict.ts (both modified)`
       const view = new ChangeView(Section.Unstaged, change);
       assert.strictEqual(
         renderView(view),
-`modified   src/foo.ts
+        `modified   src/foo.ts
 @@ -1,1 +1,1 @@
 -old
 +new
@@ -156,9 +156,40 @@ unmerged   conflict.ts (both modified)`
       );
       assert.strictEqual(
         renderView(view),
-`Recent commits
+        `Recent commits
 aaaaaaa main Most recent
 bbbbbbb Older commit
+`
+      );
+    });
+
+    test('Recent commits decorated with local branch, tracking remote, and tag', () => {
+      // Order mirrors MagitStatusView: remote branches first, then local
+      // branches, then tags. With this order, a local branch already covered
+      // by its tracking remote is folded into the remote token.
+      const refs = [
+        makeRef({ name: 'origin/main', commit: 'aaaaaaa1234', type: RefType.RemoteHead, remote: 'origin' }),
+        makeRef({ name: 'main', commit: 'aaaaaaa1234' }),
+        makeRef({ name: 'feature', commit: 'ccccccc9abc' }),
+        makeRef({ name: 'v1.0', commit: 'bbbbbbb5678', type: RefType.Tag }),
+      ];
+      const view = new CommitSectionView(
+        Section.RecentCommits,
+        [
+          makeCommit({ hash: 'aaaaaaa1234', message: 'Tip with tracking remote' }),
+          makeCommit({ hash: 'bbbbbbb5678', message: 'Tagged release' }),
+          makeCommit({ hash: 'ccccccc9abc', message: 'On a side branch' }),
+          makeCommit({ hash: 'ddddddd0000', message: 'Plain commit, no decorations' }),
+        ],
+        refs,
+      );
+      assert.strictEqual(
+        renderView(view),
+        `Recent commits
+aaaaaaa origin/main Tip with tracking remote
+bbbbbbb v1.0 Tagged release
+ccccccc feature On a side branch
+ddddddd Plain commit, no decorations
 `
       );
     });
@@ -175,7 +206,7 @@ bbbbbbb Older commit
       );
       assert.strictEqual(
         renderView(view),
-`Unpushed to origin/main (1)
+        `Unpushed to origin/main (1)
 aaaaaaa Pending push
 `
       );
@@ -190,7 +221,7 @@ aaaaaaa Pending push
       ]);
       assert.strictEqual(
         renderView(view),
-`Stashes (2)
+        `Stashes (2)
 stash@{0} WIP on main: aaa quick fix
 stash@{1} On feature: experimental work`
       );
@@ -215,7 +246,7 @@ stash@{1} On feature: experimental work`
 
       assert.strictEqual(
         renderView(view),
-`Head:     main Initial commit
+        `Head:     main Initial commit
 `
       );
     });
@@ -247,7 +278,7 @@ stash@{1} On feature: experimental work`
 
       assert.strictEqual(
         renderView(view),
-`Head:     main Initial commit
+        `Head:     main Initial commit
 
 Unstaged changes (1)
 modified   src/foo.ts
@@ -286,7 +317,7 @@ bbbbbbb Earlier work
 
       assert.strictEqual(
         renderView(view),
-`Head:     feature Local tip
+        `Head:     feature Local tip
 Merge:    origin/feature Upstream tip
 
 Unmerged into origin/feature (1)
