@@ -74,6 +74,31 @@ export async function magitStatus(): Promise<any> {
   }
 }
 
+/**
+ * Open a magit-status view for an arbitrary worktree path. Used by the
+ * worktree list — the VSCode git extension does not enumerate sibling
+ * worktrees, so we build the MagitRepository from direct git ourselves.
+ */
+export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
+
+  let repository = magitRepositories.get(workTreeUri.fsPath);
+
+  if (repository) {
+    const uri = MagitStatusView.encodeLocation(repository);
+    if (views.get(uri.toString())) {
+      MagitUtils.magitStatusAndUpdate(repository);
+      return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
+    }
+  } else {
+    repository = await internalMagitStatus(workTreeUri);
+    magitRepositories.set(repository.uri.fsPath, repository);
+  }
+
+  scheduleForgeStatusAsync(repository);
+  const uri = MagitStatusView.encodeLocation(repository);
+  return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
+}
+
 export async function internalMagitStatus(rootUri: Uri, gitRepository?: Repository): Promise<MagitRepository> {
 
   const repo = { rootUri };
