@@ -1,4 +1,6 @@
 import * as assert from 'assert';
+import * as fs from 'fs';
+import * as path from 'path';
 import { suite, test } from 'mocha';
 import { RefType } from '../../typings/git';
 import {
@@ -9,6 +11,7 @@ import {
   parseSubmodulesConfigList,
   parseCommits,
 } from '../../utils/repoStatusParsers';
+import { FIXTURES_SRC_DIR } from './fixtures/projectRoot';
 
 const FIELD = '\x1f';
 const RECORD = '\x1e';
@@ -158,19 +161,27 @@ suite('repoStatus', () => {
       assert.strictEqual(commits[1].message, 'second');
     });
 
-    test('strips git-inserted leading newlines between records', () => {
-      // `git log --format=format:...%B${RECORD}` outputs `record\n\x1e\nrecord\n\x1e\n…`
-      // because git terminates each commit with `\n` when the format doesn't.
-      // Without stripping the leading `\n`, the next record's hash field
-      // gets a `\n` prepended and pollutes downstream rendering.
-      const a = ['aaaa', '', 'Alice', 'a@x', '2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z', 'first\n'].join(FIELD);
-      const b = ['bbbb', '', 'Bob', 'b@x', '2024-02-02T00:00:00Z', '2024-02-02T01:00:00Z', 'second\n'].join(FIELD);
-      const out = a + RECORD + '\n' + b + RECORD + '\n';
-      const commits = parseCommits(out);
-      assert.strictEqual(commits.length, 2);
-      assert.strictEqual(commits[0].hash, 'aaaa');
-      assert.strictEqual(commits[1].hash, 'bbbb');
-      assert.strictEqual(commits[1].message, 'second');
+    test('parses real `git log --format=…` output (basic.log fixture)', () => {
+      // Fixture is captured from a deterministic throwaway repo by
+      // `npm run test:gen-fixtures`. Asserting against real git output keeps
+      // us honest about the on-the-wire shape — including the per-commit
+      // newline git inserts in `format:` mode that masked an earlier bug.
+      const raw = fs.readFileSync(path.join(FIXTURES_SRC_DIR, 'log', 'basic.log'));
+      const commits = parseCommits(raw.toString('utf8'));
+
+      assert.strictEqual(commits.length, 3);
+
+      // No hash should carry stray whitespace from the inter-record terminator.
+      for (const c of commits) {
+        assert.match(c.hash, /^[0-9a-f]{40}$/, `unexpected hash shape: ${JSON.stringify(c.hash)}`);
+        assert.strictEqual(c.authorName, 'Alice');
+        assert.strictEqual(c.authorEmail, 'alice@example.com');
+      }
+
+      assert.strictEqual(commits[0].message, 'third: trailing whitespace then a tab\there');
+      assert.strictEqual(commits[1].message, 'second: subject\n\nbody line one\nbody line two');
+      assert.strictEqual(commits[2].message, 'first commit');
+      assert.deepStrictEqual(commits[2].parents, []);
     });
   });
 });

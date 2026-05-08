@@ -742,7 +742,8 @@
     "pretest": "tsc -p ./",
     "test": "vscode-test",
     "pretest:unit": "tsc -p ./",
-    "test:unit": "mocha --ui tdd --require ./out/src/test/unit/setup.js \"./out/src/test/unit/**/*.test.js\""
+    "test:unit": "mocha --ui tdd --require ./out/src/test/unit/setup.js \"./out/src/test/unit/**/*.test.js\"",
+    "test:gen-fixtures": "tsc -p ./ && node -r ./out/src/test/unit/setup.js ./out/src/test/unit/fixtures/log/generate.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
