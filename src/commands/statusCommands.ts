@@ -76,7 +76,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   const headRef = repository.state.HEAD;
 
   if (repository.state.HEAD?.commit) {
-    getCommit(repository, repository.state.HEAD?.commit);
+    getCommit(repository.rootUri, repository.state.HEAD?.commit);
   }
 
   /*  This is slow and needs to be replaced with someting like one call to git log + parsing the output into commits */
@@ -135,7 +135,7 @@ export async function internalMagitStatus(repository: Repository): Promise<Magit
   const refs = await getRefs(repository);
 
   if (HEAD?.commit) {
-    HEAD.commitDetails = await getCommit(repository, HEAD.commit);
+    HEAD.commitDetails = await getCommit(repository.rootUri, HEAD.commit);
 
     HEAD.tag = refs.find(r => HEAD?.commit === r.commit && r.type === RefType.Tag);
 
@@ -224,7 +224,7 @@ async function pushRemoteStatus(repository: Repository): Promise<MagitUpstreamRe
 
       const refs = await getRefs(repository);
       const pushRemoteCommit = refs.find(ref => ref.remote === pushRemote && ref.name === `${pushRemote}/${HEAD.name}`)?.commit;
-      const pushRemoteCommitDetails = pushRemoteCommit ? getCommit(repository, pushRemoteCommit) : Promise.resolve(undefined);
+      const pushRemoteCommitDetails = pushRemoteCommit ? getCommit(repository.rootUri, pushRemoteCommit) : Promise.resolve(undefined);
 
       return { remote: pushRemote, name: HEAD.name, commit: await pushRemoteCommitDetails };
     }
@@ -255,7 +255,7 @@ async function mergingStatus(repository: Repository, dotGitPath: string): Promis
 
         return {
           mergingBranches,
-          commits: await Promise.all(mergeCommits.map(c => getCommit(repository, c)))
+          commits: await Promise.all(mergeCommits.map(c => getCommit(repository.rootUri, c)))
         };
       }
     }
@@ -316,7 +316,7 @@ async function rebasingStatus(repository: Repository, dotGitPath: string, logTas
             ));
       }
 
-      let ontoCommit = await getCommit(repository, await rebaseOntoPathFileTask!);
+      let ontoCommit = await getCommit(repository.rootUri, await rebaseOntoPathFileTask!);
       const refs = await getRefs(repository);
       let ontoBranch = refs.find(ref => ref.commit === ontoCommit.hash && ref.type !== RefType.RemoteHead);
 
@@ -356,8 +356,8 @@ async function cherryPickingStatus(repository: Repository, dotGitPath: string, s
       const todo = await sequencerTodoPathFileTask;
       const head = await sequencerHeadPathFileTask;
 
-      const currentCommitTask = getCommit(repository, cherryPickHeadCommitHash);
-      const originalHeadTask = head ? getCommit(repository, head) : getCommit(repository, repository.state.HEAD!.commit!);
+      const currentCommitTask = getCommit(repository.rootUri, cherryPickHeadCommitHash);
+      const originalHeadTask = head ? getCommit(repository.rootUri, head) : getCommit(repository.rootUri, repository.state.HEAD!.commit!);
 
       return {
         originalHead: await originalHeadTask,
@@ -383,8 +383,8 @@ async function revertingStatus(repository: Repository, dotGitPath: string, seque
       const todo = await sequencerTodoPathFileTask;
       const head = await sequencerHeadPathFileTask;
 
-      const currentCommitTask = getCommit(repository, revertHeadCommitHash);
-      const originalHeadTask = head ? getCommit(repository, head) : getCommit(repository, repository.state.HEAD!.commit!);
+      const currentCommitTask = getCommit(repository.rootUri, revertHeadCommitHash);
+      const originalHeadTask = head ? getCommit(repository.rootUri, head) : getCommit(repository.rootUri, repository.state.HEAD!.commit!);
 
       return {
         originalHead: await originalHeadTask,

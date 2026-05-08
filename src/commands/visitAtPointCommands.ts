@@ -177,7 +177,7 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
   if (!ref) {
     throw new Error('No ref to get');
   }
-  const commit = await getCommit(repo, ref); // Todo: parse this too
+  const commit = await getCommit(repo.rootUri, ref); // Todo: parse this too
   let diff = (await gitRun(repo, ['show', '--format=', commit.hash])).stdout;
   let magitChanges: MagitChange[] = diffToMagitChanges(diff, repo.rootUri, { commit: ref, type: RefType.Head });
   let shortstat = (await gitRun(repo, ['show', '--format=', '--shortstat', commit.hash])).stdout.trim();
@@ -193,7 +193,7 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
   );
 
   const { commit, changes, shortstat } = await getRef(magitState, commitHash);
-  const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.gitRepository, p)));
+  const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.uri, p)));
 
   const uri = CommitDetailView.encodeLocation(magitState, commit);
   const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs, shortstat))

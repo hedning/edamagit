@@ -1,15 +1,15 @@
-import { Commit, Repository } from '../typings/git';
+import { Uri } from 'vscode';
+import { Commit } from '../typings/git';
+import { readCommit } from './repoStatus';
 
-const commitCache: { [hash: string]: Promise<Commit>; } = {};
+const commitCache = new Map<string, Promise<Commit>>();
 
-export function getCommit(repository: Repository, hash: string): Promise<Commit> {
+export function getCommit(rootUri: Uri, hash: string): Promise<Commit> {
 
-  //@ts-expect-error TS2801
-  if (commitCache[hash]) {
-    return commitCache[hash];
-  }
+  const cached = commitCache.get(hash);
+  if (cached) return cached;
 
-  const commitTask = repository.getCommit(hash);
-  commitCache[hash] = commitTask;
+  const commitTask = readCommit(rootUri, hash);
+  commitCache.set(hash, commitTask);
   return commitTask;
 }
