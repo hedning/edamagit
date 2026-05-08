@@ -157,5 +157,20 @@ suite('repoStatus', () => {
       assert.deepStrictEqual(commits[1].parents, []);
       assert.strictEqual(commits[1].message, 'second');
     });
+
+    test('strips git-inserted leading newlines between records', () => {
+      // `git log --format=format:...%B${RECORD}` outputs `record\n\x1e\nrecord\n\x1e\n…`
+      // because git terminates each commit with `\n` when the format doesn't.
+      // Without stripping the leading `\n`, the next record's hash field
+      // gets a `\n` prepended and pollutes downstream rendering.
+      const a = ['aaaa', '', 'Alice', 'a@x', '2024-01-01T00:00:00Z', '2024-01-01T01:00:00Z', 'first\n'].join(FIELD);
+      const b = ['bbbb', '', 'Bob', 'b@x', '2024-02-02T00:00:00Z', '2024-02-02T01:00:00Z', 'second\n'].join(FIELD);
+      const out = a + RECORD + '\n' + b + RECORD + '\n';
+      const commits = parseCommits(out);
+      assert.strictEqual(commits.length, 2);
+      assert.strictEqual(commits[0].hash, 'aaaa');
+      assert.strictEqual(commits[1].hash, 'bbbb');
+      assert.strictEqual(commits[1].message, 'second');
+    });
   });
 });

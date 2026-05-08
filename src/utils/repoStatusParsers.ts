@@ -177,7 +177,10 @@ export function parseCommits(output: string): Commit[] {
   const records = output.split(RECORD);
   const commits: Commit[] = [];
   for (const raw of records) {
-    const record = raw.replace(Constants.FinalLineBreakRegex, '');
+    // `git log --format=format:...` inserts a newline between commits when
+    // the format doesn't end with one, so all records except the first start
+    // with `\n`. Strip leading newlines so they don't end up in the hash.
+    const record = raw.replace(/^\r?\n+/, '').replace(Constants.FinalLineBreakRegex, '');
     if (!record) continue;
     const f = record.split(FIELD);
     if (f.length < 7) continue;
