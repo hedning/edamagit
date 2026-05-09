@@ -53,7 +53,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri).startsWith('Commit: '),
+    uri => leafFromMagitUri(uri) === CommitDetailView.UriPath,
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;

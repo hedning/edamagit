@@ -367,7 +367,7 @@ export default class LogView extends DocumentView {
 
   static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
     const leaf = `Log: ${GitTextUtils.shortCommitMessage(revs.join(' '))}`;
-    return buildMagitUri(repository.uri, leaf, args.join('&'));
+    return buildMagitUri(repository.uri, leaf, { fragment: args.join('&') });
   }
 }
 

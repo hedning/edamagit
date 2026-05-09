@@ -408,6 +408,15 @@
         }
       },
       {
+        "scheme": "magit",
+        "authority": "commit",
+        "formatting": {
+          "label": "${query.summary} (${query.shortHash})",
+          "separator": "/",
+          "workspaceSuffix": "magit"
+        }
+      },
+      {
         "scheme": "magit-history",
         "formatting": {
           "label": "${path} (${query.ref})",

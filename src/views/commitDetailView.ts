@@ -15,6 +15,7 @@ import { Commit, Ref } from '../typings/git';
 export class CommitDetailView extends DocumentView {
 
   static UriPath: string = 'commit';
+  static UriAuthority: string = 'commit';
   isHighlightable = true;
   needsUpdate = false;
 
@@ -56,8 +57,20 @@ export class CommitDetailView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, commit: Commit): Uri {
-    const summary = GitTextUtils.shortCommitMessage(commit.message);
+    // VS Code's `getUriBasenameLabel` formats the label and then runs
+    // `basename` on it with the formatter's separator, so a literal `/` in
+    // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix
+    // off the tab title. Substitute U+2215 DIVISION SLASH like we do for the
+    // path leaf — visually identical, opaque to `basename`.
+    const summary = GitTextUtils.shortCommitMessage(commit.message).replace(/\//g, '∕');
     const shortHash = GitTextUtils.shortHash(commit.hash);
-    return buildMagitUri(repository.uri, `Commit: ${summary} (${shortHash})`, commit.hash);
+    // Path leaf is just `commit.magit`; the human label is composed by the
+    // `magit` + `commit` authority `resourceLabelFormatters` entry from these
+    // query keys. Full hash stays in the fragment for the rebuilder.
+    return buildMagitUri(repository.uri, CommitDetailView.UriPath, {
+      authority: CommitDetailView.UriAuthority,
+      query: { summary, shortHash },
+      fragment: commit.hash,
+    });
   }
 }
