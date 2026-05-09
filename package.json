@@ -388,10 +388,18 @@
         "aliases": [
           "Magit"
         ],
-        "extensions": [
-          ".magit"
-        ],
         "configuration": "./languages/magit.language-configuration.json"
+      }
+    ],
+    "resourceLabelFormatters": [
+      {
+        "scheme": "magit",
+        "formatting": {
+          "label": "${path}",
+          "separator": "/",
+          "stripPathStartingSeparator": true,
+          "workspaceSuffix": "magit"
+        }
       }
     ],
     "configurationDefaults": {
