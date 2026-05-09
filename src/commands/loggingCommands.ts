@@ -101,6 +101,9 @@ async function log(repository: MagitRepository, args: string[], revs: string[], 
       uri,
       () => new LogView(uri, repository, args, revs, paths)
   );
+  if (view instanceof LogView) {
+    await view.initialUpdate;
+  }
   return ViewUtils.showView(uri, view);
 }
 

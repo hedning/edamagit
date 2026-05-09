@@ -323,19 +323,22 @@ export default class LogView extends DocumentView {
   args: string[];
   revs: string[];
   paths: string[];
+  /** Resolves once the first `update` has populated subViews. `log()` awaits
+   *  this before opening the document so VSCode reads the full content on its
+   *  first fetch instead of receiving a big content swap mid-flight. */
+  initialUpdate: Promise<void>;
 
   constructor(uri: Uri, repository: MagitRepository, args: string[], revs: string[], paths: string[]) {
     super(uri);
     this.args = args;
     this.revs = revs;
-    const revName = this.revs.join(' ');
     this.paths = paths;
-    this.addSubview(new TextView(`Loading commits in ${revName}`));
-    this.update(repository);
+    this.initialUpdate = this.update(repository);
   }
 
   public async update(state: MagitRepository) {
     const output = await gitRunInUri(state.uri, this.args.concat(this.revs, ['--'], this.paths), {}, LogLevel.Error);
+
     const refs = state.remotes.reduce((prev, remote) => remote.branches.concat(prev), state.branches.concat(state.tags));
 
     const defaultBranches: { [remoteName: string]: string } = {};
