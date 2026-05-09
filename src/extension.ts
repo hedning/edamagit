@@ -1,6 +1,10 @@
 import { workspace, extensions, commands, ExtensionContext, Disposable, languages, window } from 'vscode';
 import * as vscode from 'vscode';
-import ContentProvider from './providers/contentProvider';
+import { magitFileSystemProvider } from './providers/magitFileSystemProvider';
+import { registerMagitViewBuilders } from './providers/magitViewBuilders';
+import { repoFsPathFromMagitUri } from './common/magitUri';
+import FilePathUtils from './utils/filePathUtils';
+import MagitUtils from './utils/magitUtils';
 import { GitExtension, API } from './typings/git';
 import { pushing } from './commands/pushingCommands';
 import { branching, showRefs } from './commands/branchingCommands';
@@ -147,10 +151,12 @@ export async function activate(context: ExtensionContext) {
     magitRepositories.delete(repository.rootUri.fsPath);
   }));
 
+  registerMagitViewBuilders(magitFileSystemProvider);
+
   const semanticTokensProvider = new SemanticTokensProvider();
   const providerRegistrations = Disposable.from(
     workspace.registerFileSystemProvider(Constants.MagitHistoryUriScheme, new GitHistoryFileSystemProvider(), { isReadonly: true }),
-    workspace.registerTextDocumentContentProvider(Constants.MagitUriScheme, new ContentProvider()),
+    workspace.registerFileSystemProvider(Constants.MagitUriScheme, magitFileSystemProvider, { isReadonly: true }),
     languages.registerDocumentHighlightProvider(Constants.MagitDocumentSelector, new HighlightProvider()),
     languages.registerFoldingRangeProvider(Constants.MagitDocumentSelector, new MagitFolding()),
     languages.registerDocumentSemanticTokensProvider(Constants.MagitDocumentSelector, semanticTokensProvider, semanticTokensProvider.legend),
@@ -159,6 +165,43 @@ export async function activate(context: ExtensionContext) {
     languages.registerFoldingRangeProvider({ pattern: '**/.git/COMMIT_EDITMSG' }, new GitCommitFolding()),
   );
   context.subscriptions.push(providerRegistrations);
+
+  // Drop the cached view when its editor closes so the next open rebuilds.
+  context.subscriptions.push(
+    workspace.onDidCloseTextDocument(doc => {
+      if (doc.uri.scheme === Constants.MagitUriScheme) views.delete(doc.uri.toString());
+    })
+  );
+
+  // Refresh visible magit status views when files change in their repository.
+  {
+    let changed: vscode.Uri[] = [];
+    let timeout: NodeJS.Timeout | undefined;
+    const update = async () => {
+      const repositories = new Map<string, MagitRepository>();
+      for (const visibleEditor of vscode.window.visibleTextEditors) {
+        if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
+        for (const uri of changed) {
+          if (!FilePathUtils.isDescendant(repoFsPathFromMagitUri(visibleEditor.document.uri), uri.fsPath)) continue;
+          const repo = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
+          if (!repo) continue;
+          repositories.set(repo.uri.fsPath, repo);
+        }
+      }
+      changed = [];
+      for (const repo of repositories.values()) MagitUtils.magitStatusAndUpdate(repo);
+    };
+    const debounceChange = (uri: vscode.Uri) => {
+      changed.push(uri);
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(update, 700);
+    };
+    const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*');
+    fsWatcher.onDidChange(debounceChange);
+    fsWatcher.onDidCreate(debounceChange);
+    fsWatcher.onDidDelete(debounceChange);
+    context.subscriptions.push(fsWatcher);
+  }
 
   context.subscriptions.push(
     commands.registerCommand('magit.status', magitStatus),

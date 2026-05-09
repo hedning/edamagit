@@ -9,6 +9,7 @@ import { RefType, Repository } from '../typings/git';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import GitTextUtils from '../utils/gitTextUtils';
 import * as Constants from '../common/constants';
+import { repoFsPathFromMagitUri } from '../common/magitUri';
 
 export default class MagitUtils {
 
@@ -61,7 +62,9 @@ export default class MagitUtils {
     let magitRepository: MagitRepository | undefined;
 
     if (uri) {
-      magitRepository = magitRepositories.get(uri.query);
+      if (uri.scheme === Constants.MagitUriScheme) {
+        magitRepository = magitRepositories.get(repoFsPathFromMagitUri(uri));
+      }
       if (!magitRepository) {
         magitRepository = this.getMagitRepoThatContainsFile(uri);
       }
@@ -126,7 +129,7 @@ export default class MagitUtils {
   }
 
   public static getCurrentMagitRepoAndView(uri: Uri): [MagitRepository | undefined, DocumentView | undefined] {
-    const repository = magitRepositories.get(uri.query);
+    const repository = magitRepositories.get(repoFsPathFromMagitUri(uri));
     const currentView = views.get(uri.toString());
     return [repository, currentView];
   }
@@ -134,7 +137,7 @@ export default class MagitUtils {
   public static async magitStatusAndUpdate(repository: MagitRepository) {
     let updatedRepository = await Status.internalMagitStatus(repository.uri, repository.gitRepository);
     magitRepositories.set(updatedRepository.uri.fsPath, updatedRepository);
-    views.forEach(view => view.needsUpdate && view.uri.query === updatedRepository.uri.fsPath ? view.update(updatedRepository) : undefined);
+    views.forEach(view => view.needsUpdate && repoFsPathFromMagitUri(view.uri) === updatedRepository.uri.fsPath ? view.update(updatedRepository) : undefined);
   }
 
   public static magitAnythingModified(repository: MagitRepository): boolean {

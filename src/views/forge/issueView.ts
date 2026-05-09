@@ -1,6 +1,6 @@
 import { DocumentView } from '../general/documentView';
 import { Uri } from 'vscode';
-import * as Constants from '../../common/constants';
+import { buildMagitUri } from '../../common/magitUri';
 import { TextView, UnclickableTextView } from '../general/textView';
 import { Issue, IssueComment } from '../../forge/model/issue';
 import { MagitRepository } from '../../models/magitRepository';
@@ -37,7 +37,7 @@ export class IssueView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, issue: Issue): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${IssueView.UriPath}?${repository.uri.fsPath}#${issue.number}`);
+    return buildMagitUri(repository.uri, IssueView.UriPath, `${issue.number}`);
   }
 }
 

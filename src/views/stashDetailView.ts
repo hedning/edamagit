@@ -1,6 +1,6 @@
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import { ChangeSectionView } from './changes/changesSectionView';
@@ -36,6 +36,6 @@ export class StashDetailView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, stash: Stash): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${StashDetailView.UriPath}?${repository.uri.fsPath}#stash@{${stash.index}}#${StashDetailView.index++}`);
+    return buildMagitUri(repository.uri, StashDetailView.UriPath, `stash@{${stash.index}}#${StashDetailView.index++}`);
   }
 }

@@ -1,6 +1,6 @@
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitCommit } from '../models/magitCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -56,9 +56,8 @@ export class CommitDetailView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, commit: Commit): Uri {
-    const summary = encodeURIComponent(GitTextUtils.shortCommitMessage(commit.message));
+    const summary = GitTextUtils.shortCommitMessage(commit.message);
     const shortHash = GitTextUtils.shortHash(commit.hash);
-
-    return Uri.parse(`${Constants.MagitUriScheme}:Commit: ${summary} (${shortHash}).magit?${repository.uri.fsPath}#${commit.hash}`);
+    return buildMagitUri(repository.uri, `Commit: ${summary} (${shortHash}).magit`, commit.hash);
   }
 }

@@ -1,4 +1,4 @@
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { magitConfig } from '../extension';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
@@ -112,6 +112,6 @@ export default class MagitStatusView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${MagitStatusView.UriPath}?${repository.uri.fsPath}`);
+    return buildMagitUri(repository.uri, MagitStatusView.UriPath);
   }
 }

@@ -1,4 +1,4 @@
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
@@ -59,6 +59,6 @@ export default class ProcessView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${ProcessView.UriPath}?${repository.uri.path}#process`);
+    return buildMagitUri(repository.uri, ProcessView.UriPath, 'process');
   }
 }

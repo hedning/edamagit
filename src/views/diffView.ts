@@ -1,6 +1,6 @@
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
@@ -24,6 +24,6 @@ export class DiffView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, diffId: string): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${DiffView.UriPath}?${repository.uri.fsPath}#${diffId}${DiffView.index++}`);
+    return buildMagitUri(repository.uri, DiffView.UriPath, `${diffId}${DiffView.index++}`);
   }
 }

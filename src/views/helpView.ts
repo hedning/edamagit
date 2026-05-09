@@ -1,6 +1,6 @@
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import * as meta from '../../package.json';
@@ -23,7 +23,7 @@ export class HelpView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${HelpView.UriPath}?${repository.uri.path}#help`);
+    return buildMagitUri(repository.uri, HelpView.UriPath, 'help');
   }
 
   private static joinTexts(spacing: number, texts: (string | undefined)[]) {

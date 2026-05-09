@@ -103,3 +103,45 @@ export class Selection extends Range {
     this.active = active;
   }
 }
+
+export class Disposable {
+  constructor(private readonly fn: () => void) {}
+  dispose(): void { this.fn(); }
+}
+
+export class EventEmitter<T> {
+  private listeners: Array<(e: T) => void> = [];
+  event = (listener: (e: T) => void): Disposable => {
+    this.listeners.push(listener);
+    return new Disposable(() => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    });
+  };
+  fire(data: T): void {
+    for (const l of this.listeners) { l(data); }
+  }
+  dispose(): void { this.listeners = []; }
+}
+
+export enum FileType {
+  Unknown = 0,
+  File = 1,
+  Directory = 2,
+  SymbolicLink = 64,
+}
+
+export enum FileChangeType {
+  Changed = 1,
+  Created = 2,
+  Deleted = 3,
+}
+
+export class FileSystemError extends Error {
+  constructor(message?: string) { super(message); this.name = 'FileSystemError'; }
+  static FileNotFound(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'FileNotFound')); }
+  static FileExists(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'FileExists')); }
+  static FileNotADirectory(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'FileNotADirectory')); }
+  static FileIsADirectory(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'FileIsADirectory')); }
+  static NoPermissions(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'NoPermissions')); }
+  static Unavailable(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'Unavailable')); }
+}

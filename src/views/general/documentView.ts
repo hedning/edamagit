@@ -1,12 +1,12 @@
 import { View } from './view';
-import { Uri, EventEmitter } from 'vscode';
+import { Uri } from 'vscode';
 import { MagitRepository } from '../../models/magitRepository';
+import { magitFileSystemProvider } from '../../providers/magitFileSystemProvider';
 
 export abstract class DocumentView extends View {
 
   isHighlightable = false;
 
-  public emitter?: EventEmitter<Uri>;
   needsUpdate: boolean = true;
 
   constructor(public uri: Uri) {
@@ -16,8 +16,6 @@ export abstract class DocumentView extends View {
   public abstract update(state: MagitRepository): void;
 
   public triggerUpdate() {
-    if (this.emitter) {
-      this.emitter.fire(this.uri);
-    }
+    magitFileSystemProvider.fireChanged(this.uri);
   }
 }

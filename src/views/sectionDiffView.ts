@@ -1,4 +1,4 @@
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
@@ -46,6 +46,6 @@ export default class SectionDiffView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${SectionDiffView.UriPath}?${repository.uri.fsPath}#${SectionDiffView.index++}`);
+    return buildMagitUri(repository.uri, SectionDiffView.UriPath, `${SectionDiffView.index++}`);
   }
 }

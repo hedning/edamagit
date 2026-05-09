@@ -1,4 +1,4 @@
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
@@ -25,6 +25,6 @@ export default class SubmoduleListView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${SubmoduleListView.UriPath}?${repository.uri.fsPath}`);
+    return buildMagitUri(repository.uri, SubmoduleListView.UriPath);
   }
 }

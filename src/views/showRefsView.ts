@@ -1,4 +1,4 @@
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { Section, SectionHeaderView } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
@@ -32,6 +32,6 @@ export default class ShowRefsView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return Uri.parse(`${Constants.MagitUriScheme}:${ShowRefsView.UriPath}?${repository.uri.fsPath}`);
+    return buildMagitUri(repository.uri, ShowRefsView.UriPath);
   }
 }

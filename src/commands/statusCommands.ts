@@ -53,7 +53,7 @@ export async function magitStatus(): Promise<any> {
        * have immediately
        */
       MagitUtils.magitStatusAndUpdate(repository);
-      if (editor?.document.uri.path === MagitStatusView.UriPath) {
+      if (editor?.document.uri.toString() === uri.toString()) {
         return;
       }
       return workspace.openTextDocument(view.uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));

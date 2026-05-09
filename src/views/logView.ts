@@ -1,6 +1,6 @@
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import { Uri } from 'vscode';
-import * as Constants from '../common/constants';
+import { buildMagitUri } from '../common/magitUri';
 import { MagitLog } from '../models/magitLog';
 import { MagitLogEntry } from '../models/magitLogCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -366,8 +366,8 @@ export default class LogView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
-    const encodedRevs = encodeURIComponent(GitTextUtils.shortCommitMessage(revs.join(' ')))
-    return Uri.parse(`${Constants.MagitUriScheme}:Log: ${encodedRevs}.magit?${repository.uri.fsPath}#${args.join('&')}`);
+    const leaf = `Log: ${GitTextUtils.shortCommitMessage(revs.join(' '))}.magit`;
+    return buildMagitUri(repository.uri, leaf, args.join('&'));
   }
 }
 
