@@ -1,5 +1,5 @@
 import { Uri } from 'vscode';
-import { MagitUriScheme } from './constants';
+import { MagitLanguageId, MagitUriScheme } from './constants';
 
 // Magit views are addressed by a URI of the shape
 // `magit://<hex(repoFsPath)>/<leaf>.magit[#<fragment>]`. The repository is
@@ -9,7 +9,7 @@ import { MagitUriScheme } from './constants';
 // VS Code's filename-based language detection to the magit language; it's
 // added here so view code can keep its UriPath constants clean.
 
-const LeafSuffix = `.${MagitUriScheme}`;
+const LeafSuffix = `.${MagitLanguageId}`;
 
 function encodeRepoAuthority(fsPath: string): string {
   return Buffer.from(fsPath, 'utf8').toString('hex');

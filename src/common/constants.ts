@@ -9,7 +9,9 @@ export const StatusMessageDisplayTimeout: number = 10000;
 export const MagitUriScheme: string = 'magit';
 export const MagitHistoryUriScheme: string = 'magit-history';
 
-export const MagitDocumentSelector: DocumentSelector = { scheme: MagitUriScheme, language: MagitUriScheme };
+export const MagitLanguageId: string = 'magit';
+
+export const MagitDocumentSelector: DocumentSelector = { scheme: MagitUriScheme, language: MagitLanguageId };
 
 // Must match the semanticTokenTypes in package.json
 export enum SemanticTokenTypes {
