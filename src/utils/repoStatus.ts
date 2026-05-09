@@ -1,10 +1,11 @@
 import { Uri } from 'vscode';
-import { Commit, Ref, Remote, Submodule } from '../typings/git';
+import { Commit, Remote, Submodule } from '../typings/git';
 import { gitRunInUri, LogLevel } from './gitRawRunner';
 import * as Constants from '../common/constants';
 import {
   COMMIT_FORMAT,
   FIELD,
+  ParsedRefs,
   PorcelainStatus,
   parseCommits,
   parsePorcelainStatus,
@@ -30,10 +31,10 @@ export async function readPorcelainStatus(rootUri: Uri): Promise<PorcelainStatus
   return parsePorcelainStatus(result.stdout);
 }
 
-export async function readRefs(rootUri: Uri): Promise<Ref[]> {
+export async function readRefs(rootUri: Uri): Promise<ParsedRefs> {
   const result = await gitRunInUri(
     rootUri,
-    ['for-each-ref', `--format=%(refname)${FIELD}%(objectname)${FIELD}%(*objectname)`, 'refs/heads', 'refs/remotes', 'refs/tags'],
+    ['for-each-ref', `--format=%(refname)${FIELD}%(objectname)${FIELD}%(*objectname)${FIELD}%(symref)`, 'refs/heads', 'refs/remotes', 'refs/tags'],
     {},
     LogLevel.None
   );

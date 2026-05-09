@@ -68,23 +68,38 @@ suite('repoStatus', () => {
   suite('parseRefs', () => {
     test('parses heads, remotes, and tags', () => {
       const lines = [
-        `refs/heads/main${FIELD}aaaa${FIELD}`,
-        `refs/remotes/origin/main${FIELD}bbbb${FIELD}`,
-        `refs/tags/v1${FIELD}cccc${FIELD}dddd`, // annotated tag, peeled commit
-        `refs/tags/light${FIELD}eeee${FIELD}`,
+        `refs/heads/main${FIELD}aaaa${FIELD}${FIELD}`,
+        `refs/remotes/origin/main${FIELD}bbbb${FIELD}${FIELD}`,
+        `refs/tags/v1${FIELD}cccc${FIELD}dddd${FIELD}`, // annotated tag, peeled commit
+        `refs/tags/light${FIELD}eeee${FIELD}${FIELD}`,
       ].join('\n');
-      const refs = parseRefs(lines);
+      const { refs, remoteHeads } = parseRefs(lines);
       assert.deepStrictEqual(refs, [
         { type: RefType.Head, name: 'main', commit: 'aaaa' },
         { type: RefType.RemoteHead, name: 'origin/main', commit: 'bbbb', remote: 'origin' },
         { type: RefType.Tag, name: 'v1', commit: 'dddd' },
         { type: RefType.Tag, name: 'light', commit: 'eeee' },
       ]);
+      assert.strictEqual(remoteHeads.size, 0);
+    });
+
+    test('captures default branch from remote HEAD symref', () => {
+      const lines = [
+        `refs/remotes/origin/HEAD${FIELD}bbbb${FIELD}${FIELD}refs/remotes/origin/main`,
+        `refs/remotes/origin/main${FIELD}bbbb${FIELD}${FIELD}`,
+        `refs/remotes/upstream/HEAD${FIELD}cccc${FIELD}${FIELD}refs/remotes/upstream/develop`,
+        `refs/remotes/upstream/develop${FIELD}cccc${FIELD}${FIELD}`,
+      ].join('\n');
+      const { remoteHeads } = parseRefs(lines);
+      assert.strictEqual(remoteHeads.get('origin'), 'main');
+      assert.strictEqual(remoteHeads.get('upstream'), 'develop');
     });
 
     test('skips unknown ref namespaces', () => {
       const lines = `refs/stash${FIELD}aaaa${FIELD}`;
-      assert.deepStrictEqual(parseRefs(lines), []);
+      const { refs, remoteHeads } = parseRefs(lines);
+      assert.deepStrictEqual(refs, []);
+      assert.strictEqual(remoteHeads.size, 0);
     });
   });
 

@@ -61,37 +61,55 @@ export function parsePorcelainStatus(output: string): PorcelainStatus {
   return { HEAD, hasUntracked };
 }
 
-export function parseRefs(output: string): Ref[] {
-  const refs: Ref[] = [];
-  for (const line of output.split(/\r?\n/)) {
-    if (!line) continue;
-    const ref = parseRefLine(line);
-    if (ref) refs.push(ref);
-  }
-  return refs;
+export interface ParsedRefs {
+  refs: Ref[];
+  /** remoteName → default branch short name (e.g. "origin" → "main"). */
+  remoteHeads: Map<string, string>;
 }
 
-function parseRefLine(line: string): Ref | undefined {
-  // `<refname>\x1f<objectname>\x1f<*objectname>` — peeled is empty for non-tags
+export function parseRefs(output: string): ParsedRefs {
+  const refs: Ref[] = [];
+  const remoteHeads = new Map<string, string>();
+  for (const line of output.split(/\r?\n/)) {
+    if (!line) continue;
+    parseRefLine(line, refs, remoteHeads);
+  }
+  return { refs, remoteHeads };
+}
+
+function parseRefLine(line: string, refs: Ref[], remoteHeads: Map<string, string>): void {
+  // `<refname>\x1f<objectname>\x1f<*objectname>\x1f<symref>` —
+  // peeled is empty for non-tags, symref is empty for non-symbolic refs.
   const parts = line.split(FIELD);
-  if (parts.length < 2) return undefined;
+  if (parts.length < 2) return;
   const refname = parts[0];
   const objectname = parts[1];
   const peeled = parts[2] ?? '';
+  const symref = parts[3] ?? '';
 
   if (refname.startsWith('refs/heads/')) {
-    return { type: RefType.Head, name: refname.slice('refs/heads/'.length), commit: objectname };
+    refs.push({ type: RefType.Head, name: refname.slice('refs/heads/'.length), commit: objectname });
+    return;
   }
   if (refname.startsWith('refs/remotes/')) {
     const fullName = refname.slice('refs/remotes/'.length);
     const slash = fullName.indexOf('/');
-    if (slash <= 0) return undefined;
-    return { type: RefType.RemoteHead, name: fullName, commit: objectname, remote: fullName.slice(0, slash) };
+    if (slash <= 0) return;
+    const remote = fullName.slice(0, slash);
+    if (fullName.slice(slash + 1) === 'HEAD' && symref.startsWith('refs/remotes/')) {
+      const target = symref.slice('refs/remotes/'.length);
+      const targetSlash = target.indexOf('/');
+      if (targetSlash > 0 && target.slice(0, targetSlash) === remote) {
+        remoteHeads.set(remote, target.slice(targetSlash + 1));
+      }
+    }
+    refs.push({ type: RefType.RemoteHead, name: fullName, commit: objectname, remote });
+    return;
   }
   if (refname.startsWith('refs/tags/')) {
-    return { type: RefType.Tag, name: refname.slice('refs/tags/'.length), commit: peeled || objectname };
+    refs.push({ type: RefType.Tag, name: refname.slice('refs/tags/'.length), commit: peeled || objectname });
+    return;
   }
-  return undefined;
 }
 
 export function parseRemotes(output: string): Remote[] {

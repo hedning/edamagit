@@ -159,7 +159,7 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
 
   const HEAD: MagitBranch | undefined = porcelainHeadToMagitBranch(porcelain.HEAD);
 
-  const refs = await refsTask;
+  const { refs, remoteHeads } = await refsTask;
 
   if (HEAD?.commit) {
     HEAD.commitDetails = await getCommit(rootUri, HEAD.commit);
@@ -175,7 +175,8 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
     ...remote,
     branches: remoteBranches.filter(remoteBranch =>
       remoteBranch.remote === remote.name &&
-      remoteBranch.name !== remote.name + '/HEAD') // filter out uninteresting remote/HEAD element
+      remoteBranch.name !== remote.name + '/HEAD'), // filter out uninteresting remote/HEAD element
+    defaultBranch: remoteHeads.get(remote.name),
   }));
 
   const forgeState = forgeStatusCached(remotes);
@@ -249,7 +250,7 @@ async function pushRemoteStatus(repo: { rootUri: Uri }, HEAD: MagitBranch): Prom
       // const commitsAhead = await Promise.all(commitsAheadPushRemote.map(c => getCommit(repo.rootUri, c)));
       // const commitsBehind = await Promise.all(commitsBehindPushRemote.map(c => getCommit(repo.rootUri, c)));
 
-      const refs = await readRefs(repo.rootUri);
+      const { refs } = await readRefs(repo.rootUri);
       const pushRemoteCommit = refs.find(ref => ref.remote === pushRemote && ref.name === `${pushRemote}/${HEAD.name}`)?.commit;
       const pushRemoteCommitDetails = pushRemoteCommit ? getCommit(repo.rootUri, pushRemoteCommit) : Promise.resolve(undefined);
 
@@ -346,7 +347,7 @@ async function rebasingStatus(repo: { rootUri: Uri }, dotGitPath: string, logTas
 
       const ontoCommit = await getCommit(repo.rootUri, await rebaseOntoPathFileTask!);
       const rebaseCurrentCommit = await getCommit(repo.rootUri, rebaseHash);
-      const refs = await readRefs(repo.rootUri);
+      const { refs } = await readRefs(repo.rootUri);
       const ontoBranch = refs.find(ref => ref.commit === ontoCommit.hash && ref.type !== RefType.RemoteHead);
 
       const onto = {

@@ -10,7 +10,7 @@ import { DocumentView } from './general/documentView';
 import { TextView } from './general/textView';
 import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
-import { gitRun, gitRunInUri, LogLevel } from '../utils/gitRawRunner';
+import { gitRunInUri, LogLevel } from '../utils/gitRawRunner';
 import { Ref } from '../typings/git';
 import ViewUtils from '../utils/viewUtils';
 import assert = require('assert');
@@ -338,13 +338,9 @@ export default class LogView extends DocumentView {
     const output = await gitRunInUri(state.uri, this.args.concat(this.revs, ['--'], this.paths), {}, LogLevel.Error);
     const refs = state.remotes.reduce((prev, remote) => remote.branches.concat(prev), state.branches.concat(state.tags));
 
-
-    let defaultBranches: { [remoteName: string]: string } = {};
-    for await (const remote of state.remotes) {
-      try {
-        let defaultBranch = await gitRunInUri(state.uri, ['symbolic-ref', `refs/remotes/${remote.name}/HEAD`], undefined, LogLevel.Error);
-        defaultBranches[remote.name] = defaultBranch.stdout.replace(`refs/remotes/${remote.name}/`, '').trimEnd();
-      } catch { } // gitRun will throw an error if remote/HEAD doesn't exist - we do not need to do anything in this case
+    const defaultBranches: { [remoteName: string]: string } = {};
+    for (const remote of state.remotes) {
+      if (remote.defaultBranch) defaultBranches[remote.name] = remote.defaultBranch;
     }
 
     const logEntries = parseLog(output.stdout);

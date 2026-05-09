@@ -6,4 +6,5 @@ export interface MagitRemote {
   readonly pushUrl?: string;
   readonly isReadOnly: boolean;
   readonly branches: Ref[];
+  readonly defaultBranch?: string;
 }
