@@ -356,10 +356,8 @@ export default class LogView extends DocumentView {
 
     this.subViews = [
       new TextView(`Commits in ${revName}`),
-      // ...logEntries.map(entry => new CommitLongFormItemView(entry, refs)),
       ...logEntries.map(entry => new CommitLongFormItemView(entry, refMap[entry.commit.hash], state.HEAD?.name, defaultBranches)),
     ];
-    // For some reason the fire event can get eaten if fired synchronously
 
     this.triggerUpdate();
   }

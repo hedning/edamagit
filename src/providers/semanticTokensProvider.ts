@@ -14,20 +14,25 @@ export default class SemanticTokensProvider implements vscode.DocumentSemanticTo
     const currentView = views.get(document.uri.toString());
     const builder = new vscode.SemanticTokensBuilder(this.legend);
     if (currentView) {
-      this.visitNode(currentView, builder);
+      // Render-set token line numbers can briefly outrun the document model when
+      // the view tree updates faster than VSCode swaps in our new content.
+      // Drop out-of-bounds tokens instead of letting VSCode reject the whole batch.
+      this.visitNode(currentView, builder, document.lineCount);
     }
     return builder.build();
   }
 
-  visitNode(view: View, builder: vscode.SemanticTokensBuilder) {
+  visitNode(view: View, builder: vscode.SemanticTokensBuilder, lineCount: number) {
     if (view instanceof SemanticTextView) {
       view.tokens.forEach(token => {
-        builder.push(token.range, token.tokenType);
+        if (token.range.end.line < lineCount) {
+          builder.push(token.range, token.tokenType);
+        }
       });
     }
 
     if (!view.folded) {
-      view.subViews.forEach(v => this.visitNode(v, builder));
+      view.subViews.forEach(v => this.visitNode(v, builder, lineCount));
 
       // Include first 'line' of folded view, but only if it's a SemanticTextView
     } else if (view.subViews.length) {
@@ -35,7 +40,9 @@ export default class SemanticTokensProvider implements vscode.DocumentSemanticTo
       let firstSubView = view.subViews[0];
       if (firstSubView instanceof SemanticTextView) {
         firstSubView.tokens.forEach(token => {
-          builder.push(token.range, token.tokenType);
+          if (token.range.end.line < lineCount) {
+            builder.push(token.range, token.tokenType);
+          }
         });
       }
     }
