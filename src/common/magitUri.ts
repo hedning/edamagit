@@ -29,19 +29,19 @@ export function buildMagitUri(repoUri: Uri, leaf: string, fragment?: string): Ur
   });
 }
 
-export function repoUriFromMagitUri(magitUri: Uri): Uri {
-  const i = magitUri.path.lastIndexOf('/');
-  return magitUri.with({
-    scheme: 'file',
-    authority: '',
-    path: magitUri.path.slice(0, i),
-    query: '',
-    fragment: '',
-  });
-}
-
-export function repoFsPathFromMagitUri(magitUri: Uri): string {
-  return repoUriFromMagitUri(magitUri).fsPath;
+// Walk path components back-to-front, asking the predicate which prefix is a
+// real repo. This is the routing primitive — the URI's last `/` is just a
+// hint; the registry is the source of truth. Tolerates leaves that contain
+// `/` (commit summaries like `feat/foo: …`, log revs like `master..feat/foo`)
+// and matches existing persisted URIs that didn't escape such leaves.
+export function findRepoFsPath(magitUri: Uri, isRepo: (fsPath: string) => boolean): string | undefined {
+  let path = magitUri.path;
+  for (let i = path.lastIndexOf('/'); i > 0; i = path.lastIndexOf('/')) {
+    path = path.slice(0, i);
+    const fsPath = Uri.file(path).fsPath;
+    if (isRepo(fsPath)) return fsPath;
+  }
+  return undefined;
 }
 
 export function leafFromMagitUri(magitUri: Uri): string {

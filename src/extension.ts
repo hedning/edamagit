@@ -2,7 +2,7 @@ import { workspace, extensions, commands, ExtensionContext, Disposable, language
 import * as vscode from 'vscode';
 import { magitFileSystemProvider } from './providers/magitFileSystemProvider';
 import { registerMagitViewBuilders } from './providers/magitViewBuilders';
-import { repoFsPathFromMagitUri } from './common/magitUri';
+import { findRepoFsPath } from './common/magitUri';
 import FilePathUtils from './utils/filePathUtils';
 import MagitUtils from './utils/magitUtils';
 import { GitExtension, API } from './typings/git';
@@ -182,7 +182,8 @@ export async function activate(context: ExtensionContext) {
       for (const visibleEditor of vscode.window.visibleTextEditors) {
         if (visibleEditor.document.uri.scheme !== Constants.MagitUriScheme) continue;
         for (const uri of changed) {
-          if (!FilePathUtils.isDescendant(repoFsPathFromMagitUri(visibleEditor.document.uri), uri.fsPath)) continue;
+          const repoFsPath = findRepoFsPath(visibleEditor.document.uri, p => magitRepositories.has(p));
+          if (!repoFsPath || !FilePathUtils.isDescendant(repoFsPath, uri.fsPath)) continue;
           const repo = await MagitUtils.getCurrentMagitRepo(visibleEditor.document.uri);
           if (!repo) continue;
           repositories.set(repo.uri.fsPath, repo);
