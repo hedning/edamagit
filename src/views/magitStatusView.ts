@@ -45,6 +45,11 @@ export default class MagitStatusView extends DocumentView {
 
     header.addSubview(new LineBreakView());
 
+    if (magitState.worktrees.length > 1 && !magitConfig.hiddenStatusSections.has('worktrees')) {
+      header.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
+      header.addSubview(new LineBreakView());
+    }
+
     if (magitState.mergingState) {
       header.addSubview(new MergingSectionView(magitState.mergingState));
     }
@@ -78,11 +83,6 @@ export default class MagitStatusView extends DocumentView {
 
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
       header.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
-      header.addSubview(new LineBreakView());
-    }
-
-    if (magitState.worktrees.length > 1 && !magitConfig.hiddenStatusSections.has('worktrees')) {
-      header.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
       header.addSubview(new LineBreakView());
     }
 
