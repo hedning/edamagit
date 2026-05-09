@@ -46,8 +46,20 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
 
             const commit = uri.authority;
             const relativePath = path.relative(repoRoot.fsPath, fileUri.fsPath);
-            const result = await gitRunInUri(repoRoot, ['show', `${commit}:${relativePath}`], {}, LogLevel.Error);
-            return Buffer.from(result.stdout, 'utf8');
+            try {
+                const result = await gitRunInUri(repoRoot, ['show', `${commit}:${relativePath}`], {}, LogLevel.Error);
+                return Buffer.from(result.stdout, 'utf8');
+            } catch (e: any) {
+                // The file may not exist at <commit> because the commit *deleted*
+                // it — in a commit detail view, the user expects to see the
+                // file's content, which only exists at the parent. Fall back to
+                // <commit>~. If that also fails, surface the original error.
+                if (typeof e?.stderr === 'string' && /does not exist in/.test(e.stderr)) {
+                    const fallback = await gitRunInUri(repoRoot, ['show', `${commit}~:${relativePath}`], {}, LogLevel.Error);
+                    return Buffer.from(fallback.stdout, 'utf8');
+                }
+                throw e;
+            }
         } catch (e: any) {
             throw vscode.FileSystemError.FileNotFound(e?.stderr ?? e?.message ?? String(e));
         }
