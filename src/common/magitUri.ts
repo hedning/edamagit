@@ -12,13 +12,19 @@ import { MagitLanguageId, MagitUriScheme } from './constants';
 // The `.magit` suffix wires VS Code's filename-based language detection to
 // the magit language; it's added here so view code can keep its UriPath
 // constants clean.
+//
+// `/` inside a leaf (commit summaries like `feat/foo: …`, log revs like
+// `feature/foo..main`) collides with the path separator we use to mark the
+// repo/leaf boundary, so we substitute U+2215 DIVISION SLASH on write and
+// reverse it on read. Visually identical, doesn't trip lastIndexOf('/').
 
 const LeafSuffix = `.${MagitLanguageId}`;
+const LeafSlash = '∕';
 
 export function buildMagitUri(repoUri: Uri, leaf: string, fragment?: string): Uri {
   return Uri.from({
     scheme: MagitUriScheme,
-    path: `${repoUri.path}/${leaf}${LeafSuffix}`,
+    path: `${repoUri.path}/${leaf.replace(/\//g, LeafSlash)}${LeafSuffix}`,
     ...(fragment !== undefined ? { fragment } : {}),
   });
 }
@@ -41,5 +47,6 @@ export function repoFsPathFromMagitUri(magitUri: Uri): string {
 export function leafFromMagitUri(magitUri: Uri): string {
   const i = magitUri.path.lastIndexOf('/');
   const leaf = magitUri.path.slice(i + 1);
-  return leaf.endsWith(LeafSuffix) ? leaf.slice(0, -LeafSuffix.length) : leaf;
+  const stripped = leaf.endsWith(LeafSuffix) ? leaf.slice(0, -LeafSuffix.length) : leaf;
+  return stripped.replace(new RegExp(LeafSlash, 'g'), '/');
 }
