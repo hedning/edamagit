@@ -12,22 +12,19 @@ import SubmoduleListView from '../views/submoduleListView';
 import { internalMagitStatus } from '../commands/statusCommands';
 import { getRef } from '../commands/visitAtPointCommands';
 import { getCommit } from '../utils/commitCache';
-import { gitApi, logPath, magitRepositories } from '../extension';
+import { logPath, magitRepositories } from '../extension';
 import { MagitRepository } from '../models/magitRepository';
-import { findRepoFsPath, leafFromMagitUri } from '../common/magitUri';
+import { leafFromMagitUri, repoUriFromMagitUri } from '../common/magitUri';
 
 async function ensureRepo(uri: Uri): Promise<MagitRepository | undefined> {
-  // Already known to magit?
-  let fsPath = findRepoFsPath(uri, p => magitRepositories.has(p));
-  if (fsPath) return magitRepositories.get(fsPath);
-
-  // Cold start (post-reload): walk back asking the git extension which prefix
-  // is a real repo. internalMagitStatus then primes magitRepositories.
-  fsPath = findRepoFsPath(uri, p => gitApi.repositories.some(r => r.rootUri.fsPath === p));
+  const repoUri = repoUriFromMagitUri(uri);
+  const fsPath = repoUri.fsPath;
   if (!fsPath) return undefined;
-  const repoUri = Uri.file(fsPath);
-  const repo = await internalMagitStatus(repoUri);
-  magitRepositories.set(fsPath, repo);
+  let repo = magitRepositories.get(fsPath);
+  if (!repo) {
+    repo = await internalMagitStatus(repoUri);
+    magitRepositories.set(fsPath, repo);
+  }
   return repo;
 }
 

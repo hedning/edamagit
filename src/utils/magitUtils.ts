@@ -9,7 +9,7 @@ import { RefType, Repository } from '../typings/git';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import GitTextUtils from '../utils/gitTextUtils';
 import * as Constants from '../common/constants';
-import { findRepoFsPath } from '../common/magitUri';
+import { repoFsPathFromMagitUri } from '../common/magitUri';
 
 export default class MagitUtils {
 
@@ -63,8 +63,7 @@ export default class MagitUtils {
 
     if (uri) {
       if (uri.scheme === Constants.MagitUriScheme) {
-        const fsPath = findRepoFsPath(uri, p => magitRepositories.has(p));
-        if (fsPath) magitRepository = magitRepositories.get(fsPath);
+        magitRepository = magitRepositories.get(repoFsPathFromMagitUri(uri));
       }
       if (!magitRepository) {
         magitRepository = this.getMagitRepoThatContainsFile(uri);
@@ -130,8 +129,7 @@ export default class MagitUtils {
   }
 
   public static getCurrentMagitRepoAndView(uri: Uri): [MagitRepository | undefined, DocumentView | undefined] {
-    const fsPath = findRepoFsPath(uri, p => magitRepositories.has(p));
-    const repository = fsPath ? magitRepositories.get(fsPath) : undefined;
+    const repository = magitRepositories.get(repoFsPathFromMagitUri(uri));
     const currentView = views.get(uri.toString());
     return [repository, currentView];
   }
@@ -139,11 +137,7 @@ export default class MagitUtils {
   public static async magitStatusAndUpdate(repository: MagitRepository) {
     let updatedRepository = await Status.internalMagitStatus(repository.uri, repository.gitRepository);
     magitRepositories.set(updatedRepository.uri.fsPath, updatedRepository);
-    views.forEach(view => {
-      if (!view.needsUpdate) return;
-      const viewRepoFsPath = findRepoFsPath(view.uri, p => magitRepositories.has(p));
-      if (viewRepoFsPath === updatedRepository.uri.fsPath) view.update(updatedRepository);
-    });
+    views.forEach(view => view.needsUpdate && repoFsPathFromMagitUri(view.uri) === updatedRepository.uri.fsPath ? view.update(updatedRepository) : undefined);
   }
 
   public static magitAnythingModified(repository: MagitRepository): boolean {
