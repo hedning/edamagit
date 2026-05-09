@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { promisify } from 'util';
-import { gitRunInUri } from '../utils/gitRawRunner';
+import { gitRunInUri, LogLevel } from '../utils/gitRawRunner';
 
 
 export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
@@ -30,18 +31,26 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-        // dummy uri that vscodes uri tools understands
-        const dummy = uri.with({ scheme: 'file', authority: '' });
-        const root = vscode.workspace.getWorkspaceFolder(dummy);
-        if (!root) throw vscode.FileSystemError.FileNotFound('Could not find workspace root');
+        const fileUri = uri.with({ scheme: 'file', authority: '' });
+        const fileDir = vscode.Uri.file(path.dirname(fileUri.fsPath));
 
-        const commit = uri.authority;
-        // git expects a relative path
-        const path = vscode.workspace.asRelativePath(dummy, false);
-        const { stdout, exitCode, stderr } = await gitRunInUri(root.uri, ['show', `${commit}:${path}`], { log: true });
-        if (exitCode !== 0) throw vscode.FileSystemError.FileNotFound(stderr);
+        // Resolve the repo via `git rev-parse --show-toplevel` from the file's
+        // directory so worktrees pick the right root — VS Code's workspace
+        // folder may be the main repo while the file lives inside a worktree
+        // checkout, in which case `asRelativePath` would yield a path that
+        // doesn't exist at the commit being shown. gitRunInUri rejects on
+        // non-zero exit, so failures surface here as FileNotFound.
+        try {
+            const top = await gitRunInUri(fileDir, ['rev-parse', '--show-toplevel'], {}, LogLevel.Error);
+            const repoRoot = vscode.Uri.file(top.stdout.trimEnd());
 
-        return Buffer.from(stdout, 'utf8');
+            const commit = uri.authority;
+            const relativePath = path.relative(repoRoot.fsPath, fileUri.fsPath);
+            const result = await gitRunInUri(repoRoot, ['show', `${commit}:${relativePath}`], {}, LogLevel.Error);
+            return Buffer.from(result.stdout, 'utf8');
+        } catch (e: any) {
+            throw vscode.FileSystemError.FileNotFound(e?.stderr ?? e?.message ?? String(e));
+        }
     }
 
 
