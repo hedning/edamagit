@@ -47,16 +47,24 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
 
   const selectedView = currentView.click(activePosition);
 
+  console.log('[magit:visit] currentView=%s selectedView=%s worktree=%s pos=%o',
+    currentView?.constructor?.name, selectedView?.constructor?.name, worktree, activePosition);
+
   if (selectedView instanceof ChangeView) {
     const change = selectedView.change;
+    console.log('[magit:visit] ChangeView change=%o ref=%o', change?.relativePath, change?.ref);
     if (change.hunks?.length) return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView, undefined, worktree);
 
     // Check if change path is a directory. Reveal directories in file explorer
     if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
 
     if (worktree || !change.ref) {
+      console.log('[magit:visit] → worktree open (worktree=%s, ref=%o)', worktree, change.ref);
       return window.showTextDocument(change.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
-    } else return openUriAtRevision(change.uri, change.ref);
+    } else {
+      console.log('[magit:visit] → openUriAtRevision');
+      return openUriAtRevision(change.uri, change.ref);
+    }
 
   } else if (selectedView instanceof HunkView) {
     return visitHunk(selectedView, activePosition, worktree);
@@ -108,6 +116,7 @@ export async function magitOpenFileAtRevision(repository: MagitRepository) {
 }
 
 export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
+  console.log('[magit:openUriAtRevision] in uri=%s ref=%o', uri?.toString(), ref);
   const shortHash = GitTextUtils.shortHash(ref.commit);
   // U+2009 U+2215 U+2009: thin-space-flanked division slash, visually a `/`
   // but inert under `path.basename` — keeps `feature/foo@abc1234` intact when
@@ -118,6 +127,7 @@ export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
     authority: ref.commit!,
     query: JSON.stringify({ ref: refLabel }),
   });
+  console.log('[magit:openUriAtRevision] showing uri=%s', uri.toString());
   return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: selection });
 }
 
@@ -125,6 +135,8 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
 
   const changeHunk = selectedView.changeHunk;
   const ref = selectedView.ref;
+  console.log('[magit:visit] visitHunk uri=%s worktree=%s ref=%o',
+    changeHunk?.uri?.toString(), worktree, ref);
 
   let relevantSelection: Selection | undefined = undefined;
   try {
@@ -166,8 +178,10 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
   } catch { }
 
   if (worktree || !ref) {
+    console.log('[magit:visit] visitHunk → worktree open (worktree=%s, ref=%o)', worktree, ref);
     await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: relevantSelection});
   } else {
+    console.log('[magit:visit] visitHunk → openUriAtRevision');
     await openUriAtRevision(changeHunk.uri, ref, relevantSelection);
   }
 

@@ -31,6 +31,7 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
+        console.log('[magit:gitHistoryFs.readFile] uri=%s', uri.toString());
         const fileUri = uri.with({ scheme: 'file', authority: '' });
         const fileDir = vscode.Uri.file(path.dirname(fileUri.fsPath));
 
@@ -46,6 +47,7 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
 
             const commit = uri.authority;
             const relativePath = path.relative(repoRoot.fsPath, fileUri.fsPath);
+            console.log('[magit:gitHistoryFs.readFile] repoRoot=%s relativePath=%s commit=%s', repoRoot.fsPath, relativePath, commit);
             try {
                 const result = await gitRunInUri(repoRoot, ['show', `${commit}:${relativePath}`], {}, LogLevel.Error);
                 return Buffer.from(result.stdout, 'utf8');
@@ -54,7 +56,9 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
                 // it — in a commit detail view, the user expects to see the
                 // file's content, which only exists at the parent. Fall back to
                 // <commit>~. If that also fails, surface the original error.
+                console.log('[magit:gitHistoryFs.readFile] git show failed: %o', e?.stderr ?? e?.message ?? e);
                 if (typeof e?.stderr === 'string' && /does not exist in/.test(e.stderr)) {
+                    console.log('[magit:gitHistoryFs.readFile] retrying at %s~', commit);
                     const fallback = await gitRunInUri(repoRoot, ['show', `${commit}~:${relativePath}`], {}, LogLevel.Error);
                     return Buffer.from(fallback.stdout, 'utf8');
                 }
