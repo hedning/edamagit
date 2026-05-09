@@ -402,6 +402,7 @@
           "separator": "/",
           "stripPathSegments": 1000,
           "stripPathStartingSeparator": true,
+          "tildify": true,
           "workspaceSuffix": "magit"
         }
       }
