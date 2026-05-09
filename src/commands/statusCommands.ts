@@ -233,7 +233,7 @@ export function toMagitChange(repository: Repository, change: Change, ref?: Ref,
   magitChange.ref = ref;
   magitChange.relativePath = FilePathUtils.uriPathRelativeTo(change.uri, repository.rootUri);
   magitChange.diff = diff;
-  magitChange.hunks = diff ? GitTextUtils.diffToHunks(diff, change.uri) : undefined;
+  magitChange.hunks = diff ? GitTextUtils.diffToHunks(diff, magitChange.relativePath) : undefined;
   return magitChange;
 }
 

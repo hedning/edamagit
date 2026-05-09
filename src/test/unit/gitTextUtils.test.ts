@@ -29,10 +29,10 @@ suite('gitTextUtils', () => {
   });
 
   suite('diffToHunks', () => {
-    const uri = Uri.parse('file:///repo/file.txt');
+    const relativePath = 'file.txt';
 
     test('returns [] when no hunk header is present', () => {
-      const result = GitTextUtils.diffToHunks('diff --git a/x b/x\nindex 111..222\n', uri);
+      const result = GitTextUtils.diffToHunks('diff --git a/x b/x\nindex 111..222\n', relativePath);
       assert.deepStrictEqual(result, []);
     });
 
@@ -50,11 +50,11 @@ suite('gitTextUtils', () => {
         '',
       ].join('\n');
 
-      const hunks = GitTextUtils.diffToHunks(diff, uri);
+      const hunks = GitTextUtils.diffToHunks(diff, relativePath);
       assert.strictEqual(hunks.length, 1);
       assert.ok(hunks[0].diffHeader.startsWith('diff --git'));
       assert.ok(hunks[0].diff.startsWith('@@ -1,3 +1,3 @@'));
-      assert.strictEqual(hunks[0].uri, uri);
+      assert.strictEqual(hunks[0].relativePath, relativePath);
     });
 
     test('splits multiple hunks on the @@ boundary', () => {
@@ -75,7 +75,7 @@ suite('gitTextUtils', () => {
         ' z',
       ].join('\n');
 
-      const hunks = GitTextUtils.diffToHunks(diff, uri);
+      const hunks = GitTextUtils.diffToHunks(diff, relativePath);
       assert.strictEqual(hunks.length, 2);
       assert.ok(hunks[0].diff.startsWith('@@ -1,3 +1,3 @@'));
       assert.ok(hunks[1].diff.startsWith('@@ -10,3 +10,3 @@'));

@@ -54,21 +54,26 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
   if (selectedView instanceof ChangeView) {
     const change = selectedView.change;
     console.log('[magit:visit] ChangeView change=%o ref=%o', change?.relativePath, change?.ref);
-    if (change.hunks?.length) return visitHunk(selectedView.subViews.find(v => v instanceof HunkView) as HunkView, undefined, worktree);
+    if (change.hunks?.length) return visitHunk(repository, selectedView.subViews.find(v => v instanceof HunkView) as HunkView, undefined, worktree);
+
+    // Resolve the file URI from the live repo so it follows the worktree the
+    // status view was opened from, not whichever root the change object was
+    // first built against.
+    const fileUri = change.relativePath ? Uri.joinPath(repository.uri, change.relativePath) : change.uri;
 
     // Check if change path is a directory. Reveal directories in file explorer
-    if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', change.uri);
+    if (change.relativePath?.endsWith(sep)) return commands.executeCommand('revealInExplorer', fileUri);
 
     if (worktree || !change.ref) {
       console.log('[magit:visit] → worktree open (worktree=%s, ref=%o)', worktree, change.ref);
-      return window.showTextDocument(change.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
+      return window.showTextDocument(fileUri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
     } else {
       console.log('[magit:visit] → openUriAtRevision');
-      return openUriAtRevision(change.uri, change.ref);
+      return openUriAtRevision(fileUri, change.ref);
     }
 
   } else if (selectedView instanceof HunkView) {
-    return visitHunk(selectedView, activePosition, worktree);
+    return visitHunk(repository, selectedView, activePosition, worktree);
 
   } else if (selectedView instanceof CommitItemView) {
     return visitCommit(repository, selectedView.commit.hash);
@@ -136,12 +141,13 @@ export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
   return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: selection });
 }
 
-async function visitHunk(selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
+async function visitHunk(repository: MagitRepository, selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
 
   const changeHunk = selectedView.changeHunk;
   const ref = selectedView.ref;
+  const fileUri = Uri.joinPath(repository.uri, changeHunk.relativePath);
   console.log('[magit:visit] visitHunk uri=%s worktree=%s ref=%o',
-    changeHunk?.uri?.toString(), worktree, ref);
+    fileUri.toString(), worktree, ref);
 
   let relevantSelection: Selection | undefined = undefined;
   try {
@@ -184,10 +190,10 @@ async function visitHunk(selectedView: HunkView, activePosition?: Position, work
 
   if (worktree || !ref) {
     console.log('[magit:visit] visitHunk → worktree open (worktree=%s, ref=%o)', worktree, ref);
-    await window.showTextDocument(changeHunk.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: relevantSelection});
+    await window.showTextDocument(fileUri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: relevantSelection});
   } else {
     console.log('[magit:visit] visitHunk → openUriAtRevision');
-    await openUriAtRevision(changeHunk.uri, ref, relevantSelection);
+    await openUriAtRevision(fileUri, ref, relevantSelection);
   }
 
 }

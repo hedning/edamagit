@@ -115,7 +115,7 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
     renameUri: renameUri,
     relativePath: file,
     diff: text,
-    hunks: GitTextUtils.diffToHunks(text, uri),
+    hunks: GitTextUtils.diffToHunks(text, file),
     ref: ref,
   };
   return change;

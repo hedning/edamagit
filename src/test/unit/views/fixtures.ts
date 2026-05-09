@@ -45,8 +45,8 @@ export function makeChange(opts: {
   };
 }
 
-export function makeHunk(diff: string, diffHeader = ''): MagitChangeHunk {
-  return { diff, diffHeader, uri: REPO_URI };
+export function makeHunk(diff: string, diffHeader = '', relativePath = ''): MagitChangeHunk {
+  return { diff, diffHeader, relativePath };
 }
 
 export function makeStash(index: number, description: string): Stash {

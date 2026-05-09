@@ -16,7 +16,7 @@ export function getStatusText(status: Status): string {
 
 export default class GitTextUtils {
 
-  public static diffToHunks(diff: string, uri: Uri): MagitChangeHunk[] {
+  public static diffToHunks(diff: string, relativePath: string): MagitChangeHunk[] {
 
     const hunksStart = diff.indexOf('@@');
     const diffHeader = diff.slice(0, hunksStart);
@@ -29,7 +29,7 @@ export default class GitTextUtils {
       .replace(Constants.FinalLineBreakRegex, '') // removes extra line break at the end
       .slice(hunksStart)
       .split(/\n(?=^@@.*@@.*$)/gm)
-      .map(hunkText => ({ diff: hunkText, diffHeader, uri }));
+      .map(hunkText => ({ diff: hunkText, diffHeader, relativePath }));
   }
 
   /**
