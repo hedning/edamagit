@@ -6,6 +6,7 @@ import { View } from '../views/general/view';
 import { Status } from '../typings/git';
 import { getStatusText } from '../utils/gitTextUtils';
 import { ChangeSectionView } from '../views/changes/changesSectionView';
+import { BranchHeaderSectionView } from '../views/branches/branchHeaderSectionView';
 
 
 function createSymbol(view: ChangeView) {
@@ -19,7 +20,19 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
         if (!currentView) return;
 
         const symbols: vscode.DocumentSymbol[] = [];
+        // Sticky scroll only shows containers that are *nested ancestors* of
+        // the current symbol, not flat siblings. So when we enter HEAD we
+        // redirect subsequent pushes into its children for the duration.
+        let scope: vscode.DocumentSymbol[] = symbols;
         function iter(view: View) {
+            if (view instanceof BranchHeaderSectionView) {
+                const head = new vscode.DocumentSymbol('HEAD', '', vscode.SymbolKind.Namespace, view.range, view.range);
+                scope.push(head);
+                const outer = scope; scope = head.children;
+                for (const sub of view.subViews) iter(sub);
+                scope = outer;
+                return;
+            }
             if (view instanceof ChangeSectionView) {
                 const changes: vscode.DocumentSymbol[] = [];
                 for (const changeView of view.subViews) {
@@ -28,12 +41,12 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
                 }
                 const section = new vscode.DocumentSymbol(view.section, '', vscode.SymbolKind.Namespace, view.range, view.range);
                 section.children = changes;
-                symbols.push(section);
+                scope.push(section);
                 return;
 
             } else if (view instanceof ChangeView) {
                 // Commit views doesn't have a section
-                symbols.push(createSymbol(view));
+                scope.push(createSymbol(view));
                 return;
             }
             // todo: add branch symbols in the log view
