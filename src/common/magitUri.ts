@@ -9,7 +9,7 @@ import { MagitUriScheme } from './constants';
 // VS Code's filename-based language detection to the magit language; it's
 // added here so view code can keep its UriPath constants clean.
 
-const LeafSuffix = '.magit';
+const LeafSuffix = `.${MagitUriScheme}`;
 
 function encodeRepoAuthority(fsPath: string): string {
   return Buffer.from(fsPath, 'utf8').toString('hex');
