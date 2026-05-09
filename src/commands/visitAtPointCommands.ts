@@ -3,6 +3,7 @@ import { MagitRepository } from '../models/magitRepository';
 import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
+import GitTextUtils from '../utils/gitTextUtils';
 import { CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { ChangeView } from '../views/changes/changeView';
@@ -103,13 +104,19 @@ export async function magitOpenFileAtRevision(repository: MagitRepository) {
   const ref = await MagitUtils.chooseRef(repository, 'Open file at revision');
   const hash = await gitRunInUri(repository.uri, ['rev-parse', ref]);
 
-  return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, commit: hash.stdout.trimEnd() });
+  return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, name: ref, commit: hash.stdout.trimEnd() });
 }
 
 export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
+  const shortHash = GitTextUtils.shortHash(ref.commit);
+  // U+2009 U+2215 U+2009: thin-space-flanked division slash, visually a `/`
+  // but inert under `path.basename` — keeps `feature/foo@abc1234` intact when
+  // the formatter feeds the result through basename.
+  const refLabel = (ref.name ? `${ref.name}@${shortHash}` : shortHash).replace(/\//g, '\u2009\u2215\u2009');
   uri = uri.with({
-    scheme: Constants.MagitHistoryUriScheme, authority: ref.commit!,
-    query: `{"ref": ${ref.commit!}}`
+    scheme: Constants.MagitHistoryUriScheme,
+    authority: ref.commit!,
+    query: JSON.stringify({ ref: refLabel }),
   });
   return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: selection });
 }
