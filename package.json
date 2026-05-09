@@ -388,6 +388,9 @@
         "aliases": [
           "Magit"
         ],
+        "extensions": [
+          ".magit"
+        ],
         "configuration": "./languages/magit.language-configuration.json"
       }
     ],
