@@ -39,17 +39,12 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => {
-      const leaf = leafFromMagitUri(uri);
-      return leaf.startsWith('Log: ') && leaf.endsWith('.magit');
-    },
+    uri => leafFromMagitUri(uri).startsWith('Log: '),
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;
       const leaf = leafFromMagitUri(uri);
-      const m = leaf.match(/^Log: (.+)\.magit$/);
-      if (!m) return undefined;
-      const revs = m[1].split(' ').filter(r => r.length > 0);
+      const revs = leaf.slice('Log: '.length).split(' ').filter(r => r.length > 0);
       const args = uri.fragment ? uri.fragment.split('&') : [];
       const view = new LogView(uri, repo, args, revs, []);
       await view.initialUpdate;
@@ -58,10 +53,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => {
-      const leaf = leafFromMagitUri(uri);
-      return leaf.startsWith('Commit: ') && leaf.endsWith('.magit');
-    },
+    uri => leafFromMagitUri(uri).startsWith('Commit: '),
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;

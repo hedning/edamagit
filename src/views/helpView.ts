@@ -7,7 +7,7 @@ import * as meta from '../../package.json';
 
 export class HelpView extends DocumentView {
 
-  static UriPath: string = 'help.magit';
+  static UriPath: string = 'help';
   isHighlightable = false;
   needsUpdate = false;
 

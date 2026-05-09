@@ -22,7 +22,7 @@ import { ErrorMessageView } from './errorMessageView';
 
 export default class MagitStatusView extends DocumentView {
 
-  static UriPath: string = 'status.magit';
+  static UriPath: string = 'status';
   public HEAD?: MagitBranch;
 
   constructor(uri: Uri, magitState: MagitRepository) {

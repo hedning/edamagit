@@ -9,7 +9,7 @@ import { RemoteSectionView } from './remotes/remoteSectionView';
 
 export default class ShowRefsView extends DocumentView {
 
-  static UriPath: string = 'refs.magit';
+  static UriPath: string = 'refs';
 
   constructor(uri: Uri, magitState: MagitRepository) {
     super(uri);

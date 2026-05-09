@@ -10,7 +10,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 
 export class IssueView extends DocumentView {
 
-  static UriPath: string = 'issue.magit';
+  static UriPath: string = 'issue';
 
   constructor(uri: Uri, public issue: Issue) {
     super(uri);

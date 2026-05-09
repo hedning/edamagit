@@ -7,7 +7,7 @@ import { MagitRepository } from '../models/magitRepository';
 
 export default class SectionDiffView extends DocumentView {
 
-  static UriPath: string = 'staged.magit';
+  static UriPath: string = 'staged';
 
   constructor(uri: Uri, magitState: MagitRepository, private section: Section) {
     super(uri);

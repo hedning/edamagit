@@ -317,7 +317,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
 }
 export default class LogView extends DocumentView {
 
-  static UriPath: string = 'log.magit';
+  static UriPath: string = 'log';
   needsUpdate = true
   isFoldable = true;
   args: string[];
@@ -366,7 +366,7 @@ export default class LogView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
-    const leaf = `Log: ${GitTextUtils.shortCommitMessage(revs.join(' '))}.magit`;
+    const leaf = `Log: ${GitTextUtils.shortCommitMessage(revs.join(' '))}`;
     return buildMagitUri(repository.uri, leaf, args.join('&'));
   }
 }

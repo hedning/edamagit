@@ -10,7 +10,7 @@ import { Stash } from '../models/stash';
 
 export class StashDetailView extends DocumentView {
 
-  static UriPath: string = 'stash.magit';
+  static UriPath: string = 'stash';
   needsUpdate = false;
 
   constructor(public uri: Uri, stash: Stash, unstaged: MagitChange[], staged: MagitChange[], untracked: MagitChange[]) {

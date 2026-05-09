@@ -173,6 +173,18 @@ export async function activate(context: ExtensionContext) {
     })
   );
 
+  // URIs no longer carry a .magit extension, so VS Code's filename-based
+  // language detection won't tag them. Set the language explicitly for any
+  // magit-scheme document — covers both fresh opens and editors restored
+  // from the previous session.
+  const ensureMagitLanguage = (doc: vscode.TextDocument) => {
+    if (doc.uri.scheme === Constants.MagitUriScheme && doc.languageId !== 'magit') {
+      languages.setTextDocumentLanguage(doc, 'magit');
+    }
+  };
+  for (const doc of workspace.textDocuments) ensureMagitLanguage(doc);
+  context.subscriptions.push(workspace.onDidOpenTextDocument(ensureMagitLanguage));
+
   // Refresh visible magit status views when files change in their repository.
   {
     let changed: vscode.Uri[] = [];

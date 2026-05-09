@@ -14,7 +14,7 @@ import { Commit, Ref } from '../typings/git';
 
 export class CommitDetailView extends DocumentView {
 
-  static UriPath: string = 'commit.magit';
+  static UriPath: string = 'commit';
   isHighlightable = true;
   needsUpdate = false;
 
@@ -58,6 +58,6 @@ export class CommitDetailView extends DocumentView {
   static encodeLocation(repository: MagitRepository, commit: Commit): Uri {
     const summary = GitTextUtils.shortCommitMessage(commit.message);
     const shortHash = GitTextUtils.shortHash(commit.hash);
-    return buildMagitUri(repository.uri, `Commit: ${summary} (${shortHash}).magit`, commit.hash);
+    return buildMagitUri(repository.uri, `Commit: ${summary} (${shortHash})`, commit.hash);
   }
 }

@@ -6,7 +6,7 @@ import { TextView } from './general/textView';
 
 export default class SubmoduleListView extends DocumentView {
 
-  static UriPath: string = 'submodules.magit';
+  static UriPath: string = 'submodules';
 
   constructor(uri: Uri, magitState: MagitRepository) {
     super(uri);

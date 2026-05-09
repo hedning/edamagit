@@ -29,6 +29,16 @@ export class Uri {
     return new Uri('file', '', p.startsWith('/') ? p : '/' + p, '', '');
   }
 
+  static from(components: { scheme: string; authority?: string; path?: string; query?: string; fragment?: string }): Uri {
+    return new Uri(
+      components.scheme,
+      components.authority ?? '',
+      components.path ?? '',
+      components.query ?? '',
+      components.fragment ?? '',
+    );
+  }
+
   static joinPath(base: Uri, ...segments: string[]): Uri {
     const joined = [base.path.replace(/\/+$/, ''), ...segments.map(s => s.replace(/^\/+/, ''))]
       .filter(p => p.length > 0)

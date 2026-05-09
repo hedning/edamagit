@@ -10,7 +10,7 @@ import { Section } from './general/sectionHeader';
 
 export class DiffView extends DocumentView {
 
-  static UriPath: string = 'diff.magit';
+  static UriPath: string = 'diff';
   isHighlightable = false;
   needsUpdate = false;
 

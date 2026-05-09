@@ -37,7 +37,7 @@ class ProcessLogEntryView extends View {
 
 export default class ProcessView extends DocumentView {
 
-  static UriPath: string = 'process.magit';
+  static UriPath: string = 'process';
 
   constructor(uri: Uri) {
     super(uri);

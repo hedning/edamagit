@@ -10,7 +10,7 @@ import { IssueCommentSection, IssueCommentView } from './issueView';
 
 export class PullRequestView extends DocumentView {
 
-  static UriPath: string = 'pr.magit';
+  static UriPath: string = 'pr';
 
   constructor(uri: Uri, public pullRequest: PullRequest) {
     super(uri);
