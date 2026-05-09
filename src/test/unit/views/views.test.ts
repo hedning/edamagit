@@ -10,6 +10,7 @@ import { ChangeView } from '../../../views/changes/changeView';
 import { CommitSectionView } from '../../../views/commits/commitSectionView';
 import { UnsourcedCommitSectionView } from '../../../views/commits/unsourcedCommitsSectionView';
 import { StashSectionView } from '../../../views/stashes/stashSectionView';
+import { WorktreeSectionView } from '../../../views/worktrees/worktreeSectionView';
 import { ErrorMessageView } from '../../../views/errorMessageView';
 import MagitStatusView from '../../../views/magitStatusView';
 
@@ -224,6 +225,27 @@ aaaaaaa Pending push
         `Stashes (2)
 stash@{0} WIP on main: aaa quick fix
 stash@{1} On feature: experimental work`
+      );
+    });
+  });
+
+  suite('WorktreeSectionView', () => {
+    test('marks the current worktree and lines up branch and hash columns', () => {
+      const main = Uri.file('/repo/main');
+      const view = new WorktreeSectionView(
+        [
+          { path: main, head: 'aaaaaaaaaa', branch: 'main', bare: false, detached: false },
+          { path: Uri.file('/repo/feat'), head: 'bbbbbbbbbb', branch: 'feature/x', bare: false, detached: false, locked: '' },
+          { path: Uri.file('/repo/dt'), head: 'cccccccccc', bare: false, detached: true },
+        ],
+        main,
+      );
+      assert.strictEqual(
+        renderView(view),
+        `Worktrees (3)
+* main        aaaaaaa  /repo/main
+  feature/x   bbbbbbb  /repo/feat  locked
+  (detached)  ccccccc  /repo/dt`
       );
     });
   });

@@ -19,6 +19,7 @@ import { getLatestGitError } from '../commands/commandPrimer';
 import { PullRequestSectionView } from './forge/pullRequestSectionView';
 import { IssueSectionView } from './forge/issueSectionView';
 import { ErrorMessageView } from './errorMessageView';
+import { WorktreeSectionView } from './worktrees/worktreeSectionView';
 
 export default class MagitStatusView extends DocumentView {
 
@@ -77,6 +78,11 @@ export default class MagitStatusView extends DocumentView {
 
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
       header.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
+      header.addSubview(new LineBreakView());
+    }
+
+    if (magitState.worktrees.length > 1 && !magitConfig.hiddenStatusSections.has('worktrees')) {
+      header.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
       header.addSubview(new LineBreakView());
     }
 

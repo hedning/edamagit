@@ -113,6 +113,7 @@ export function makeRepository(overrides: Partial<MagitRepository> = {}): MagitR
     tags: [],
     refs: [],
     submodules: [],
+    worktrees: [],
     ...overrides,
   };
 }

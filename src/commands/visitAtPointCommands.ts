@@ -6,6 +6,7 @@ import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import GitTextUtils from '../utils/gitTextUtils';
 import { CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
+import { WorktreeItemView } from '../views/worktrees/worktreeSectionView';
 import { ChangeView } from '../views/changes/changeView';
 import { MagitCommit } from '../models/magitCommit';
 import { HunkView } from '../views/changes/hunkView';
@@ -22,7 +23,7 @@ import { PullRequestView } from '../views/forge/pullRequestView';
 import { sep } from 'path';
 import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
-import { toMagitChange } from './statusCommands';
+import { magitStatusForPath, toMagitChange } from './statusCommands';
 import { getCommit } from '../utils/commitCache';
 import { Ref, RefType, Repository } from '../typings/git';
 import path = require('path');
@@ -82,6 +83,10 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
 
   } else if (selectedView instanceof StashItemView) {
     return Diffing.showStashDetail(repository, selectedView.stash);
+
+  } else if (selectedView instanceof WorktreeItemView) {
+    if (selectedView.worktree.bare) return;
+    return magitStatusForPath(selectedView.worktree.path);
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;

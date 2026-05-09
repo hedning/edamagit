@@ -19,6 +19,7 @@ import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
 import { diffToMagitChanges } from '../utils/diffParser';
+import { listWorktrees } from '../utils/worktreeUtils';
 import {
   readPorcelainStatus,
   readRefs,
@@ -108,6 +109,7 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
   const refsTask = readRefs(rootUri);
   const remotesTask = readRemotes(rootUri);
   const submodulesTask = readSubmodules(rootUri);
+  const worktreesTask = listWorktrees(rootUri).catch(() => [] as Awaited<ReturnType<typeof listWorktrees>>);
   const stashTask = getStashes(repo);
   const rebaseHashTask = readRebaseCommitHash(rootUri);
 
@@ -202,6 +204,7 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
     tags: refs.filter(ref => ref.type === RefType.Tag),
     refs,
     submodules: await submodulesTask,
+    worktrees: await worktreesTask,
     gitRepository,
     forgeState: forgeState,
   };
