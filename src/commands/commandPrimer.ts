@@ -29,6 +29,9 @@ export class CommandPrimer {
   static primeRepoAndView(command: ViewCommand, triggersUpdate: boolean = true): (editor: TextEditor) => Promise<any> {
     return async (editor: TextEditor) => {
       const [repository, currentView] = MagitUtils.getCurrentMagitRepoAndView(editor.document.uri);
+      console.log('[magit:primeRepoAndView] cmd=%s uri=%s scheme=%s lang=%s repo=%s view=%s',
+        command.name, editor.document.uri.toString(), editor.document.uri.scheme,
+        editor.document.languageId, !!repository, !!currentView);
       if (!repository || !currentView) return;
 
       try {
