@@ -217,17 +217,7 @@ export async function getRef(magitState: MagitRepository, ref?: string) {
 }
 
 export async function visitCommit(magitState: MagitRepository, commitHash: string) {
-
-  // fixme: abstract
-  const refs = magitState.remotes.reduce(
-    (prev, remote) => remote.branches.concat(prev),
-    magitState.branches.concat(magitState.tags)
-  );
-
-  const { commit, changes, shortstat } = await getRef(magitState, commitHash);
-  const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.uri, p)));
-
-  const uri = CommitDetail.buildUri(magitState, commit);
-  const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs, shortstat))
-  return ViewUtils.showView(uri, view);
+  const { commit } = await getRef(magitState, commitHash);
+  const view = await ViewUtils.buildOrUpdate(magitState, CommitDetail, commit);
+  if (view) return ViewUtils.showView(view.uri, view);
 }

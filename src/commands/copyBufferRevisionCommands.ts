@@ -11,7 +11,7 @@ export async function copyBufferRevisionCommands(repository: MagitRepository, cu
     if (currentView instanceof MagitStatusView) {
         sectionValue = currentView.HEAD?.commit;
     } else if (currentView instanceof CommitDetailView) {
-        sectionValue = currentView.commit.hash;
+        sectionValue = currentView.commit?.hash;
     }
 
     if (sectionValue) {
