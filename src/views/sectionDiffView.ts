@@ -1,17 +1,15 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { Section } from './general/sectionHeader';
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { MagitRepository } from '../models/magitRepository';
 import MagitUtils from '../utils/magitUtils';
 
 // Only Staged/Unstaged are valid sections for this view; other Section
 // values would never produce a useful diff and we'd reject them on rebuild.
-type SectionDiffSection = Section.Staged | Section.Unstaged;
+export type SectionDiffSection = Section.Staged | Section.Unstaged;
 
 export default class SectionDiffView extends DocumentView {
-
-  static UriAuthority: string = 'sectionDiff';
 
   constructor(uri: MagitUri, magitState: MagitRepository, private section: SectionDiffSection) {
     super(uri);
@@ -48,18 +46,18 @@ export default class SectionDiffView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static buildUri(repository: MagitRepository, section: SectionDiffSection): MagitUri {
-    const leaf = section === Section.Staged ? 'staged' : 'unstaged';
-    return buildMagitUri(repository.uri, leaf, {
-      authority: SectionDiffView.UriAuthority,
-      fragment: leaf,
-    });
-  }
+}
 
-  static async rebuild(uri: MagitUri): Promise<SectionDiffView | undefined> {
+export const SectionDiff: RebuildableViewKind<[SectionDiffSection]> = {
+  authority: 'sectionDiff',
+  buildUri: (repo, section) => {
+    const leaf = section === Section.Staged ? 'staged' : 'unstaged';
+    return buildMagitUri(repo.uri, leaf, { authority: SectionDiff.authority, fragment: leaf });
+  },
+  build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
     const section = uri.fragment === 'staged' ? Section.Staged : Section.Unstaged;
     return new SectionDiffView(uri, repo, section);
-  }
-}
+  },
+};

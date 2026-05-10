@@ -1,5 +1,5 @@
 import { workspace } from 'vscode';
-import { HelpView } from '../views/helpView';
+import { Help, HelpView } from '../views/helpView';
 import { MagitRepository } from '../models/magitRepository';
 import * as path from 'path';
 import * as JSONC from 'jsonc-parser';
@@ -24,6 +24,6 @@ async function openHelpView(repository: MagitRepository) {
     userKeyBindings = JSONC.parse(userKeyBindingsText);
   } catch (e) { console.error(e); }
 
-  const uri = HelpView.buildUri(repository);
+  const uri = Help.buildUri(repository);
   return ViewUtils.showView(uri, new HelpView(uri, userKeyBindings));
 }

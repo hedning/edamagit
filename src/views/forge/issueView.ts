@@ -1,7 +1,7 @@
-import { DocumentView } from '../general/documentView';
+import { DocumentView, ViewKind } from '../general/documentView';
 import { buildMagitUri, MagitUri } from '../../common/magitUri';
 import { TextView, UnclickableTextView } from '../general/textView';
-import { Issue, IssueComment } from '../../forge/model/issue';
+import { Issue as IssueModel, IssueComment } from '../../forge/model/issue';
 import { MagitRepository } from '../../models/magitRepository';
 import { View } from '../general/view';
 import { LineBreakView } from '../general/lineBreakView';
@@ -9,15 +9,12 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 
 export class IssueView extends DocumentView {
 
-  static UriPath: string = 'issue';
-  static UriAuthority: string = 'issue';
-
-  constructor(uri: MagitUri, public issue: Issue) {
+  constructor(uri: MagitUri, public issue: IssueModel) {
     super(uri);
     this.provideContent(issue);
   }
 
-  provideContent(issue: Issue) {
+  provideContent(issue: IssueModel) {
     this.subViews = [
       new IssueHeader(issue),
       new LineBreakView(),
@@ -36,22 +33,24 @@ export class IssueView extends DocumentView {
     }
   }
 
-  static buildUri(repository: MagitRepository, issue: Issue): MagitUri {
-    return buildMagitUri(repository.uri, IssueView.UriPath, {
-      authority: IssueView.UriAuthority,
-      fragment: `${issue.number}`,
-    });
-  }
-  // No `static rebuild`: requires forge state which isn't fetched on demand.
-  // Tab drops on reload; reopen via the status view to refetch.
 }
+
+// Not rebuildable: requires forge state which isn't fetched on demand.
+// Tab drops on reload; reopen via the status view to refetch.
+export const Issue: ViewKind<[IssueModel]> = {
+  authority: 'issue',
+  buildUri: (repo, issue) => buildMagitUri(repo.uri, 'issue', {
+    authority: Issue.authority,
+    fragment: `${issue.number}`,
+  }),
+};
 
 class IssueHeader extends View {
   isFoldable = true;
 
   get id() { return `issueHeader#${this.issue.number}`; }
 
-  constructor(private issue: Issue) {
+  constructor(private issue: IssueModel) {
     super();
     this.addSubview(new UnclickableTextView(`#${issue.number}: ${issue.title}`));
     this.addSubview(new TextView(`Title: ${issue.title}`));

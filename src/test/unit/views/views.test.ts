@@ -12,7 +12,7 @@ import { UnsourcedCommitSectionView } from '../../../views/commits/unsourcedComm
 import { StashSectionView } from '../../../views/stashes/stashSectionView';
 import { WorktreeSectionView } from '../../../views/worktrees/worktreeSectionView';
 import { ErrorMessageView } from '../../../views/errorMessageView';
-import MagitStatusView from '../../../views/magitStatusView';
+import MagitStatusView, { MagitStatus } from '../../../views/magitStatusView';
 
 import {
   REPO_URI,
@@ -264,7 +264,7 @@ stash@{1} On feature: experimental work`
     test('clean repo with HEAD shows just the header line', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'abc123def', message: 'Initial commit' });
       const repo = makeRepository({ HEAD });
-      const view = new MagitStatusView(MagitStatusView.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
 
       assert.strictEqual(
         renderView(view),
@@ -296,7 +296,7 @@ stash@{1} On feature: experimental work`
         ],
       });
 
-      const view = new MagitStatusView(MagitStatusView.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
 
       assert.strictEqual(
         renderView(view),
@@ -335,7 +335,7 @@ bbbbbbb Earlier work
         }),
       });
       const repo = makeRepository({ HEAD });
-      const view = new MagitStatusView(MagitStatusView.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
 
       assert.strictEqual(
         renderView(view),

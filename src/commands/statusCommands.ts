@@ -4,7 +4,7 @@ import { magitRepositories, views } from '../extension';
 import FilePathUtils from '../utils/filePathUtils';
 import GitTextUtils from '../utils/gitTextUtils';
 import MagitUtils from '../utils/magitUtils';
-import MagitStatusView from '../views/magitStatusView';
+import MagitStatusView, { MagitStatus } from '../views/magitStatusView';
 import { Status, Commit, RefType, Repository, Change, Ref } from '../typings/git';
 import { MagitBranch, MagitUpstreamRef } from '../models/magitBranch';
 import { gitRun, gitRunInUri, LogLevel } from '../utils/gitRawRunner';
@@ -45,7 +45,7 @@ export async function magitStatus(): Promise<any> {
 
   if (repository) {
 
-    const uri = MagitStatusView.buildUri(repository);
+    const uri = MagitStatus.buildUri(repository);
 
     // Checks for existing Magit status view
     let view = views.get(uri.toString());
@@ -70,7 +70,7 @@ export async function magitStatus(): Promise<any> {
 
   if (repository) {
     scheduleForgeStatusAsync(repository);
-    const uri = MagitStatusView.buildUri(repository);
+    const uri = MagitStatus.buildUri(repository);
     return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
   }
 }
@@ -85,7 +85,7 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
   let repository = magitRepositories.get(workTreeUri.fsPath);
 
   if (repository) {
-    const uri = MagitStatusView.buildUri(repository);
+    const uri = MagitStatus.buildUri(repository);
     if (views.get(uri.toString())) {
       MagitUtils.magitStatusAndUpdate(repository);
       return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
@@ -96,7 +96,7 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
   }
 
   scheduleForgeStatusAsync(repository);
-  const uri = MagitStatusView.buildUri(repository);
+  const uri = MagitStatus.buildUri(repository);
   return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
 }
 

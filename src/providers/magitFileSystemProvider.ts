@@ -10,7 +10,7 @@ import {
   FileType,
   Uri,
 } from 'vscode';
-import { DocumentView, DocumentViewClass } from '../views/general/documentView';
+import { DocumentView, RebuildableViewKind } from '../views/general/documentView';
 import { views } from '../extension';
 import { asMagitUri, MagitUri } from '../common/magitUri';
 
@@ -30,10 +30,10 @@ export class MagitFileSystemProvider implements FileSystemProvider {
   // across a window reload and `views` is empty.
   private rebuilders: Rebuilder[] = [];
 
-  register(viewClass: DocumentViewClass): void {
+  register(kind: RebuildableViewKind): void {
     this.rebuilders.push({
-      authority: viewClass.UriAuthority,
-      build: uri => viewClass.rebuild(uri),
+      authority: kind.authority,
+      build: uri => kind.build(uri),
     });
   }
 

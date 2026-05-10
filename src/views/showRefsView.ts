@@ -1,6 +1,6 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { Section, SectionHeaderView } from './general/sectionHeader';
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import MagitUtils from '../utils/magitUtils';
 import { MagitRepository } from '../models/magitRepository';
 import { TagSectionView } from './tags/tagSectionView';
@@ -8,9 +8,6 @@ import { BranchesSectionView } from './branches/branchesSectionView';
 import { RemoteSectionView } from './remotes/remoteSectionView';
 
 export default class ShowRefsView extends DocumentView {
-
-  static UriPath: string = 'refs';
-  static UriAuthority: string = 'refs';
 
   constructor(uri: MagitUri, magitState: MagitRepository) {
     super(uri);
@@ -32,12 +29,13 @@ export default class ShowRefsView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static buildUri(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, ShowRefsView.UriPath, { authority: ShowRefsView.UriAuthority });
-  }
+}
 
-  static async rebuild(uri: MagitUri): Promise<ShowRefsView | undefined> {
+export const ShowRefs: RebuildableViewKind<[]> = {
+  authority: 'refs',
+  buildUri: (repo) => buildMagitUri(repo.uri, 'refs', { authority: ShowRefs.authority }),
+  build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     return repo ? new ShowRefsView(uri, repo) : undefined;
-  }
-}
+  },
+};

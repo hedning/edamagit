@@ -1,6 +1,7 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import MagitUtils from '../utils/magitUtils';
 import { magitConfig } from '../extension';
+import { RebuildableViewKind } from './general/documentView';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
@@ -23,7 +24,6 @@ import { WorktreeSectionView } from './worktrees/worktreeSectionView';
 
 export default class MagitStatusView extends DocumentView {
 
-  static UriPath: string = 'status';
   public HEAD?: MagitBranch;
 
   constructor(uri: MagitUri, magitState: MagitRepository) {
@@ -117,13 +117,13 @@ export default class MagitStatusView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static UriAuthority: string = 'status';
-  static buildUri(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, MagitStatusView.UriPath, { authority: MagitStatusView.UriAuthority });
-  }
+}
 
-  static async rebuild(uri: MagitUri): Promise<MagitStatusView | undefined> {
+export const MagitStatus: RebuildableViewKind<[]> = {
+  authority: 'status',
+  buildUri: (repo) => buildMagitUri(repo.uri, 'status', { authority: MagitStatus.authority }),
+  build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     return repo ? new MagitStatusView(uri, repo) : undefined;
-  }
-}
+  },
+};

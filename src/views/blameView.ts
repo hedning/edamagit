@@ -1,4 +1,4 @@
-import { DocumentView } from './general/documentView';
+import { DocumentView, ViewKind } from './general/documentView';
 import { Uri } from 'vscode';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
@@ -6,7 +6,6 @@ import { MagitRepository } from '../models/magitRepository';
 
 export class BlameView extends DocumentView {
 
-  static UriAuthority: string = 'blame';
   isHighlightable = false;
   needsUpdate = false;
 
@@ -19,15 +18,17 @@ export class BlameView extends DocumentView {
   }
 
   public update(state: MagitRepository): void { }
+}
 
-  static buildUri(repository: MagitRepository, fileUri: Uri): MagitUri {
+// Not rebuildable: would require re-running `git blame` against the file
+// in the fragment. Tab drops on reload.
+export const Blame: ViewKind<[Uri]> = {
+  authority: 'blame',
+  buildUri: (repo, fileUri) => {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
-    const leaf = `Blame: ${basename}`;
-    return buildMagitUri(repository.uri, leaf, {
-      authority: BlameView.UriAuthority,
+    return buildMagitUri(repo.uri, `Blame: ${basename}`, {
+      authority: Blame.authority,
       fragment: fileUri.path,
     });
-  }
-  // No `static rebuild`: would require re-running `git blame` against the
-  // file in the fragment. Skipped for now; tab drops on reload.
-}
+  },
+};

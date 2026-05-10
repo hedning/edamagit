@@ -7,7 +7,7 @@ import { MagitRepository } from '../models/magitRepository';
 import { gitRun, LogLevel } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
-import LogView from '../views/logView';
+import LogView, { Log } from '../views/logView';
 
 const loggingMenu = {
   title: 'Logging',
@@ -95,7 +95,7 @@ export async function logFile(repository: MagitRepository, fileUri: Uri) {
 
 async function log(repository: MagitRepository, args: string[], revs: string[], paths: string[] = []) {
 
-  const uri = LogView.buildUri(repository, revs, args);
+  const uri = Log.buildUri(repository, revs, args);
   const view = ViewUtils.createOrUpdateView(
       repository,
       uri,

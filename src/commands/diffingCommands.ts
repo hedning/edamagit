@@ -1,12 +1,12 @@
 import { Uri, window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
-import { DiffView } from '../views/diffView';
+import { Diff, DiffView } from '../views/diffView';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
-import { StashDetailView } from '../views/stashDetailView';
+import { StashDetail, StashDetailView } from '../views/stashDetailView';
 import MagitUtils from '../utils/magitUtils';
-import SectionDiffView from '../views/sectionDiffView';
+import SectionDiffView, { SectionDiff } from '../views/sectionDiffView';
 import * as VisitAtPoint from './visitAtPointCommands';
 import * as Constants from '../common/constants';
 import { Section } from '../views/general/sectionHeader';
@@ -87,14 +87,14 @@ async function diff(repository: MagitRepository, id: string, args: string[] = []
   const diffResult = await gitRunInUri(repository.uri, ['diff', ...args]);
   const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
 
-  const uri = DiffView.buildUri(repository, id);
+  const uri = Diff.buildUri(repository, id);
 
   return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
 }
 
 export async function showDiffSection(repository: MagitRepository, section: Section, preserveFocus = false) {
   if (section !== Section.Staged && section !== Section.Unstaged) return;
-  const uri = SectionDiffView.buildUri(repository, section);
+  const uri = SectionDiff.buildUri(repository, section);
   return ViewUtils.showView(uri, new SectionDiffView(uri, repository, section), { preserveFocus });
 }
 
@@ -109,7 +109,7 @@ async function showStash({ repository }: MenuState) {
 }
 
 export async function showStashDetail(repository: MagitRepository, stash: Stash) {
-  const uri = StashDetailView.buildUri(repository, stash);
+  const uri = StashDetail.buildUri(repository, stash);
 
   const ref = `refs/stash@{${stash.index}}`;
   const { commit, changes: unstaged } = await VisitAtPoint.getRef(repository, ref);
@@ -150,6 +150,6 @@ export async function diffFile(repository: MagitRepository, fileUri: Uri, index 
   const diffResult = await gitRunInUri(repository.uri, args);
   const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
 
-  const uri = DiffView.buildUri(repository, fileUri.path);
+  const uri = Diff.buildUri(repository, fileUri.path);
   return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
 }

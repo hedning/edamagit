@@ -1,17 +1,26 @@
 import { workspace } from 'vscode';
 import * as path from 'path';
 import * as JSONC from 'jsonc-parser';
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import { logPath } from '../extension';
 import * as meta from '../../package.json';
 
+async function loadUserKeyBindings(): Promise<any> {
+  const keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
+  try {
+    const doc = await workspace.openTextDocument(keybindingsPath);
+    const text = doc.getText().replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+    return JSONC.parse(text);
+  } catch {
+    return [];
+  }
+}
+
 export class HelpView extends DocumentView {
 
-  static UriPath: string = 'help';
-  static UriAuthority: string = 'help';
   isHighlightable = false;
   needsUpdate = false;
 
@@ -25,21 +34,6 @@ export class HelpView extends DocumentView {
   }
 
   public update(state: MagitRepository): void { }
-
-  static buildUri(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, HelpView.UriPath, { authority: HelpView.UriAuthority });
-  }
-
-  static async rebuild(uri: MagitUri): Promise<HelpView | undefined> {
-    const keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
-    let userKeyBindings: any = [];
-    try {
-      const doc = await workspace.openTextDocument(keybindingsPath);
-      const text = doc.getText().replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
-      userKeyBindings = JSONC.parse(text);
-    } catch { }
-    return new HelpView(uri, userKeyBindings);
-  }
 
   private static joinTexts(spacing: number, texts: (string | undefined)[]) {
     texts = texts.filter(t => t !== undefined);
@@ -105,3 +99,9 @@ Essential commands
   ${HelpView.joinTexts(9, [c['magit.move-previous-entity'], 'Move cursor to previous entity'])}`;
   }
 }
+
+export const Help: RebuildableViewKind<[]> = {
+  authority: 'help',
+  buildUri: (repo) => buildMagitUri(repo.uri, 'help', { authority: Help.authority }),
+  build: async (uri) => new HelpView(uri, await loadUserKeyBindings()),
+};

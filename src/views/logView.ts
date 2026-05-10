@@ -6,7 +6,7 @@ import { MagitLogEntry } from '../models/magitLogCommit';
 import { MagitRepository } from '../models/magitRepository';
 import GitTextUtils from '../utils/gitTextUtils';
 import { CommitItemView } from './commits/commitSectionView';
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { TextView } from './general/textView';
 import { Token } from './general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
@@ -318,8 +318,6 @@ function parseLog(stdout: string): MagitLogEntry[] {
 }
 export default class LogView extends DocumentView {
 
-  static UriPath: string = 'log';
-  static UriAuthority: string = 'log';
   needsUpdate = true
   isFoldable = true;
   args: string[];
@@ -367,17 +365,18 @@ export default class LogView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static buildUri(repository: MagitRepository, revs: string[], args: string[]): MagitUri {
-    // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
-    // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
-    // commit-detail trick. Reversed in `rebuild`.
-    return buildMagitUri(repository.uri, LogView.UriPath, {
-      authority: LogView.UriAuthority,
-      query: { revs: revs.join(' ').replace(/\//g, '∕'), args: args.join(' ') },
-    });
-  }
+}
 
-  static async rebuild(uri: MagitUri): Promise<LogView | undefined> {
+export const Log: RebuildableViewKind<[string[], string[]]> = {
+  authority: 'log',
+  // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
+  // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
+  // commit-detail trick. Reversed in `build`.
+  buildUri: (repo, revs, args) => buildMagitUri(repo.uri, 'log', {
+    authority: Log.authority,
+    query: { revs: revs.join(' ').replace(/\//g, '∕'), args: args.join(' ') },
+  }),
+  build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
     const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string } : {};
@@ -386,8 +385,8 @@ export default class LogView extends DocumentView {
     const view = new LogView(uri, repo, args, revs, []);
     await view.initialUpdate;
     return view;
-  }
-}
+  },
+};
 
 export class CommitLongFormItemView extends CommitItemView {
 

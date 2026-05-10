@@ -20,13 +20,26 @@ export abstract class DocumentView extends View {
   }
 }
 
-// Contract for a `DocumentView` subclass that participates in URI-based
-// rebuild dispatch. The FS provider keys off `UriAuthority`; `rebuild` is the
-// inverse of the subclass's `buildUri` and is called when an editor is
-// restored across a window reload (so `views` is empty). Returning
-// `undefined` is honest: it tells the FS provider this URI's tab can't be
-// brought back, and VS Code drops it.
-export interface DocumentViewClass {
-  UriAuthority: string;
-  rebuild(uri: MagitUri): Promise<DocumentView | undefined>;
+// Per-view factory. Owns the encode side (`buildUri`) and identifies the
+// view kind by `authority`. Each view file exports one of these alongside
+// its class.
+//
+// `TArgs` is whatever extra inputs the live "open this view" path needs
+// beyond the repo — revs+args for log, a commit for commit-detail, a section
+// for section-diff. For rebuild-from-URI to work, all of `TArgs` must be
+// recoverable from the URI alone.
+export interface ViewKind<TArgs extends any[] = any[]> {
+  authority: string;
+  buildUri(repo: MagitRepository, ...args: TArgs): MagitUri;
+}
+
+// Stronger contract: the view can be rebuilt from URI alone. `build` is the
+// single constructor used by both the fresh-open path and the FS provider's
+// rebuild path — they're the same operation, and the live caller just
+// happens to have constructed the URI a moment earlier.
+//
+// Returning `undefined` is honest: the URI's repo couldn't be located, etc.
+// Only `RebuildableViewKind`s can be passed to `provider.register`.
+export interface RebuildableViewKind<TArgs extends any[] = any[]> extends ViewKind<TArgs> {
+  build(uri: MagitUri): Promise<DocumentView | undefined>;
 }

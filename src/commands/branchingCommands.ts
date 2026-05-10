@@ -6,7 +6,7 @@ import { GitErrorCodes, Ref, RefType } from '../typings/git';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
-import ShowRefsView from '../views/showRefsView';
+import ShowRefsView, { ShowRefs } from '../views/showRefsView';
 
 const branchingCommands = [
   { label: 'b', description: 'Checkout', action: checkout },
@@ -40,7 +40,7 @@ export async function branching(repository: MagitRepository) {
 }
 
 export async function showRefs(repository: MagitRepository) {
-  const uri = ShowRefsView.buildUri(repository);
+  const uri = ShowRefs.buildUri(repository);
 
   let refsView = ViewUtils.createOrUpdateView(repository, uri, () => new ShowRefsView(uri, repository));
 

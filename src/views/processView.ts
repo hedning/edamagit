@@ -1,5 +1,5 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { MagitRepository } from '../models/magitRepository';
 import { processLog } from '../extension';
 import { View } from './general/view';
@@ -36,9 +36,6 @@ class ProcessLogEntryView extends View {
 
 export default class ProcessView extends DocumentView {
 
-  static UriPath: string = 'process';
-  static UriAuthority: string = 'process';
-
   constructor(uri: MagitUri) {
     super(uri);
     this.provideContent();
@@ -58,14 +55,13 @@ export default class ProcessView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static buildUri(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, ProcessView.UriPath, {
-      authority: ProcessView.UriAuthority,
-      fragment: 'process',
-    });
-  }
-
-  static async rebuild(uri: MagitUri): Promise<ProcessView | undefined> {
-    return new ProcessView(uri);
-  }
 }
+
+export const Process: RebuildableViewKind<[]> = {
+  authority: 'process',
+  buildUri: (repo) => buildMagitUri(repo.uri, 'process', {
+    authority: Process.authority,
+    fragment: 'process',
+  }),
+  build: async (uri) => new ProcessView(uri),
+};

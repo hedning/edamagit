@@ -1,7 +1,7 @@
-import { DocumentView } from '../general/documentView';
+import { DocumentView, ViewKind } from '../general/documentView';
 import { buildMagitUri, MagitUri } from '../../common/magitUri';
 import { TextView, UnclickableTextView } from '../general/textView';
-import { PullRequest } from '../../forge/model/pullRequest';
+import { PullRequest as PullRequestModel } from '../../forge/model/pullRequest';
 import { MagitRepository } from '../../models/magitRepository';
 import { View } from '../general/view';
 import { LineBreakView } from '../general/lineBreakView';
@@ -9,15 +9,12 @@ import { IssueCommentSection, IssueCommentView } from './issueView';
 
 export class PullRequestView extends DocumentView {
 
-  static UriPath: string = 'pr';
-  static UriAuthority: string = 'pr';
-
-  constructor(uri: MagitUri, public pullRequest: PullRequest) {
+  constructor(uri: MagitUri, public pullRequest: PullRequestModel) {
     super(uri);
     this.provideContent(pullRequest);
   }
 
-  provideContent(pullRequest: PullRequest) {
+  provideContent(pullRequest: PullRequestModel) {
     this.subViews = [
       new PullRequestHeader(pullRequest),
       new LineBreakView(),
@@ -36,22 +33,24 @@ export class PullRequestView extends DocumentView {
     }
   }
 
-  static buildUri(repository: MagitRepository, pullRequest: PullRequest): MagitUri {
-    return buildMagitUri(repository.uri, PullRequestView.UriPath, {
-      authority: PullRequestView.UriAuthority,
-      fragment: `${pullRequest.number}`,
-    });
-  }
-  // No `static rebuild`: requires forge state which isn't fetched on demand.
-  // Tab drops on reload; reopen via the status view to refetch.
 }
+
+// Not rebuildable: requires forge state which isn't fetched on demand.
+// Tab drops on reload; reopen via the status view to refetch.
+export const PullRequest: ViewKind<[PullRequestModel]> = {
+  authority: 'pr',
+  buildUri: (repo, pr) => buildMagitUri(repo.uri, 'pr', {
+    authority: PullRequest.authority,
+    fragment: `${pr.number}`,
+  }),
+};
 
 class PullRequestHeader extends View {
   isFoldable = true;
 
   get id() { return `pullRequestHeader#${this.pullRequest.number}`; }
 
-  constructor(private pullRequest: PullRequest) {
+  constructor(private pullRequest: PullRequestModel) {
     super();
     this.addSubview(new UnclickableTextView(`#${pullRequest.number}: ${pullRequest.title}`));
     this.addSubview(new TextView(`Title: ${pullRequest.title}`));

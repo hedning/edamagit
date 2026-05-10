@@ -4,7 +4,7 @@ import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import GitTextUtils from '../utils/gitTextUtils';
-import { CommitDetailView } from '../views/commitDetailView';
+import { CommitDetail, CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { WorktreeItemView } from '../views/worktrees/worktreeSectionView';
 import { ChangeView } from '../views/changes/changeView';
@@ -17,9 +17,9 @@ import * as Diffing from './diffingCommands';
 import * as Constants from '../common/constants';
 import ViewUtils from '../utils/viewUtils';
 import { IssueItemView } from '../views/forge/issueSectionView';
-import { IssueView } from '../views/forge/issueView';
+import { Issue, IssueView } from '../views/forge/issueView';
 import { PullRequestItemView } from '../views/forge/pullRequestSectionView';
-import { PullRequestView } from '../views/forge/pullRequestView';
+import { PullRequest, PullRequestView } from '../views/forge/pullRequestView';
 import { sep } from 'path';
 import { ErrorMessageView } from '../views/errorMessageView';
 import { processView } from './processCommands';
@@ -95,13 +95,13 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;
-    const uri = IssueView.buildUri(repository, issue);
+    const uri = Issue.buildUri(repository, issue);
     const issueView = ViewUtils.createOrUpdateView(repository, uri, () => new IssueView(uri, issue));
     return ViewUtils.showView(uri, issueView);
 
   } else if (selectedView instanceof PullRequestItemView) {
     const pullRequest = selectedView.pullRequest;
-    const uri = PullRequestView.buildUri(repository, pullRequest);
+    const uri = PullRequest.buildUri(repository, pullRequest);
     let pullRequestView = ViewUtils.createOrUpdateView(repository, uri, () => new PullRequestView(uri, pullRequest));
 
     return ViewUtils.showView(uri, pullRequestView);
@@ -227,7 +227,7 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
   const { commit, changes, shortstat } = await getRef(magitState, commitHash);
   const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.uri, p)));
 
-  const uri = CommitDetailView.buildUri(magitState, commit);
+  const uri = CommitDetail.buildUri(magitState, commit);
   const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs, shortstat))
   return ViewUtils.showView(uri, view);
 }

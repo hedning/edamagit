@@ -1,4 +1,4 @@
-import { DocumentView } from './general/documentView';
+import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import MagitUtils from '../utils/magitUtils';
 import { getRef } from '../commands/visitAtPointCommands';
@@ -16,8 +16,6 @@ import { Commit, Ref } from '../typings/git';
 
 export class CommitDetailView extends DocumentView {
 
-  static UriPath: string = 'commit';
-  static UriAuthority: string = 'commit';
   isHighlightable = true;
   needsUpdate = false;
 
@@ -56,27 +54,28 @@ export class CommitDetailView extends DocumentView {
   }
 
   public update(state: MagitRepository): void { }
+}
 
-  static index = 0;
-  static buildUri(repository: MagitRepository, commit: Commit): MagitUri {
-    // VS Code's `getUriBasenameLabel` formats the label and then runs
-    // `basename` on it with the formatter's separator, so a literal `/` in
-    // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix
-    // off the tab title. Substitute U+2215 DIVISION SLASH like we do for the
-    // path leaf — visually identical, opaque to `basename`.
+export const CommitDetail: RebuildableViewKind<[Commit]> = {
+  authority: 'commit',
+  // VS Code's `getUriBasenameLabel` formats the label and then runs
+  // `basename` on it with the formatter's separator, so a literal `/` in
+  // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix
+  // off the tab title. Substitute U+2215 DIVISION SLASH like we do for the
+  // path leaf — visually identical, opaque to `basename`.
+  // Path leaf is just `commit.magit`; the human label is composed by the
+  // `magit` + `commit` authority `resourceLabelFormatters` entry from these
+  // query keys. Full hash stays in the fragment for `build`.
+  buildUri: (repo, commit) => {
     const summary = GitTextUtils.shortCommitMessage(commit.message).replace(/\//g, '∕');
     const shortHash = GitTextUtils.shortHash(commit.hash);
-    // Path leaf is just `commit.magit`; the human label is composed by the
-    // `magit` + `commit` authority `resourceLabelFormatters` entry from these
-    // query keys. Full hash stays in the fragment for the rebuilder.
-    return buildMagitUri(repository.uri, CommitDetailView.UriPath, {
-      authority: CommitDetailView.UriAuthority,
+    return buildMagitUri(repo.uri, 'commit', {
+      authority: CommitDetail.authority,
       query: { summary, shortHash },
       fragment: commit.hash,
     });
-  }
-
-  static async rebuild(uri: MagitUri): Promise<CommitDetailView | undefined> {
+  },
+  build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
     const commitHash = uri.fragment;
@@ -89,5 +88,5 @@ export class CommitDetailView extends DocumentView {
     const { commit, changes, shortstat } = await getRef(repo, commitHash);
     const parents = await Promise.all(commit.parents.map(p => getCommit(repo.uri, p)));
     return new CommitDetailView(uri, commit, changes, parents, refs, shortstat);
-  }
-}
+  },
+};

@@ -1,4 +1,4 @@
-import { DocumentView } from './general/documentView';
+import { DocumentView, ViewKind } from './general/documentView';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
@@ -9,8 +9,6 @@ import { Stash } from '../models/stash';
 
 export class StashDetailView extends DocumentView {
 
-  static UriPath: string = 'stash';
-  static UriAuthority: string = 'stash';
   needsUpdate = false;
 
   constructor(public uri: MagitUri, stash: Stash, unstaged: MagitChange[], staged: MagitChange[], untracked: MagitChange[]) {
@@ -33,14 +31,14 @@ export class StashDetailView extends DocumentView {
   }
 
   public update(state: MagitRepository): void { }
-
-  static buildUri(repository: MagitRepository, stash: Stash): MagitUri {
-    return buildMagitUri(repository.uri, StashDetailView.UriPath, {
-      authority: StashDetailView.UriAuthority,
-      fragment: `stash@{${stash.index}}`,
-    });
-  }
-  // No `static rebuild`: would require re-running `git stash show` against
-  // the index in the fragment. Doable but skipped until someone hits the
-  // regression. Tab drops on reload.
 }
+
+// Not rebuildable: would require re-running `git stash show` against the
+// index in the fragment. Tab drops on reload.
+export const StashDetail: ViewKind<[Stash]> = {
+  authority: 'stash',
+  buildUri: (repo, stash) => buildMagitUri(repo.uri, 'stash', {
+    authority: StashDetail.authority,
+    fragment: `stash@{${stash.index}}`,
+  }),
+};
