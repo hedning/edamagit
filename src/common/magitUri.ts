@@ -3,19 +3,16 @@ import { MagitLanguageId, MagitUriScheme } from './constants';
 
 // Magit views are addressed by a URI of the shape
 // `magit://<authority>/<repoUri.path>/<leaf>.magit[?<query>][#<fragment>]`.
-// The repo path is embedded directly so the URI is self-describing —
-// `dirname(uri.path)` recovers the repo so a persisted editor can be rebuilt
-// on first readFile, and tab disambiguation between two repos picks up the
-// differing repo segment naturally. The leaf is always a simple identifier
-// (no `/`) — view-specific data rides in the query so `lastIndexOf('/')` can
-// safely split repo from leaf. The displayed label is composed by the
-// `resourceLabelFormatters` contribution: a default that strips to the leaf,
-// plus per-authority overrides that pull `${query.<key>}` substitutions out
-// of the JSON-encoded query.
+// The view kind rides in `<authority>` and is what `magitViewBuilders` keys
+// off when rebuilding a persisted editor. The repo path is embedded directly
+// so `dirname(uri.path)` recovers the repo on first readFile, and tab
+// disambiguation between two repos picks up the differing repo segment
+// naturally. The leaf is always a simple identifier (no `/`) and exists for
+// the default `${path}` `resourceLabelFormatters` fallback and for VS Code's
+// filename-based language detection (the `.magit` suffix).
 //
-// The `.magit` suffix wires VS Code's filename-based language detection to
-// the magit language; it's added here so view code can keep its UriPath
-// constants clean.
+// View-specific data rides in the query as JSON, where it's available to
+// per-authority `resourceLabelFormatters` entries via `${query.<key>}`.
 
 const LeafSuffix = `.${MagitLanguageId}`;
 
@@ -50,10 +47,4 @@ export function repoUriFromMagitUri(magitUri: Uri): Uri {
 
 export function repoFsPathFromMagitUri(magitUri: Uri): string {
   return repoUriFromMagitUri(magitUri).fsPath;
-}
-
-export function leafFromMagitUri(magitUri: Uri): string {
-  const i = magitUri.path.lastIndexOf('/');
-  const leaf = magitUri.path.slice(i + 1);
-  return leaf.endsWith(LeafSuffix) ? leaf.slice(0, -LeafSuffix.length) : leaf;
 }

@@ -7,6 +7,7 @@ import { TextView } from './general/textView';
 export default class SubmoduleListView extends DocumentView {
 
   static UriPath: string = 'submodules';
+  static UriAuthority: string = 'submodules';
 
   constructor(uri: Uri, magitState: MagitRepository) {
     super(uri);
@@ -25,6 +26,6 @@ export default class SubmoduleListView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return buildMagitUri(repository.uri, SubmoduleListView.UriPath);
+    return buildMagitUri(repository.uri, SubmoduleListView.UriPath, { authority: SubmoduleListView.UriAuthority });
   }
 }

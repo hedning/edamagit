@@ -8,6 +8,7 @@ import * as meta from '../../package.json';
 export class HelpView extends DocumentView {
 
   static UriPath: string = 'help';
+  static UriAuthority: string = 'help';
   isHighlightable = false;
   needsUpdate = false;
 
@@ -23,7 +24,7 @@ export class HelpView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return buildMagitUri(repository.uri, HelpView.UriPath, { fragment: 'help' });
+    return buildMagitUri(repository.uri, HelpView.UriPath, { authority: HelpView.UriAuthority });
   }
 
   private static joinTexts(spacing: number, texts: (string | undefined)[]) {

@@ -10,6 +10,7 @@ import { RemoteSectionView } from './remotes/remoteSectionView';
 export default class ShowRefsView extends DocumentView {
 
   static UriPath: string = 'refs';
+  static UriAuthority: string = 'refs';
 
   constructor(uri: Uri, magitState: MagitRepository) {
     super(uri);
@@ -32,6 +33,6 @@ export default class ShowRefsView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): Uri {
-    return buildMagitUri(repository.uri, ShowRefsView.UriPath);
+    return buildMagitUri(repository.uri, ShowRefsView.UriPath, { authority: ShowRefsView.UriAuthority });
   }
 }

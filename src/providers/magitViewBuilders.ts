@@ -14,7 +14,7 @@ import { getRef } from '../commands/visitAtPointCommands';
 import { getCommit } from '../utils/commitCache';
 import { logPath, magitRepositories } from '../extension';
 import { MagitRepository } from '../models/magitRepository';
-import { leafFromMagitUri, repoUriFromMagitUri } from '../common/magitUri';
+import { repoUriFromMagitUri } from '../common/magitUri';
 
 async function ensureRepo(uri: Uri): Promise<MagitRepository | undefined> {
   const repoUri = repoUriFromMagitUri(uri);
@@ -31,7 +31,7 @@ async function ensureRepo(uri: Uri): Promise<MagitRepository | undefined> {
 export function registerMagitViewBuilders(provider: MagitFileSystemProvider): void {
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === MagitStatusView.UriPath,
+    uri => uri.authority === MagitStatusView.UriAuthority,
     async uri => {
       const repo = await ensureRepo(uri);
       return repo ? new MagitStatusView(uri, repo) : undefined;
@@ -39,7 +39,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === LogView.UriPath,
+    uri => uri.authority === LogView.UriAuthority,
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;
@@ -53,7 +53,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === CommitDetailView.UriPath,
+    uri => uri.authority === CommitDetailView.UriAuthority,
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;
@@ -71,7 +71,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === HelpView.UriPath,
+    uri => uri.authority === HelpView.UriAuthority,
     async uri => {
       const keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
       let userKeyBindings: any = [];
@@ -85,7 +85,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === ShowRefsView.UriPath,
+    uri => uri.authority === ShowRefsView.UriAuthority,
     async uri => {
       const repo = await ensureRepo(uri);
       return repo ? new ShowRefsView(uri, repo) : undefined;
@@ -93,7 +93,7 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri) === SubmoduleListView.UriPath,
+    uri => uri.authority === SubmoduleListView.UriAuthority,
     async uri => {
       const repo = await ensureRepo(uri);
       return repo ? new SubmoduleListView(uri, repo) : undefined;
