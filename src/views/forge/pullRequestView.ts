@@ -10,6 +10,7 @@ import { IssueCommentSection, IssueCommentView } from './issueView';
 export class PullRequestView extends DocumentView {
 
   static UriPath: string = 'pr';
+  static UriAuthority: string = 'pr';
 
   constructor(uri: MagitUri, public pullRequest: PullRequest) {
     super(uri);
@@ -36,7 +37,10 @@ export class PullRequestView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, pullRequest: PullRequest): MagitUri {
-    return buildMagitUri(repository.uri, PullRequestView.UriPath, { fragment: `${pullRequest.number}` });
+    return buildMagitUri(repository.uri, PullRequestView.UriPath, {
+      authority: PullRequestView.UriAuthority,
+      fragment: `${pullRequest.number}`,
+    });
   }
 }
 

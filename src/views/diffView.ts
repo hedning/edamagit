@@ -10,6 +10,7 @@ import { Section } from './general/sectionHeader';
 export class DiffView extends DocumentView {
 
   static UriPath: string = 'diff';
+  static UriAuthority: string = 'diff';
   isHighlightable = false;
   needsUpdate = false;
 
@@ -23,6 +24,9 @@ export class DiffView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, diffId: string): MagitUri {
-    return buildMagitUri(repository.uri, DiffView.UriPath, { fragment: `${diffId}${DiffView.index++}` });
+    return buildMagitUri(repository.uri, DiffView.UriPath, {
+      authority: DiffView.UriAuthority,
+      fragment: `${diffId}${DiffView.index++}`,
+    });
   }
 }

@@ -37,6 +37,7 @@ class ProcessLogEntryView extends View {
 export default class ProcessView extends DocumentView {
 
   static UriPath: string = 'process';
+  static UriAuthority: string = 'process';
 
   constructor(uri: MagitUri) {
     super(uri);
@@ -58,6 +59,9 @@ export default class ProcessView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, ProcessView.UriPath, { fragment: 'process' });
+    return buildMagitUri(repository.uri, ProcessView.UriPath, {
+      authority: ProcessView.UriAuthority,
+      fragment: 'process',
+    });
   }
 }

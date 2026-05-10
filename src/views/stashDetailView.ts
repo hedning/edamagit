@@ -10,6 +10,7 @@ import { Stash } from '../models/stash';
 export class StashDetailView extends DocumentView {
 
   static UriPath: string = 'stash';
+  static UriAuthority: string = 'stash';
   needsUpdate = false;
 
   constructor(public uri: MagitUri, stash: Stash, unstaged: MagitChange[], staged: MagitChange[], untracked: MagitChange[]) {
@@ -35,6 +36,9 @@ export class StashDetailView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository, stash: Stash): MagitUri {
-    return buildMagitUri(repository.uri, StashDetailView.UriPath, { fragment: `stash@{${stash.index}}#${StashDetailView.index++}` });
+    return buildMagitUri(repository.uri, StashDetailView.UriPath, {
+      authority: StashDetailView.UriAuthority,
+      fragment: `stash@{${stash.index}}#${StashDetailView.index++}`,
+    });
   }
 }

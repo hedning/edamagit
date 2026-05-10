@@ -7,6 +7,7 @@ import { MagitRepository } from '../models/magitRepository';
 export default class SectionDiffView extends DocumentView {
 
   static UriPath: string = 'staged';
+  static UriAuthority: string = 'sectionDiff';
 
   constructor(uri: MagitUri, magitState: MagitRepository, private section: Section) {
     super(uri);
@@ -45,6 +46,9 @@ export default class SectionDiffView extends DocumentView {
 
   static index = 0;
   static encodeLocation(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, SectionDiffView.UriPath, { fragment: `${SectionDiffView.index++}` });
+    return buildMagitUri(repository.uri, SectionDiffView.UriPath, {
+      authority: SectionDiffView.UriAuthority,
+      fragment: `${SectionDiffView.index++}`,
+    });
   }
 }

@@ -6,6 +6,7 @@ import { MagitRepository } from '../models/magitRepository';
 
 export class BlameView extends DocumentView {
 
+  static UriAuthority: string = 'blame';
   isHighlightable = false;
   needsUpdate = false;
 
@@ -23,6 +24,9 @@ export class BlameView extends DocumentView {
   static encodeLocation(repository: MagitRepository, fileUri: Uri): MagitUri {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
     const leaf = `Blame: ${basename}`;
-    return buildMagitUri(repository.uri, leaf, { fragment: `${fileUri.path}#${BlameView.index++}` });
+    return buildMagitUri(repository.uri, leaf, {
+      authority: BlameView.UriAuthority,
+      fragment: `${fileUri.path}#${BlameView.index++}`,
+    });
   }
 }

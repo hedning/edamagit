@@ -10,6 +10,7 @@ import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 export class IssueView extends DocumentView {
 
   static UriPath: string = 'issue';
+  static UriAuthority: string = 'issue';
 
   constructor(uri: MagitUri, public issue: Issue) {
     super(uri);
@@ -36,7 +37,10 @@ export class IssueView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, issue: Issue): MagitUri {
-    return buildMagitUri(repository.uri, IssueView.UriPath, { fragment: `${issue.number}` });
+    return buildMagitUri(repository.uri, IssueView.UriPath, {
+      authority: IssueView.UriAuthority,
+      fragment: `${issue.number}`,
+    });
   }
 }
 
