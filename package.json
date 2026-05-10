@@ -433,6 +433,17 @@
           "separator": "/",
           "workspaceSuffix": "magit"
         }
+      },
+      {
+        "scheme": "magit-history",
+        "formatting": {
+          "label": "${path} (${query.ref})",
+          "separator": "/",
+          "stripPathSegments": 1000,
+          "stripPathStartingSeparator": true,
+          "tildify": true,
+          "workspaceSuffix": "magit"
+        }
       }
     ],
     "configurationDefaults": {
