@@ -7,10 +7,11 @@ import { ShowRefs } from '../views/showRefsView';
 import { SubmoduleList } from '../views/submoduleListView';
 import { Process } from '../views/processView';
 import { SectionDiff } from '../views/sectionDiffView';
+import { Diff } from '../views/diffView';
 
 // Kinds registered here can be restored from URI alone after a window
-// reload (each implements `build`). Kinds that don't appear here (Diff,
-// StashDetail, Blame, PullRequest, Issue) hold transient state not encoded
+// reload (each implements `build`). Kinds that don't appear here
+// (StashDetail, Blame, PullRequest, Issue) hold transient state not encoded
 // in the URI — their tabs are dropped on reload.
 export function registerMagitViewBuilders(provider: MagitFileSystemProvider): void {
   provider.register(MagitStatus);
@@ -21,4 +22,5 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   provider.register(SubmoduleList);
   provider.register(Process);
   provider.register(SectionDiff);
+  provider.register(Diff);
 }

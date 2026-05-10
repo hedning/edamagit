@@ -424,6 +424,15 @@
           "separator": "/",
           "workspaceSuffix": "magit"
         }
+      },
+      {
+        "scheme": "magit",
+        "authority": "diff",
+        "formatting": {
+          "label": "Diff: ${query.label}",
+          "separator": "/",
+          "workspaceSuffix": "magit"
+        }
       }
     ],
     "configurationDefaults": {

@@ -1,7 +1,7 @@
 import { Uri, window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
-import { Diff, DiffView } from '../views/diffView';
+import { gitRun } from '../utils/gitRawRunner';
+import { Diff, DiffSpec } from '../views/diffView';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
 import { StashDetail, StashDetailView } from '../views/stashDetailView';
@@ -14,7 +14,6 @@ import { Status } from '../typings/git';
 import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
-import { diffToMagitChanges } from '../utils/diffParser';
 
 const diffingMenu = {
   title: 'Diffing',
@@ -54,8 +53,7 @@ async function diffRange({ repository }: MenuState) {
   }
 
   if (range) {
-    const args = [range];
-    return diff(repository, range, args);
+    return openDiff(repository, { kind: 'range', rev: range });
   }
 }
 
@@ -67,7 +65,7 @@ async function diffPaths({ repository }: MenuState) {
     const fileB = await window.showInputBox({ prompt: 'Second file', value: repository.uri.fsPath });
 
     if (fileB) {
-      return diff(repository, 'files', ['--no-index', fileA, fileB]);
+      return openDiff(repository, { kind: 'paths', a: fileA, b: fileB });
     }
   }
 }
@@ -80,16 +78,12 @@ async function diffUnstaged({ repository }: MenuState) {
   return showDiffSection(repository, Section.Unstaged);
 }
 async function diffWorktree({ repository }: MenuState) {
-  return diff(repository, 'worktree', ['HEAD']);
+  return openDiff(repository, { kind: 'range', rev: 'HEAD' });
 }
 
-async function diff(repository: MagitRepository, id: string, args: string[] = []) {
-  const diffResult = await gitRunInUri(repository.uri, ['diff', ...args]);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
-
-  const uri = Diff.buildUri(repository, id);
-
-  return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
+async function openDiff(repository: MagitRepository, spec: DiffSpec) {
+  const view = await ViewUtils.buildOrUpdate(repository, Diff, spec);
+  if (view) return ViewUtils.showView(view.uri, view);
 }
 
 export async function showDiffSection(repository: MagitRepository, section: Section, preserveFocus = false) {
@@ -139,17 +133,5 @@ async function showCommit({ repository }: MenuState) {
 }
 
 export async function diffFile(repository: MagitRepository, fileUri: Uri, index = false) {
-
-  const args = ['diff'];
-  if (index) {
-    args.push('--cached');
-  }
-
-  args.push(fileUri.fsPath);
-
-  const diffResult = await gitRunInUri(repository.uri, args);
-  const magitChanges = diffToMagitChanges(diffResult.stdout, repository.uri);
-
-  const uri = Diff.buildUri(repository, fileUri.path);
-  return ViewUtils.showView(uri, new DiffView(uri, magitChanges));
+  return openDiff(repository, { kind: 'file', path: fileUri.fsPath, cached: index });
 }
