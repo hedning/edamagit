@@ -323,17 +323,13 @@ export default class LogView extends DocumentView {
   args: string[];
   revs: string[];
   paths: string[];
-  /** Resolves once the first `update` has populated subViews. `log()` awaits
-   *  this before opening the document so VSCode reads the full content on its
-   *  first fetch instead of receiving a big content swap mid-flight. */
-  initialUpdate: Promise<void>;
 
-  constructor(uri: MagitUri, repository: MagitRepository, args: string[], revs: string[], paths: string[]) {
+  constructor(uri: MagitUri) {
     super(uri);
-    this.args = args;
-    this.revs = revs;
-    this.paths = paths;
-    this.initialUpdate = this.update(repository);
+    const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string; paths?: string } : {};
+    this.revs = (q.revs ?? '').replace(/∕/g, '/').split(' ').filter(r => r.length > 0);
+    this.args = (q.args ?? '').split(' ').filter(a => a.length > 0);
+    this.paths = (q.paths ?? '').split(' ').filter(p => p.length > 0);
   }
 
   public async update(state: MagitRepository) {
@@ -383,12 +379,8 @@ export const Log: RebuildableViewKind<[string[], string[], string[]]> = {
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
-    const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string; paths?: string } : {};
-    const revs = (q.revs ?? '').replace(/∕/g, '/').split(' ').filter(r => r.length > 0);
-    const args = (q.args ?? '').split(' ').filter(a => a.length > 0);
-    const paths = (q.paths ?? '').split(' ').filter(p => p.length > 0);
-    const view = new LogView(uri, repo, args, revs, paths);
-    await view.initialUpdate;
+    const view = new LogView(uri);
+    await view.update(repo);
     return view;
   },
 };
