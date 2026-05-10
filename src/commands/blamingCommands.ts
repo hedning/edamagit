@@ -1,13 +1,9 @@
-import { Uri, ViewColumn, workspace } from 'vscode';
+import { Uri, ViewColumn } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
-import { Blame, BlameView } from '../views/blameView';
+import { Blame } from '../views/blameView';
 import ViewUtils from '../utils/viewUtils';
 
 export async function blameFile(repository: MagitRepository, fileUri: Uri) {
-
-  const blameResult = await gitRunInUri(repository.uri, ['blame', fileUri.fsPath]);
-
-  const uri = Blame.buildUri(repository, fileUri);
-  return ViewUtils.showView(uri, new BlameView(uri, blameResult.stdout), { viewColumn: ViewColumn.Active });
+  const view = await ViewUtils.buildOrUpdate(repository, Blame, fileUri);
+  if (view) return ViewUtils.showView(view.uri, view, { viewColumn: ViewColumn.Active });
 }
