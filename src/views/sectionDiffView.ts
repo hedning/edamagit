@@ -11,9 +11,11 @@ export type SectionDiffSection = Section.Staged | Section.Unstaged;
 
 export default class SectionDiffView extends DocumentView {
 
-  constructor(uri: MagitUri, magitState: MagitRepository, private section: SectionDiffSection) {
+  private section: SectionDiffSection;
+
+  constructor(uri: MagitUri) {
     super(uri);
-    this.provideContent(magitState, true);
+    this.section = uri.fragment === 'staged' ? Section.Staged : Section.Unstaged;
   }
 
   provideContent(magitState: MagitRepository, unfoldAll = false) {
@@ -41,8 +43,11 @@ export default class SectionDiffView extends DocumentView {
     ];
   }
 
+  private initialUpdateDone = false;
+
   public update(state: MagitRepository): void {
-    this.provideContent(state);
+    this.provideContent(state, !this.initialUpdateDone);
+    this.initialUpdateDone = true;
     this.triggerUpdate();
   }
 
@@ -57,7 +62,8 @@ export const SectionDiff: RebuildableViewKind<[SectionDiffSection]> = {
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
-    const section = uri.fragment === 'staged' ? Section.Staged : Section.Unstaged;
-    return new SectionDiffView(uri, repo, section);
+    const view = new SectionDiffView(uri);
+    await view.update(repo);
+    return view;
   },
 };
