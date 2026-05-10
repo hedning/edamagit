@@ -10,12 +10,11 @@ import {
   FileType,
   Uri,
 } from 'vscode';
-import { DocumentView } from '../views/general/documentView';
+import { DocumentView, DocumentViewClass } from '../views/general/documentView';
 import { views } from '../extension';
 import { asMagitUri, MagitUri } from '../common/magitUri';
 
-type ViewRebuilder = (uri: MagitUri) => Promise<DocumentView | undefined>;
-type Rebuilder = { test: (uri: MagitUri) => boolean; build: ViewRebuilder };
+type Rebuilder = { authority: string; build: (uri: MagitUri) => Promise<DocumentView | undefined> };
 
 export class MagitFileSystemProvider implements FileSystemProvider {
 
@@ -31,8 +30,11 @@ export class MagitFileSystemProvider implements FileSystemProvider {
   // across a window reload and `views` is empty.
   private rebuilders: Rebuilder[] = [];
 
-  registerRebuilder(test: (uri: MagitUri) => boolean, build: ViewRebuilder): void {
-    this.rebuilders.push({ test, build });
+  register(viewClass: DocumentViewClass): void {
+    this.rebuilders.push({
+      authority: viewClass.UriAuthority,
+      build: uri => viewClass.rebuild(uri),
+    });
   }
 
   fireChanged(uri: MagitUri): void {
@@ -72,12 +74,12 @@ export class MagitFileSystemProvider implements FileSystemProvider {
   }
 
   private canRebuild(uri: MagitUri): boolean {
-    return this.rebuilders.some(r => r.test(uri));
+    return this.rebuilders.some(r => r.authority === uri.authority);
   }
 
   private async rebuild(uri: MagitUri): Promise<DocumentView | undefined> {
     for (const r of this.rebuilders) {
-      if (r.test(uri)) return r.build(uri);
+      if (r.authority === uri.authority) return r.build(uri);
     }
     return undefined;
   }

@@ -9,7 +9,7 @@ import { RefType, Repository } from '../typings/git';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import GitTextUtils from '../utils/gitTextUtils';
 import * as Constants from '../common/constants';
-import { asMagitUri, repoFsPathFromMagitUri } from '../common/magitUri';
+import { asMagitUri, MagitUri, repoFsPathFromMagitUri, repoUriFromMagitUri } from '../common/magitUri';
 
 export default class MagitUtils {
 
@@ -127,6 +127,22 @@ export default class MagitUtils {
     }
 
     return repository;
+  }
+
+  // Look up the MagitRepository keyed by a magit URI, populating it via
+  // `internalMagitStatus` if it isn't cached yet. Used by view rebuilders
+  // when restoring an editor across a window reload — `views` is empty and
+  // we have nothing but the URI to work with.
+  public static async ensureRepoForMagitUri(uri: MagitUri): Promise<MagitRepository | undefined> {
+    const repoUri = repoUriFromMagitUri(uri);
+    const fsPath = repoUri.fsPath;
+    if (!fsPath) return undefined;
+    let repo = magitRepositories.get(fsPath);
+    if (!repo) {
+      repo = await Status.internalMagitStatus(repoUri);
+      magitRepositories.set(fsPath, repo);
+    }
+    return repo;
   }
 
   public static getCurrentMagitRepoAndView(uri: Uri): [MagitRepository | undefined, DocumentView | undefined] {

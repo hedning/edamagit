@@ -1,7 +1,11 @@
+import { workspace } from 'vscode';
+import * as path from 'path';
+import * as JSONC from 'jsonc-parser';
 import { DocumentView } from './general/documentView';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
+import { logPath } from '../extension';
 import * as meta from '../../package.json';
 
 export class HelpView extends DocumentView {
@@ -24,6 +28,17 @@ export class HelpView extends DocumentView {
 
   static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, HelpView.UriPath, { authority: HelpView.UriAuthority });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<HelpView | undefined> {
+    const keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
+    let userKeyBindings: any = [];
+    try {
+      const doc = await workspace.openTextDocument(keybindingsPath);
+      const text = doc.getText().replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+      userKeyBindings = JSONC.parse(text);
+    } catch { }
+    return new HelpView(uri, userKeyBindings);
   }
 
   private static joinTexts(spacing: number, texts: (string | undefined)[]) {

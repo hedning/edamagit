@@ -1,4 +1,5 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
+import MagitUtils from '../utils/magitUtils';
 import { magitConfig } from '../extension';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
@@ -119,5 +120,10 @@ export default class MagitStatusView extends DocumentView {
   static UriAuthority: string = 'status';
   static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, MagitStatusView.UriPath, { authority: MagitStatusView.UriAuthority });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<MagitStatusView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    return repo ? new MagitStatusView(uri, repo) : undefined;
   }
 }

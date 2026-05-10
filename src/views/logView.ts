@@ -13,6 +13,7 @@ import { SemanticTokenTypes } from '../common/constants';
 import { gitRunInUri, LogLevel } from '../utils/gitRawRunner';
 import { Ref } from '../typings/git';
 import ViewUtils from '../utils/viewUtils';
+import MagitUtils from '../utils/magitUtils';
 import assert = require('assert');
 
 /** Box drawing chars
@@ -369,11 +370,22 @@ export default class LogView extends DocumentView {
   static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): MagitUri {
     // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
     // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
-    // commit-detail trick. Reversed in `magitViewBuilders` on rebuild.
+    // commit-detail trick. Reversed in `rebuild`.
     return buildMagitUri(repository.uri, LogView.UriPath, {
       authority: LogView.UriAuthority,
       query: { revs: revs.join(' ').replace(/\//g, '∕'), args: args.join(' ') },
     });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<LogView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    if (!repo) return undefined;
+    const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string } : {};
+    const revs = (q.revs ?? '').replace(/∕/g, '/').split(' ').filter(r => r.length > 0);
+    const args = (q.args ?? '').split(' ').filter(a => a.length > 0);
+    const view = new LogView(uri, repo, args, revs, []);
+    await view.initialUpdate;
+    return view;
   }
 }
 

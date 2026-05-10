@@ -1,6 +1,7 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { Section, SectionHeaderView } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
+import MagitUtils from '../utils/magitUtils';
 import { MagitRepository } from '../models/magitRepository';
 import { TagSectionView } from './tags/tagSectionView';
 import { BranchesSectionView } from './branches/branchesSectionView';
@@ -33,5 +34,10 @@ export default class ShowRefsView extends DocumentView {
 
   static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, ShowRefsView.UriPath, { authority: ShowRefsView.UriAuthority });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<ShowRefsView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    return repo ? new ShowRefsView(uri, repo) : undefined;
   }
 }

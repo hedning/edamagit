@@ -1,5 +1,6 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { DocumentView } from './general/documentView';
+import MagitUtils from '../utils/magitUtils';
 import { MagitRepository } from '../models/magitRepository';
 import { TextView } from './general/textView';
 
@@ -26,5 +27,10 @@ export default class SubmoduleListView extends DocumentView {
 
   static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, SubmoduleListView.UriPath, { authority: SubmoduleListView.UriAuthority });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<SubmoduleListView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    return repo ? new SubmoduleListView(uri, repo) : undefined;
   }
 }

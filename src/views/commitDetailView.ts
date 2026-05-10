@@ -1,5 +1,8 @@
 import { DocumentView } from './general/documentView';
 import { buildMagitUri, MagitUri } from '../common/magitUri';
+import MagitUtils from '../utils/magitUtils';
+import { getRef } from '../commands/visitAtPointCommands';
+import { getCommit } from '../utils/commitCache';
 import { TextView } from './general/textView';
 import { MagitCommit } from '../models/magitCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -71,5 +74,20 @@ export class CommitDetailView extends DocumentView {
       query: { summary, shortHash },
       fragment: commit.hash,
     });
+  }
+
+  static async rebuild(uri: MagitUri): Promise<CommitDetailView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    if (!repo) return undefined;
+    const commitHash = uri.fragment;
+    if (!commitHash) return undefined;
+
+    const refs = repo.remotes.reduce(
+      (prev, remote) => remote.branches.concat(prev),
+      repo.branches.concat(repo.tags),
+    );
+    const { commit, changes, shortstat } = await getRef(repo, commitHash);
+    const parents = await Promise.all(commit.parents.map(p => getCommit(repo.uri, p)));
+    return new CommitDetailView(uri, commit, changes, parents, refs, shortstat);
   }
 }
