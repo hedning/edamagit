@@ -1,10 +1,6 @@
-import { workspace } from 'vscode';
-import { Help, HelpView } from '../views/helpView';
+import { Help } from '../views/helpView';
 import { MagitRepository } from '../models/magitRepository';
-import * as path from 'path';
-import * as JSONC from 'jsonc-parser';
 import ViewUtils from '../utils/viewUtils';
-import { logPath } from '../extension';
 
 export async function magitHelp(repository: MagitRepository) {
   return openHelpView(repository);
@@ -15,15 +11,6 @@ export async function magitDispatch(repository: MagitRepository) {
 }
 
 async function openHelpView(repository: MagitRepository) {
-  let keybindingsPath = path.join(logPath, '..', '..', '..', '..', 'User', 'keybindings.json');
-  let userKeyBindings = [];
-
-  try {
-    const userKeyBindingsDoc = await workspace.openTextDocument(keybindingsPath);
-    const userKeyBindingsText = userKeyBindingsDoc.getText().replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
-    userKeyBindings = JSONC.parse(userKeyBindingsText);
-  } catch (e) { console.error(e); }
-
-  const uri = Help.buildUri(repository);
-  return ViewUtils.showView(uri, new HelpView(uri, userKeyBindings));
+  const view = await ViewUtils.buildOrUpdate(repository, Help);
+  if (view) return ViewUtils.showView(view.uri, view);
 }

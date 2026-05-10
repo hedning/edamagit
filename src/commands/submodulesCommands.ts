@@ -3,7 +3,7 @@ import { MenuUtil, MenuState } from '../menu/menu';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import { window } from 'vscode';
 import * as Fetching from './fetchingCommands';
-import SubmoduleListView, { SubmoduleList } from '../views/submoduleListView';
+import { SubmoduleList } from '../views/submoduleListView';
 import ViewUtils from '../utils/viewUtils';
 
 const submodulesMenu = {
@@ -114,12 +114,8 @@ async function remove({ repository, switches }: MenuState) {
 }
 
 async function listAll({ repository, switches }: MenuState) {
-
-  const uri = SubmoduleList.buildUri(repository);
-
-  let submoduleListView = ViewUtils.createOrUpdateView(repository, uri, () => new SubmoduleListView(uri, repository));
-
-  return ViewUtils.showView(uri, submoduleListView);
+  const view = await ViewUtils.buildOrUpdate(repository, SubmoduleList);
+  if (view) return ViewUtils.showView(view.uri, view);
 }
 
 function fetchAll({ repository, switches }: MenuState) {

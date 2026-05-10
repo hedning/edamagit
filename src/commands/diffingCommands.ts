@@ -6,7 +6,7 @@ import { MenuUtil, MenuState } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
 import { StashDetail, StashDetailView } from '../views/stashDetailView';
 import MagitUtils from '../utils/magitUtils';
-import SectionDiffView, { SectionDiff } from '../views/sectionDiffView';
+import { SectionDiff } from '../views/sectionDiffView';
 import * as VisitAtPoint from './visitAtPointCommands';
 import * as Constants from '../common/constants';
 import { Section } from '../views/general/sectionHeader';
@@ -94,8 +94,8 @@ async function diff(repository: MagitRepository, id: string, args: string[] = []
 
 export async function showDiffSection(repository: MagitRepository, section: Section, preserveFocus = false) {
   if (section !== Section.Staged && section !== Section.Unstaged) return;
-  const uri = SectionDiff.buildUri(repository, section);
-  return ViewUtils.showView(uri, new SectionDiffView(uri, repository, section), { preserveFocus });
+  const view = await ViewUtils.buildOrUpdate(repository, SectionDiff, section);
+  if (view) return ViewUtils.showView(view.uri, view, { preserveFocus });
 }
 
 async function showStash({ repository }: MenuState) {

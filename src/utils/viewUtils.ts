@@ -5,7 +5,7 @@ import { Ref, RefType } from '../typings/git';
 import { Token } from '../views/general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
 import GitTextUtils from './gitTextUtils';
-import { DocumentView } from '../views/general/documentView';
+import { DocumentView, RebuildableViewKind } from '../views/general/documentView';
 import { magitConfig, views } from '../extension';
 
 export default class ViewUtils {
@@ -18,6 +18,24 @@ export default class ViewUtils {
       return existingView as T;
     }
     return viewFactory();
+  }
+
+  // For rebuildable views: routes the live "fresh open" through `kind.build`
+  // so the live and reload paths are literally the same code. Cache hit
+  // refreshes via `update(repo)` like before; cache miss goes through
+  // `kind.build` exactly as the FS provider's rebuild path does.
+  public static async buildOrUpdate<TArgs extends any[]>(
+    repository: MagitRepository,
+    kind: RebuildableViewKind<TArgs>,
+    ...args: TArgs
+  ): Promise<DocumentView | undefined> {
+    const uri = kind.buildUri(repository, ...args);
+    const cached = views.get(uri.toString());
+    if (cached) {
+      cached.update(repository);
+      return cached;
+    }
+    return await kind.build(uri);
   }
 
   public static async showView(uri: Uri, view: DocumentView, textDocumentShowOptions: TextDocumentShowOptions = { preview: false, preserveFocus: false }) {

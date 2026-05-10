@@ -4,7 +4,7 @@ import { magitRepositories, views } from '../extension';
 import FilePathUtils from '../utils/filePathUtils';
 import GitTextUtils from '../utils/gitTextUtils';
 import MagitUtils from '../utils/magitUtils';
-import MagitStatusView, { MagitStatus } from '../views/magitStatusView';
+import { MagitStatus } from '../views/magitStatusView';
 import { Status, Commit, RefType, Repository, Change, Ref } from '../typings/git';
 import { MagitBranch, MagitUpstreamRef } from '../models/magitBranch';
 import { gitRun, gitRunInUri, LogLevel } from '../utils/gitRawRunner';
@@ -70,8 +70,8 @@ export async function magitStatus(): Promise<any> {
 
   if (repository) {
     scheduleForgeStatusAsync(repository);
-    const uri = MagitStatus.buildUri(repository);
-    return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
+    const view = await ViewUtils.buildOrUpdate(repository, MagitStatus);
+    if (view) return ViewUtils.showView(view.uri, view);
   }
 }
 
@@ -96,8 +96,8 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
   }
 
   scheduleForgeStatusAsync(repository);
-  const uri = MagitStatus.buildUri(repository);
-  return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
+  const view = await ViewUtils.buildOrUpdate(repository, MagitStatus);
+  if (view) return ViewUtils.showView(view.uri, view);
 }
 
 export async function internalMagitStatus(rootUri: Uri, gitRepository?: Repository): Promise<MagitRepository> {

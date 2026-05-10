@@ -367,22 +367,27 @@ export default class LogView extends DocumentView {
 
 }
 
-export const Log: RebuildableViewKind<[string[], string[]]> = {
+export const Log: RebuildableViewKind<[string[], string[], string[]]> = {
   authority: 'log',
   // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
   // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
   // commit-detail trick. Reversed in `build`.
-  buildUri: (repo, revs, args) => buildMagitUri(repo.uri, 'log', {
+  buildUri: (repo, revs, args, paths) => buildMagitUri(repo.uri, 'log', {
     authority: Log.authority,
-    query: { revs: revs.join(' ').replace(/\//g, '∕'), args: args.join(' ') },
+    query: {
+      revs: revs.join(' ').replace(/\//g, '∕'),
+      args: args.join(' '),
+      paths: paths.join(' '),
+    },
   }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;
-    const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string } : {};
+    const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string; paths?: string } : {};
     const revs = (q.revs ?? '').replace(/∕/g, '/').split(' ').filter(r => r.length > 0);
     const args = (q.args ?? '').split(' ').filter(a => a.length > 0);
-    const view = new LogView(uri, repo, args, revs, []);
+    const paths = (q.paths ?? '').split(' ').filter(p => p.length > 0);
+    const view = new LogView(uri, repo, args, revs, paths);
     await view.initialUpdate;
     return view;
   },
