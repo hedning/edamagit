@@ -6,41 +6,33 @@ import { MagitLanguageId, MagitUriScheme } from './constants';
 // The repo path is embedded directly so the URI is self-describing —
 // `dirname(uri.path)` recovers the repo so a persisted editor can be rebuilt
 // on first readFile, and tab disambiguation between two repos picks up the
-// differing repo segment naturally. The displayed label is collapsed to just
-// `<leaf>.magit` by the `resourceLabelFormatters` contribution
-// (stripPathSegments), with per-authority overrides that can compose richer
-// labels from the query (which `resourceLabelFormatters` parses as JSON for
-// `${query.<key>}` substitutions).
+// differing repo segment naturally. The leaf is always a simple identifier
+// (no `/`) — view-specific data rides in the query so `lastIndexOf('/')` can
+// safely split repo from leaf. The displayed label is composed by the
+// `resourceLabelFormatters` contribution: a default that strips to the leaf,
+// plus per-authority overrides that pull `${query.<key>}` substitutions out
+// of the JSON-encoded query.
 //
 // The `.magit` suffix wires VS Code's filename-based language detection to
 // the magit language; it's added here so view code can keep its UriPath
 // constants clean.
-//
-// `/` inside a leaf (log revs like `feature/foo..main`) collides with the
-// path separator we use to mark the repo/leaf boundary, so we substitute
-// U+2215 DIVISION SLASH on write and reverse it on read. Visually identical,
-// doesn't trip lastIndexOf('/').
 
 const LeafSuffix = `.${MagitLanguageId}`;
-const LeafSlash = '∕';
 
 export interface MagitUriOptions {
   authority?: string;
-  // Object form is JSON-stringified so VS Code's `resourceLabelFormatters`
-  // can pick out `${query.<key>}` substitutions.
-  query?: string | Record<string, string>;
+  // JSON-stringified so VS Code's `resourceLabelFormatters` can pick out
+  // `${query.<key>}` substitutions.
+  query?: Record<string, string>;
   fragment?: string;
 }
 
 export function buildMagitUri(repoUri: Uri, leaf: string, options: MagitUriOptions = {}): Uri {
-  const query = typeof options.query === 'object' && options.query !== null
-    ? JSON.stringify(options.query)
-    : options.query;
   return Uri.from({
     scheme: MagitUriScheme,
     authority: options.authority ?? '',
-    path: `${repoUri.path}/${leaf.replace(/\//g, LeafSlash)}${LeafSuffix}`,
-    ...(query !== undefined ? { query } : {}),
+    path: `${repoUri.path}/${leaf}${LeafSuffix}`,
+    ...(options.query !== undefined ? { query: JSON.stringify(options.query) } : {}),
     ...(options.fragment !== undefined ? { fragment: options.fragment } : {}),
   });
 }
@@ -63,6 +55,5 @@ export function repoFsPathFromMagitUri(magitUri: Uri): string {
 export function leafFromMagitUri(magitUri: Uri): string {
   const i = magitUri.path.lastIndexOf('/');
   const leaf = magitUri.path.slice(i + 1);
-  const stripped = leaf.endsWith(LeafSuffix) ? leaf.slice(0, -LeafSuffix.length) : leaf;
-  return stripped.replace(new RegExp(LeafSlash, 'g'), '/');
+  return leaf.endsWith(LeafSuffix) ? leaf.slice(0, -LeafSuffix.length) : leaf;
 }

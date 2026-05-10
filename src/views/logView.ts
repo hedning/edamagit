@@ -318,6 +318,7 @@ function parseLog(stdout: string): MagitLogEntry[] {
 export default class LogView extends DocumentView {
 
   static UriPath: string = 'log';
+  static UriAuthority: string = 'log';
   needsUpdate = true
   isFoldable = true;
   args: string[];
@@ -366,8 +367,13 @@ export default class LogView extends DocumentView {
   }
 
   static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
-    const leaf = `Log: ${GitTextUtils.shortCommitMessage(revs.join(' '))}`;
-    return buildMagitUri(repository.uri, leaf, { fragment: args.join('&') });
+    // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
+    // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
+    // commit-detail trick. Reversed in `magitViewBuilders` on rebuild.
+    return buildMagitUri(repository.uri, LogView.UriPath, {
+      authority: LogView.UriAuthority,
+      query: { revs: revs.join(' ').replace(/\//g, '∕'), args: args.join(' ') },
+    });
   }
 }
 

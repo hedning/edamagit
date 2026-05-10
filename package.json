@@ -417,13 +417,11 @@
         }
       },
       {
-        "scheme": "magit-history",
+        "scheme": "magit",
+        "authority": "log",
         "formatting": {
-          "label": "${path} (${query.ref})",
+          "label": "Log: ${query.revs}",
           "separator": "/",
-          "stripPathSegments": 1000,
-          "stripPathStartingSeparator": true,
-          "tildify": true,
           "workspaceSuffix": "magit"
         }
       }

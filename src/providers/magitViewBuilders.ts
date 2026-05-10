@@ -39,13 +39,13 @@ export function registerMagitViewBuilders(provider: MagitFileSystemProvider): vo
   );
 
   provider.registerRebuilder(
-    uri => leafFromMagitUri(uri).startsWith('Log: '),
+    uri => leafFromMagitUri(uri) === LogView.UriPath,
     async uri => {
       const repo = await ensureRepo(uri);
       if (!repo) return undefined;
-      const leaf = leafFromMagitUri(uri);
-      const revs = leaf.slice('Log: '.length).split(' ').filter(r => r.length > 0);
-      const args = uri.fragment ? uri.fragment.split('&') : [];
+      const q = uri.query ? JSON.parse(uri.query) as { revs?: string; args?: string } : {};
+      const revs = (q.revs ?? '').replace(/∕/g, '/').split(' ').filter(r => r.length > 0);
+      const args = (q.args ?? '').split(' ').filter(a => a.length > 0);
       const view = new LogView(uri, repo, args, revs, []);
       await view.initialUpdate;
       return view;
