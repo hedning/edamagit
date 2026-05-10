@@ -34,11 +34,10 @@ export class StashDetailView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static index = 0;
   static encodeLocation(repository: MagitRepository, stash: Stash): MagitUri {
     return buildMagitUri(repository.uri, StashDetailView.UriPath, {
       authority: StashDetailView.UriAuthority,
-      fragment: `stash@{${stash.index}}#${StashDetailView.index++}`,
+      fragment: `stash@{${stash.index}}`,
     });
   }
   // No `static rebuild`: would require re-running `git stash show` against

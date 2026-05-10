@@ -20,13 +20,12 @@ export class BlameView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static index = 0;
   static encodeLocation(repository: MagitRepository, fileUri: Uri): MagitUri {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
     const leaf = `Blame: ${basename}`;
     return buildMagitUri(repository.uri, leaf, {
       authority: BlameView.UriAuthority,
-      fragment: `${fileUri.path}#${BlameView.index++}`,
+      fragment: fileUri.path,
     });
   }
   // No `static rebuild`: would require re-running `git blame` against the

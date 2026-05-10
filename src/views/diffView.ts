@@ -22,11 +22,10 @@ export class DiffView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static index = 0;
   static encodeLocation(repository: MagitRepository, diffId: string): MagitUri {
     return buildMagitUri(repository.uri, DiffView.UriPath, {
       authority: DiffView.UriAuthority,
-      fragment: `${diffId}${DiffView.index++}`,
+      fragment: diffId,
     });
   }
   // No `static rebuild`: DiffView holds the parsed output of a specific

@@ -3,13 +3,17 @@ import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { MagitRepository } from '../models/magitRepository';
+import MagitUtils from '../utils/magitUtils';
+
+// Only Staged/Unstaged are valid sections for this view; other Section
+// values would never produce a useful diff and we'd reject them on rebuild.
+type SectionDiffSection = Section.Staged | Section.Unstaged;
 
 export default class SectionDiffView extends DocumentView {
 
-  static UriPath: string = 'staged';
   static UriAuthority: string = 'sectionDiff';
 
-  constructor(uri: MagitUri, magitState: MagitRepository, private section: Section) {
+  constructor(uri: MagitUri, magitState: MagitRepository, private section: SectionDiffSection) {
     super(uri);
     this.provideContent(magitState, true);
   }
@@ -44,13 +48,18 @@ export default class SectionDiffView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static index = 0;
-  static encodeLocation(repository: MagitRepository): MagitUri {
-    return buildMagitUri(repository.uri, SectionDiffView.UriPath, {
+  static encodeLocation(repository: MagitRepository, section: SectionDiffSection): MagitUri {
+    const leaf = section === Section.Staged ? 'staged' : 'unstaged';
+    return buildMagitUri(repository.uri, leaf, {
       authority: SectionDiffView.UriAuthority,
-      fragment: `${SectionDiffView.index++}`,
+      fragment: leaf,
     });
   }
-  // No `static rebuild`: the section (staged/unstaged) is a constructor
-  // arg, not in the URI. Step 5 will encode it and add a real rebuild.
+
+  static async rebuild(uri: MagitUri): Promise<SectionDiffView | undefined> {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    if (!repo) return undefined;
+    const section = uri.fragment === 'staged' ? Section.Staged : Section.Unstaged;
+    return new SectionDiffView(uri, repo, section);
+  }
 }
