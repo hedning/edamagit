@@ -1,17 +1,13 @@
 import { Uri, window } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
-import { gitRun } from '../utils/gitRawRunner';
 import { Diff, DiffSpec } from '../views/diffView';
 import { MenuUtil, MenuState } from '../menu/menu';
 import { PickMenuUtil, PickMenuItem } from '../menu/pickMenu';
-import { StashDetail, StashDetailView } from '../views/stashDetailView';
+import { StashDetail } from '../views/stashDetailView';
 import MagitUtils from '../utils/magitUtils';
 import { SectionDiff } from '../views/sectionDiffView';
 import * as VisitAtPoint from './visitAtPointCommands';
-import * as Constants from '../common/constants';
 import { Section } from '../views/general/sectionHeader';
-import { Status } from '../typings/git';
-import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import ViewUtils from '../utils/viewUtils';
 
@@ -103,24 +99,8 @@ async function showStash({ repository }: MenuState) {
 }
 
 export async function showStashDetail(repository: MagitRepository, stash: Stash) {
-  const uri = StashDetail.buildUri(repository, stash);
-
-  const ref = `refs/stash@{${stash.index}}`;
-  const { commit, changes: unstaged } = await VisitAtPoint.getRef(repository, ref);
-  const { changes: staged } = await VisitAtPoint.getRef(repository, commit.parents[1]);
-
-  let stashUntrackedFiles: MagitChange[] = [];
-  if (commit.parents.length === 3) {
-    let { changes: untracked } = await VisitAtPoint.getRef(repository, commit.parents[2]);
-
-    stashUntrackedFiles = untracked.map(c => ({
-      ...c,
-      status: Status.UNTRACKED,
-      section: Section.Untracked
-    }));
-  }
-
-  return ViewUtils.showView(uri, new StashDetailView(uri, stash, unstaged, staged, stashUntrackedFiles));
+  const view = await ViewUtils.buildOrUpdate(repository, StashDetail, stash);
+  if (view) return ViewUtils.showView(view.uri, view);
 }
 
 async function showCommit({ repository }: MenuState) {
