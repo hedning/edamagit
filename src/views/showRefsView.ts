@@ -9,11 +9,6 @@ import { RemoteSectionView } from './remotes/remoteSectionView';
 
 export default class ShowRefsView extends DocumentView {
 
-  constructor(uri: MagitUri, magitState: MagitRepository) {
-    super(uri);
-    this.provideContent(magitState);
-  }
-
   provideContent(magitState: MagitRepository) {
 
     this.subViews = [
@@ -36,6 +31,9 @@ export const ShowRefs: RebuildableViewKind<[]> = {
   buildUri: (repo) => buildMagitUri(repo.uri, 'refs', { authority: ShowRefs.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
-    return repo ? new ShowRefsView(uri, repo) : undefined;
+    if (!repo) return undefined;
+    const view = new ShowRefsView(uri);
+    await view.update(repo);
+    return view;
   },
 };

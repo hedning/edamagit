@@ -6,11 +6,6 @@ import { TextView } from './general/textView';
 
 export default class SubmoduleListView extends DocumentView {
 
-  constructor(uri: MagitUri, magitState: MagitRepository) {
-    super(uri);
-    this.provideContent(magitState);
-  }
-
   provideContent(magitState: MagitRepository) {
     this.subViews = [
       ...magitState.submodules.map(submodule => new TextView(`${submodule.name}\t\t${submodule.path}\t\t${submodule.url}`)),
@@ -28,6 +23,9 @@ export const SubmoduleList: RebuildableViewKind<[]> = {
   buildUri: (repo) => buildMagitUri(repo.uri, 'submodules', { authority: SubmoduleList.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
-    return repo ? new SubmoduleListView(uri, repo) : undefined;
+    if (!repo) return undefined;
+    const view = new SubmoduleListView(uri);
+    await view.update(repo);
+    return view;
   },
 };

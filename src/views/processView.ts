@@ -1,6 +1,7 @@
 import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { MagitRepository } from '../models/magitRepository';
+import MagitUtils from '../utils/magitUtils';
 import { processLog } from '../extension';
 import { View } from './general/view';
 import { MagitProcessLogEntry } from '../models/magitProcessLogEntry';
@@ -36,11 +37,6 @@ class ProcessLogEntryView extends View {
 
 export default class ProcessView extends DocumentView {
 
-  constructor(uri: MagitUri) {
-    super(uri);
-    this.provideContent();
-  }
-
   provideContent() {
 
     if (processLog.length > 0) {
@@ -63,5 +59,11 @@ export const Process: RebuildableViewKind<[]> = {
     authority: Process.authority,
     fragment: 'process',
   }),
-  build: async (uri) => new ProcessView(uri),
+  build: async (uri) => {
+    const repo = await MagitUtils.ensureRepoForMagitUri(uri);
+    if (!repo) return undefined;
+    const view = new ProcessView(uri);
+    await view.update(repo);
+    return view;
+  },
 };

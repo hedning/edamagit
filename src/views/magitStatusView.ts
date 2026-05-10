@@ -26,11 +26,6 @@ export default class MagitStatusView extends DocumentView {
 
   public HEAD?: MagitBranch;
 
-  constructor(uri: MagitUri, magitState: MagitRepository) {
-    super(uri);
-    this.provideContent(magitState);
-  }
-
   provideContent(magitState: MagitRepository) {
     this.HEAD = magitState.HEAD;
     this.subViews = [];
@@ -124,6 +119,9 @@ export const MagitStatus: RebuildableViewKind<[]> = {
   buildUri: (repo) => buildMagitUri(repo.uri, 'status', { authority: MagitStatus.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
-    return repo ? new MagitStatusView(uri, repo) : undefined;
+    if (!repo) return undefined;
+    const view = new MagitStatusView(uri);
+    await view.update(repo);
+    return view;
   },
 };

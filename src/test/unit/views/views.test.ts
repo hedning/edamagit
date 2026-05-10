@@ -264,7 +264,8 @@ stash@{1} On feature: experimental work`
     test('clean repo with HEAD shows just the header line', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'abc123def', message: 'Initial commit' });
       const repo = makeRepository({ HEAD });
-      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo));
+      view.update(repo);
 
       assert.strictEqual(
         renderView(view),
@@ -296,7 +297,8 @@ stash@{1} On feature: experimental work`
         ],
       });
 
-      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo));
+      view.update(repo);
 
       assert.strictEqual(
         renderView(view),
@@ -335,7 +337,8 @@ bbbbbbb Earlier work
         }),
       });
       const repo = makeRepository({ HEAD });
-      const view = new MagitStatusView(MagitStatus.buildUri(repo), repo);
+      const view = new MagitStatusView(MagitStatus.buildUri(repo));
+      view.update(repo);
 
       assert.strictEqual(
         renderView(view),
