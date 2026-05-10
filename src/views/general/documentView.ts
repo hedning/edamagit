@@ -13,7 +13,7 @@ export abstract class DocumentView extends View {
     super();
   }
 
-  public abstract update(state: MagitRepository): void;
+  public abstract update(state: MagitRepository): void | Promise<void>;
 
   public triggerUpdate() {
     magitFileSystemProvider.fireChanged(this.uri);
