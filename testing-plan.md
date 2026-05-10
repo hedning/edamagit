@@ -1,4 +1,4 @@
-Create a thorough testing plan.
+Create a thorough testing plan, there's already some tests in the repo, but consider this greenfield.
 
 The extension sits between vscode as the final render interaction layer, and git.
 
@@ -6,6 +6,30 @@ Trying to mock these layers fully is difficult to get consistently right.
 
 One of the main things I want is making the tests readable, and it's OK creating some dedicated
 test only parsers/renderers to get us there
+
+Edamagit is text based interface for git.
+
+Eg. here's how the MagitStatusView might look like for instance:
+```status
+Head:     switch-to-fs-provider ...
+Push:     origin/switch-to-fs-provider (claude) constants: split MagitLanguageId from MagitUriScheme
+
+Unstaged changes (1)
+modified   src/commands/copyBufferRevisionCommands.ts
+@@ -14,7 +14,7 @@ export async function copyBufferRevisionCommands(repository: MagitRepository, cu
+         sectionValue = currentView.commit?.hash;
+     }
+ 
+-    if (sectionValue) {
++    if (sectionValue) { // some change
+         await env.clipboard.writeText(sectionValue);
+         window.setStatusBarMessage(sectionValue, Constants.StatusMessageDisplayTimeout);
+     }
+
+Recent commits
+319198b switch-to-fs-provider ...
+d59ec88 start on a better test plan
+```
 
 # git backend
 
@@ -15,6 +39,7 @@ sure we don't mess up.
 Ie. having little dsl like framework, where we can specify a commit and the worktree
 it should describe, optionally being able to specify patches instead of full content:
 
+We'd use a leading space to markup file content (ala. diffs):
 ```
 commit: foo
 > filename.py
@@ -59,10 +84,10 @@ make it approachable.
 # other providers
 
 We also have symbol and highlighting providers. Here again we should consider
-adding a markup language on top of the text interface:
-```
+adding a markup language on top of the text interface to test the highlighter:
+```log.magit
  0aa5e3a THB  56 minut… ┯ switch-to-fs-provider (claude) gitHistory: encode repo path in URI, drop spawn-from-file's-dir
-                          ^  highlight-type   ^
+                          ^  branch-type      ^
  c253084 THB  1 hour    ┿ (claude) package: restore magit-history label formatter
  d5d2f9f THB  1 hour    ┿ (claude) views: Blame becomes rebuildable
 ```
