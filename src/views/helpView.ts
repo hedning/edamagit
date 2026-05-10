@@ -26,7 +26,7 @@ export class HelpView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static encodeLocation(repository: MagitRepository): MagitUri {
+  static buildUri(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, HelpView.UriPath, { authority: HelpView.UriAuthority });
   }
 

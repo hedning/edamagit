@@ -20,7 +20,7 @@ export class BlameView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static encodeLocation(repository: MagitRepository, fileUri: Uri): MagitUri {
+  static buildUri(repository: MagitRepository, fileUri: Uri): MagitUri {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
     const leaf = `Blame: ${basename}`;
     return buildMagitUri(repository.uri, leaf, {

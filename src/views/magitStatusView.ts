@@ -118,7 +118,7 @@ export default class MagitStatusView extends DocumentView {
   }
 
   static UriAuthority: string = 'status';
-  static encodeLocation(repository: MagitRepository): MagitUri {
+  static buildUri(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, MagitStatusView.UriPath, { authority: MagitStatusView.UriAuthority });
   }
 

@@ -115,7 +115,7 @@ async function remove({ repository, switches }: MenuState) {
 
 async function listAll({ repository, switches }: MenuState) {
 
-  const uri = SubmoduleListView.encodeLocation(repository);
+  const uri = SubmoduleListView.buildUri(repository);
 
   let submoduleListView = ViewUtils.createOrUpdateView(repository, uri, () => new SubmoduleListView(uri, repository));
 

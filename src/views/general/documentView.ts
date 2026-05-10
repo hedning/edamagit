@@ -22,7 +22,7 @@ export abstract class DocumentView extends View {
 
 // Contract for a `DocumentView` subclass that participates in URI-based
 // rebuild dispatch. The FS provider keys off `UriAuthority`; `rebuild` is the
-// inverse of the subclass's `encodeLocation` and is called when an editor is
+// inverse of the subclass's `buildUri` and is called when an editor is
 // restored across a window reload (so `views` is empty). Returning
 // `undefined` is honest: it tells the FS provider this URI's tab can't be
 // brought back, and VS Code drops it.

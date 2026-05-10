@@ -58,7 +58,7 @@ export class CommitDetailView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, commit: Commit): MagitUri {
+  static buildUri(repository: MagitRepository, commit: Commit): MagitUri {
     // VS Code's `getUriBasenameLabel` formats the label and then runs
     // `basename` on it with the formatter's separator, so a literal `/` in
     // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix

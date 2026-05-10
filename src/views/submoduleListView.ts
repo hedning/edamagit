@@ -25,7 +25,7 @@ export default class SubmoduleListView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository): MagitUri {
+  static buildUri(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, SubmoduleListView.UriPath, { authority: SubmoduleListView.UriAuthority });
   }
 

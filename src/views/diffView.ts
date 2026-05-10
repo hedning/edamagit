@@ -22,7 +22,7 @@ export class DiffView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static encodeLocation(repository: MagitRepository, diffId: string): MagitUri {
+  static buildUri(repository: MagitRepository, diffId: string): MagitUri {
     return buildMagitUri(repository.uri, DiffView.UriPath, {
       authority: DiffView.UriAuthority,
       fragment: diffId,

@@ -367,7 +367,7 @@ export default class LogView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): MagitUri {
+  static buildUri(repository: MagitRepository, revs: string[], args: string[]): MagitUri {
     // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
     // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
     // commit-detail trick. Reversed in `rebuild`.

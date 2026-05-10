@@ -40,7 +40,7 @@ export async function branching(repository: MagitRepository) {
 }
 
 export async function showRefs(repository: MagitRepository) {
-  const uri = ShowRefsView.encodeLocation(repository);
+  const uri = ShowRefsView.buildUri(repository);
 
   let refsView = ViewUtils.createOrUpdateView(repository, uri, () => new ShowRefsView(uri, repository));
 

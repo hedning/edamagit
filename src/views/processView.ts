@@ -58,7 +58,7 @@ export default class ProcessView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository): MagitUri {
+  static buildUri(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, ProcessView.UriPath, {
       authority: ProcessView.UriAuthority,
       fragment: 'process',

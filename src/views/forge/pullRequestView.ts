@@ -36,7 +36,7 @@ export class PullRequestView extends DocumentView {
     }
   }
 
-  static encodeLocation(repository: MagitRepository, pullRequest: PullRequest): MagitUri {
+  static buildUri(repository: MagitRepository, pullRequest: PullRequest): MagitUri {
     return buildMagitUri(repository.uri, PullRequestView.UriPath, {
       authority: PullRequestView.UriAuthority,
       fragment: `${pullRequest.number}`,

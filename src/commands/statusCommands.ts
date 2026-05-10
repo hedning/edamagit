@@ -45,7 +45,7 @@ export async function magitStatus(): Promise<any> {
 
   if (repository) {
 
-    const uri = MagitStatusView.encodeLocation(repository);
+    const uri = MagitStatusView.buildUri(repository);
 
     // Checks for existing Magit status view
     let view = views.get(uri.toString());
@@ -70,7 +70,7 @@ export async function magitStatus(): Promise<any> {
 
   if (repository) {
     scheduleForgeStatusAsync(repository);
-    const uri = MagitStatusView.encodeLocation(repository);
+    const uri = MagitStatusView.buildUri(repository);
     return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
   }
 }
@@ -85,7 +85,7 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
   let repository = magitRepositories.get(workTreeUri.fsPath);
 
   if (repository) {
-    const uri = MagitStatusView.encodeLocation(repository);
+    const uri = MagitStatusView.buildUri(repository);
     if (views.get(uri.toString())) {
       MagitUtils.magitStatusAndUpdate(repository);
       return workspace.openTextDocument(uri).then(doc => window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), preview: false }));
@@ -96,7 +96,7 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
   }
 
   scheduleForgeStatusAsync(repository);
-  const uri = MagitStatusView.encodeLocation(repository);
+  const uri = MagitStatusView.buildUri(repository);
   return ViewUtils.showView(uri, ViewUtils.createOrUpdateView(repository, uri, () => new MagitStatusView(uri, repository!)));
 }
 

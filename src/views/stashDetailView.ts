@@ -34,7 +34,7 @@ export class StashDetailView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static encodeLocation(repository: MagitRepository, stash: Stash): MagitUri {
+  static buildUri(repository: MagitRepository, stash: Stash): MagitUri {
     return buildMagitUri(repository.uri, StashDetailView.UriPath, {
       authority: StashDetailView.UriAuthority,
       fragment: `stash@{${stash.index}}`,

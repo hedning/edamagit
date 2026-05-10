@@ -32,7 +32,7 @@ export default class ShowRefsView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository): MagitUri {
+  static buildUri(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, ShowRefsView.UriPath, { authority: ShowRefsView.UriAuthority });
   }
 

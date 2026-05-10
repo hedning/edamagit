@@ -48,7 +48,7 @@ export default class SectionDiffView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository, section: SectionDiffSection): MagitUri {
+  static buildUri(repository: MagitRepository, section: SectionDiffSection): MagitUri {
     const leaf = section === Section.Staged ? 'staged' : 'unstaged';
     return buildMagitUri(repository.uri, leaf, {
       authority: SectionDiffView.UriAuthority,

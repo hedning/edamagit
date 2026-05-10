@@ -36,7 +36,7 @@ export class IssueView extends DocumentView {
     }
   }
 
-  static encodeLocation(repository: MagitRepository, issue: Issue): MagitUri {
+  static buildUri(repository: MagitRepository, issue: Issue): MagitUri {
     return buildMagitUri(repository.uri, IssueView.UriPath, {
       authority: IssueView.UriAuthority,
       fragment: `${issue.number}`,

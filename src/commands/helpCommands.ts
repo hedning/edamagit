@@ -24,6 +24,6 @@ async function openHelpView(repository: MagitRepository) {
     userKeyBindings = JSONC.parse(userKeyBindingsText);
   } catch (e) { console.error(e); }
 
-  const uri = HelpView.encodeLocation(repository);
+  const uri = HelpView.buildUri(repository);
   return ViewUtils.showView(uri, new HelpView(uri, userKeyBindings));
 }

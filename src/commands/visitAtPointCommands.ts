@@ -95,13 +95,13 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;
-    const uri = IssueView.encodeLocation(repository, issue);
+    const uri = IssueView.buildUri(repository, issue);
     const issueView = ViewUtils.createOrUpdateView(repository, uri, () => new IssueView(uri, issue));
     return ViewUtils.showView(uri, issueView);
 
   } else if (selectedView instanceof PullRequestItemView) {
     const pullRequest = selectedView.pullRequest;
-    const uri = PullRequestView.encodeLocation(repository, pullRequest);
+    const uri = PullRequestView.buildUri(repository, pullRequest);
     let pullRequestView = ViewUtils.createOrUpdateView(repository, uri, () => new PullRequestView(uri, pullRequest));
 
     return ViewUtils.showView(uri, pullRequestView);
@@ -227,7 +227,7 @@ export async function visitCommit(magitState: MagitRepository, commitHash: strin
   const { commit, changes, shortstat } = await getRef(magitState, commitHash);
   const parents = await Promise.all(commit.parents.map(p => getCommit(magitState.uri, p)));
 
-  const uri = CommitDetailView.encodeLocation(magitState, commit);
+  const uri = CommitDetailView.buildUri(magitState, commit);
   const view = ViewUtils.createOrUpdateView(magitState, uri, () => new CommitDetailView(uri, commit, changes, parents, refs, shortstat))
   return ViewUtils.showView(uri, view);
 }
