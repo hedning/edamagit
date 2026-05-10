@@ -14,6 +14,13 @@ import { MagitLanguageId, MagitUriScheme } from './constants';
 // View-specific data rides in the query as JSON, where it's available to
 // per-authority `resourceLabelFormatters` entries via `${query.<key>}`.
 
+// Nominal brand: `MagitUri` is a `Uri` produced by `buildMagitUri` (or
+// validated by `asMagitUri`). The brand is compile-time only — it doesn't
+// affect runtime — and exists so `DocumentView.uri` can't be set from an
+// arbitrary `Uri` without going through the canonical builder/validator.
+declare const MagitUriBrand: unique symbol;
+export type MagitUri = Uri & { readonly [MagitUriBrand]: true };
+
 const LeafSuffix = `.${MagitLanguageId}`;
 
 export interface MagitUriOptions {
@@ -24,17 +31,25 @@ export interface MagitUriOptions {
   fragment?: string;
 }
 
-export function buildMagitUri(repoUri: Uri, leaf: string, options: MagitUriOptions = {}): Uri {
+export function buildMagitUri(repoUri: Uri, leaf: string, options: MagitUriOptions = {}): MagitUri {
   return Uri.from({
     scheme: MagitUriScheme,
     authority: options.authority ?? '',
     path: `${repoUri.path}/${leaf}${LeafSuffix}`,
     ...(options.query !== undefined ? { query: JSON.stringify(options.query) } : {}),
     ...(options.fragment !== undefined ? { fragment: options.fragment } : {}),
-  });
+  }) as MagitUri;
 }
 
-export function repoUriFromMagitUri(magitUri: Uri): Uri {
+// Validate a `Uri` received from VS Code (e.g. inside the FS provider) is in
+// the magit shape, and return it branded. Used at boundaries.
+export function asMagitUri(uri: Uri): MagitUri | undefined {
+  if (uri.scheme !== MagitUriScheme) return undefined;
+  if (uri.path.lastIndexOf('/') <= 0) return undefined;
+  return uri as MagitUri;
+}
+
+export function repoUriFromMagitUri(magitUri: MagitUri): Uri {
   const i = magitUri.path.lastIndexOf('/');
   return magitUri.with({
     scheme: 'file',
@@ -45,6 +60,6 @@ export function repoUriFromMagitUri(magitUri: Uri): Uri {
   });
 }
 
-export function repoFsPathFromMagitUri(magitUri: Uri): string {
+export function repoFsPathFromMagitUri(magitUri: MagitUri): string {
   return repoUriFromMagitUri(magitUri).fsPath;
 }

@@ -1,4 +1,4 @@
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { magitConfig } from '../extension';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
@@ -6,7 +6,6 @@ import { DocumentView } from './general/documentView';
 import { StashSectionView } from './stashes/stashSectionView';
 import { CommitSectionView } from './commits/commitSectionView';
 import { LineBreakView } from './general/lineBreakView';
-import { Uri } from 'vscode';
 import { BranchHeaderSectionView } from './branches/branchHeaderSectionView';
 import { MergingSectionView } from './merging/mergingSectionView';
 import { UnsourcedCommitSectionView } from './commits/unsourcedCommitsSectionView';
@@ -26,7 +25,7 @@ export default class MagitStatusView extends DocumentView {
   static UriPath: string = 'status';
   public HEAD?: MagitBranch;
 
-  constructor(uri: Uri, magitState: MagitRepository) {
+  constructor(uri: MagitUri, magitState: MagitRepository) {
     super(uri);
     this.provideContent(magitState);
   }
@@ -118,7 +117,7 @@ export default class MagitStatusView extends DocumentView {
   }
 
   static UriAuthority: string = 'status';
-  static encodeLocation(repository: MagitRepository): Uri {
+  static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, MagitStatusView.UriPath, { authority: MagitStatusView.UriAuthority });
   }
 }

@@ -1,7 +1,6 @@
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
 import { ChangeSectionView } from './changes/changesSectionView';
 import { MagitRepository } from '../models/magitRepository';
 
@@ -9,7 +8,7 @@ export default class SectionDiffView extends DocumentView {
 
   static UriPath: string = 'staged';
 
-  constructor(uri: Uri, magitState: MagitRepository, private section: Section) {
+  constructor(uri: MagitUri, magitState: MagitRepository, private section: Section) {
     super(uri);
     this.provideContent(magitState, true);
   }
@@ -45,7 +44,7 @@ export default class SectionDiffView extends DocumentView {
   }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository): Uri {
+  static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, SectionDiffView.UriPath, { fragment: `${SectionDiffView.index++}` });
   }
 }

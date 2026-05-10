@@ -1,6 +1,6 @@
 import { DocumentView } from './general/documentView';
 import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 
@@ -9,7 +9,7 @@ export class BlameView extends DocumentView {
   isHighlightable = false;
   needsUpdate = false;
 
-  constructor(uri: Uri, private blame: string) {
+  constructor(uri: MagitUri, private blame: string) {
     super(uri);
 
     const blameTextView = new TextView(blame);
@@ -20,7 +20,7 @@ export class BlameView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, fileUri: Uri): Uri {
+  static encodeLocation(repository: MagitRepository, fileUri: Uri): MagitUri {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
     const leaf = `Blame: ${basename}`;
     return buildMagitUri(repository.uri, leaf, { fragment: `${fileUri.path}#${BlameView.index++}` });

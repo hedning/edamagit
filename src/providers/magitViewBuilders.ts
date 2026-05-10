@@ -1,4 +1,4 @@
-import { Uri, workspace } from 'vscode';
+import { workspace } from 'vscode';
 import * as path from 'path';
 import * as JSONC from 'jsonc-parser';
 
@@ -14,9 +14,9 @@ import { getRef } from '../commands/visitAtPointCommands';
 import { getCommit } from '../utils/commitCache';
 import { logPath, magitRepositories } from '../extension';
 import { MagitRepository } from '../models/magitRepository';
-import { repoUriFromMagitUri } from '../common/magitUri';
+import { MagitUri, repoUriFromMagitUri } from '../common/magitUri';
 
-async function ensureRepo(uri: Uri): Promise<MagitRepository | undefined> {
+async function ensureRepo(uri: MagitUri): Promise<MagitRepository | undefined> {
   const repoUri = repoUriFromMagitUri(uri);
   const fsPath = repoUri.fsPath;
   if (!fsPath) return undefined;

@@ -1,6 +1,5 @@
 import { DocumentView } from '../general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../../common/magitUri';
+import { buildMagitUri, MagitUri } from '../../common/magitUri';
 import { TextView, UnclickableTextView } from '../general/textView';
 import { PullRequest } from '../../forge/model/pullRequest';
 import { MagitRepository } from '../../models/magitRepository';
@@ -12,7 +11,7 @@ export class PullRequestView extends DocumentView {
 
   static UriPath: string = 'pr';
 
-  constructor(uri: Uri, public pullRequest: PullRequest) {
+  constructor(uri: MagitUri, public pullRequest: PullRequest) {
     super(uri);
     this.provideContent(pullRequest);
   }
@@ -36,7 +35,7 @@ export class PullRequestView extends DocumentView {
     }
   }
 
-  static encodeLocation(repository: MagitRepository, pullRequest: PullRequest): Uri {
+  static encodeLocation(repository: MagitRepository, pullRequest: PullRequest): MagitUri {
     return buildMagitUri(repository.uri, PullRequestView.UriPath, { fragment: `${pullRequest.number}` });
   }
 }

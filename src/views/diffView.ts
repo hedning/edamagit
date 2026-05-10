@@ -1,6 +1,5 @@
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import { gitRun } from '../utils/gitRawRunner';
@@ -14,7 +13,7 @@ export class DiffView extends DocumentView {
   isHighlightable = false;
   needsUpdate = false;
 
-  constructor(uri: Uri, private changes: MagitChange[]) {
+  constructor(uri: MagitUri, private changes: MagitChange[]) {
     super(uri);
 
     this.addSubview(new ChangeSectionView(Section.Changes, changes));
@@ -23,7 +22,7 @@ export class DiffView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, diffId: string): Uri {
+  static encodeLocation(repository: MagitRepository, diffId: string): MagitUri {
     return buildMagitUri(repository.uri, DiffView.UriPath, { fragment: `${diffId}${DiffView.index++}` });
   }
 }

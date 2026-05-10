@@ -1,6 +1,5 @@
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitCommit } from '../models/magitCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -19,7 +18,7 @@ export class CommitDetailView extends DocumentView {
   isHighlightable = true;
   needsUpdate = false;
 
-  constructor(uri: Uri, public commit: MagitCommit, changes: MagitChange[], parents: Commit[], refs: Ref[], shortstat?: string) {
+  constructor(uri: MagitUri, public commit: MagitCommit, changes: MagitChange[], parents: Commit[], refs: Ref[], shortstat?: string) {
     super(uri);
 
 
@@ -56,7 +55,7 @@ export class CommitDetailView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, commit: Commit): Uri {
+  static encodeLocation(repository: MagitRepository, commit: Commit): MagitUri {
     // VS Code's `getUriBasenameLabel` formats the label and then runs
     // `basename` on it with the formatter's separator, so a literal `/` in
     // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix

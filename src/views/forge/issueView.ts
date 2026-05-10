@@ -1,6 +1,5 @@
 import { DocumentView } from '../general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../../common/magitUri';
+import { buildMagitUri, MagitUri } from '../../common/magitUri';
 import { TextView, UnclickableTextView } from '../general/textView';
 import { Issue, IssueComment } from '../../forge/model/issue';
 import { MagitRepository } from '../../models/magitRepository';
@@ -12,7 +11,7 @@ export class IssueView extends DocumentView {
 
   static UriPath: string = 'issue';
 
-  constructor(uri: Uri, public issue: Issue) {
+  constructor(uri: MagitUri, public issue: Issue) {
     super(uri);
     this.provideContent(issue);
   }
@@ -36,7 +35,7 @@ export class IssueView extends DocumentView {
     }
   }
 
-  static encodeLocation(repository: MagitRepository, issue: Issue): Uri {
+  static encodeLocation(repository: MagitRepository, issue: Issue): MagitUri {
     return buildMagitUri(repository.uri, IssueView.UriPath, { fragment: `${issue.number}` });
   }
 }

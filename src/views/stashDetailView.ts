@@ -1,6 +1,5 @@
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import { ChangeSectionView } from './changes/changesSectionView';
@@ -13,7 +12,7 @@ export class StashDetailView extends DocumentView {
   static UriPath: string = 'stash';
   needsUpdate = false;
 
-  constructor(public uri: Uri, stash: Stash, unstaged: MagitChange[], staged: MagitChange[], untracked: MagitChange[]) {
+  constructor(public uri: MagitUri, stash: Stash, unstaged: MagitChange[], staged: MagitChange[], untracked: MagitChange[]) {
     super(uri);
 
     this.addSubview(new TextView(`Stash@{${stash.index}} ${stash.description}`));
@@ -35,7 +34,7 @@ export class StashDetailView extends DocumentView {
   public update(state: MagitRepository): void { }
 
   static index = 0;
-  static encodeLocation(repository: MagitRepository, stash: Stash): Uri {
+  static encodeLocation(repository: MagitRepository, stash: Stash): MagitUri {
     return buildMagitUri(repository.uri, StashDetailView.UriPath, { fragment: `stash@{${stash.index}}#${StashDetailView.index++}` });
   }
 }

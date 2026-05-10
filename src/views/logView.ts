@@ -1,6 +1,6 @@
 import formatDistanceToNowStrict from 'date-fns/formatDistanceToNowStrict';
 import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { MagitLog } from '../models/magitLog';
 import { MagitLogEntry } from '../models/magitLogCommit';
 import { MagitRepository } from '../models/magitRepository';
@@ -329,7 +329,7 @@ export default class LogView extends DocumentView {
    *  first fetch instead of receiving a big content swap mid-flight. */
   initialUpdate: Promise<void>;
 
-  constructor(uri: Uri, repository: MagitRepository, args: string[], revs: string[], paths: string[]) {
+  constructor(uri: MagitUri, repository: MagitRepository, args: string[], revs: string[], paths: string[]) {
     super(uri);
     this.args = args;
     this.revs = revs;
@@ -366,7 +366,7 @@ export default class LogView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): Uri {
+  static encodeLocation(repository: MagitRepository, revs: string[], args: string[]): MagitUri {
     // U+2215 substitution on revs so `getUriBasenameLabel` doesn't chop the
     // `Log: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
     // commit-detail trick. Reversed in `magitViewBuilders` on rebuild.

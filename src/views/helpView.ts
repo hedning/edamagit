@@ -1,6 +1,5 @@
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { TextView } from './general/textView';
 import { MagitRepository } from '../models/magitRepository';
 import * as meta from '../../package.json';
@@ -12,7 +11,7 @@ export class HelpView extends DocumentView {
   isHighlightable = false;
   needsUpdate = false;
 
-  constructor(uri: Uri, userKeyBindings: any) {
+  constructor(uri: MagitUri, userKeyBindings: any) {
     super(uri);
 
     let binds = HelpView.generateBindings(userKeyBindings);
@@ -23,7 +22,7 @@ export class HelpView extends DocumentView {
 
   public update(state: MagitRepository): void { }
 
-  static encodeLocation(repository: MagitRepository): Uri {
+  static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, HelpView.UriPath, { authority: HelpView.UriAuthority });
   }
 

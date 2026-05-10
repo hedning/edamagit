@@ -9,7 +9,7 @@ import { RefType, Repository } from '../typings/git';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import GitTextUtils from '../utils/gitTextUtils';
 import * as Constants from '../common/constants';
-import { repoFsPathFromMagitUri } from '../common/magitUri';
+import { asMagitUri, repoFsPathFromMagitUri } from '../common/magitUri';
 
 export default class MagitUtils {
 
@@ -62,8 +62,9 @@ export default class MagitUtils {
     let magitRepository: MagitRepository | undefined;
 
     if (uri) {
-      if (uri.scheme === Constants.MagitUriScheme) {
-        magitRepository = magitRepositories.get(repoFsPathFromMagitUri(uri));
+      const magitUri = asMagitUri(uri);
+      if (magitUri) {
+        magitRepository = magitRepositories.get(repoFsPathFromMagitUri(magitUri));
       }
       if (!magitRepository) {
         magitRepository = this.getMagitRepoThatContainsFile(uri);
@@ -129,8 +130,10 @@ export default class MagitUtils {
   }
 
   public static getCurrentMagitRepoAndView(uri: Uri): [MagitRepository | undefined, DocumentView | undefined] {
-    const repository = magitRepositories.get(repoFsPathFromMagitUri(uri));
-    const currentView = views.get(uri.toString());
+    const magitUri = asMagitUri(uri);
+    if (!magitUri) return [undefined, undefined];
+    const repository = magitRepositories.get(repoFsPathFromMagitUri(magitUri));
+    const currentView = views.get(magitUri.toString());
     return [repository, currentView];
   }
 

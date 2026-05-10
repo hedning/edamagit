@@ -1,7 +1,7 @@
 import { View } from './view';
-import { Uri } from 'vscode';
 import { MagitRepository } from '../../models/magitRepository';
 import { magitFileSystemProvider } from '../../providers/magitFileSystemProvider';
+import { MagitUri } from '../../common/magitUri';
 
 export abstract class DocumentView extends View {
 
@@ -9,7 +9,7 @@ export abstract class DocumentView extends View {
 
   needsUpdate: boolean = true;
 
-  constructor(public uri: Uri) {
+  constructor(public uri: MagitUri) {
     super();
   }
 

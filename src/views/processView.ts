@@ -1,6 +1,5 @@
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { processLog } from '../extension';
 import { View } from './general/view';
@@ -39,7 +38,7 @@ export default class ProcessView extends DocumentView {
 
   static UriPath: string = 'process';
 
-  constructor(uri: Uri) {
+  constructor(uri: MagitUri) {
     super(uri);
     this.provideContent();
   }
@@ -58,7 +57,7 @@ export default class ProcessView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository): Uri {
+  static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, ProcessView.UriPath, { fragment: 'process' });
   }
 }

@@ -1,7 +1,6 @@
-import { buildMagitUri } from '../common/magitUri';
+import { buildMagitUri, MagitUri } from '../common/magitUri';
 import { Section, SectionHeaderView } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
-import { Uri } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { TagSectionView } from './tags/tagSectionView';
 import { BranchesSectionView } from './branches/branchesSectionView';
@@ -12,7 +11,7 @@ export default class ShowRefsView extends DocumentView {
   static UriPath: string = 'refs';
   static UriAuthority: string = 'refs';
 
-  constructor(uri: Uri, magitState: MagitRepository) {
+  constructor(uri: MagitUri, magitState: MagitRepository) {
     super(uri);
     this.provideContent(magitState);
   }
@@ -32,7 +31,7 @@ export default class ShowRefsView extends DocumentView {
     this.triggerUpdate();
   }
 
-  static encodeLocation(repository: MagitRepository): Uri {
+  static encodeLocation(repository: MagitRepository): MagitUri {
     return buildMagitUri(repository.uri, ShowRefsView.UriPath, { authority: ShowRefsView.UriAuthority });
   }
 }

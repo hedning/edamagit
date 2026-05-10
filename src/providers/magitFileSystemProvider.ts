@@ -12,9 +12,10 @@ import {
 } from 'vscode';
 import { DocumentView } from '../views/general/documentView';
 import { views } from '../extension';
+import { asMagitUri, MagitUri } from '../common/magitUri';
 
-type ViewRebuilder = (uri: Uri) => Promise<DocumentView | undefined>;
-type Rebuilder = { test: (uri: Uri) => boolean; build: ViewRebuilder };
+type ViewRebuilder = (uri: MagitUri) => Promise<DocumentView | undefined>;
+type Rebuilder = { test: (uri: MagitUri) => boolean; build: ViewRebuilder };
 
 export class MagitFileSystemProvider implements FileSystemProvider {
 
@@ -30,11 +31,11 @@ export class MagitFileSystemProvider implements FileSystemProvider {
   // across a window reload and `views` is empty.
   private rebuilders: Rebuilder[] = [];
 
-  registerRebuilder(test: (uri: Uri) => boolean, build: ViewRebuilder): void {
+  registerRebuilder(test: (uri: MagitUri) => boolean, build: ViewRebuilder): void {
     this.rebuilders.push({ test, build });
   }
 
-  fireChanged(uri: Uri): void {
+  fireChanged(uri: MagitUri): void {
     this.mtimes.set(uri.toString(), Date.now());
     this._emitter.fire([{ type: FileChangeType.Changed, uri }]);
   }
@@ -44,34 +45,37 @@ export class MagitFileSystemProvider implements FileSystemProvider {
   }
 
   async stat(uri: Uri): Promise<FileStat> {
-    if (views.has(uri.toString()) || this.canRebuild(uri)) {
+    const magitUri = asMagitUri(uri);
+    if (magitUri && (views.has(magitUri.toString()) || this.canRebuild(magitUri))) {
       return {
         type: FileType.File,
         ctime: 0,
-        mtime: this.mtimes.get(uri.toString()) ?? 0,
-        size: this.sizes.get(uri.toString()) ?? 0,
+        mtime: this.mtimes.get(magitUri.toString()) ?? 0,
+        size: this.sizes.get(magitUri.toString()) ?? 0,
       };
     }
     throw FileSystemError.FileNotFound(uri);
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
-    let view = views.get(uri.toString());
+    const magitUri = asMagitUri(uri);
+    if (!magitUri) throw FileSystemError.FileNotFound(uri);
+    let view = views.get(magitUri.toString());
     if (!view) {
-      view = await this.rebuild(uri);
+      view = await this.rebuild(magitUri);
       if (!view) throw FileSystemError.FileNotFound(uri);
-      views.set(uri.toString(), view);
+      views.set(magitUri.toString(), view);
     }
     const bytes = Buffer.from(view.render(0).join('\n'), 'utf8');
-    this.sizes.set(uri.toString(), bytes.length);
+    this.sizes.set(magitUri.toString(), bytes.length);
     return bytes;
   }
 
-  private canRebuild(uri: Uri): boolean {
+  private canRebuild(uri: MagitUri): boolean {
     return this.rebuilders.some(r => r.test(uri));
   }
 
-  private async rebuild(uri: Uri): Promise<DocumentView | undefined> {
+  private async rebuild(uri: MagitUri): Promise<DocumentView | undefined> {
     for (const r of this.rebuilders) {
       if (r.test(uri)) return r.build(uri);
     }
