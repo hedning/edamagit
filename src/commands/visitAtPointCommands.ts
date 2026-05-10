@@ -4,6 +4,7 @@ import { CommitItemView } from '../views/commits/commitSectionView';
 import { DocumentView } from '../views/general/documentView';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
 import GitTextUtils from '../utils/gitTextUtils';
+import { buildHistoryUri } from '../common/historyUri';
 import { CommitDetail, CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { WorktreeItemView } from '../views/worktrees/worktreeSectionView';
@@ -69,7 +70,7 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
       return window.showTextDocument(fileUri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
     } else {
       console.log('[magit:visit] → openUriAtRevision');
-      return openUriAtRevision(fileUri, change.ref);
+      return openUriAtRevision(repository, fileUri, change.ref);
     }
 
   } else if (selectedView instanceof HunkView) {
@@ -122,24 +123,15 @@ export async function magitOpenFileAtRevision(repository: MagitRepository) {
   const ref = await MagitUtils.chooseRef(repository, 'Open file at revision');
   const hash = await gitRunInUri(repository.uri, ['rev-parse', ref]);
 
-  return await openUriAtRevision(window.activeTextEditor.document.uri, { type: RefType.Head, name: ref, commit: hash.stdout.trimEnd() });
+  return await openUriAtRevision(repository, window.activeTextEditor.document.uri, { type: RefType.Head, name: ref, commit: hash.stdout.trimEnd() });
 }
 
-export async function openUriAtRevision(uri: Uri, ref: Ref, selection?: Range) {
-  console.log('[magit:openUriAtRevision] in uri=%s ref=%o', uri?.toString(), ref);
-  const shortHash = GitTextUtils.shortHash(ref.commit);
-  // U+2009 U+2215 U+2009: thin-space-flanked division slash, visually a `/`
-  // but inert under `path.basename` — keeps `feature/foo@abc1234` intact when
-  // the formatter feeds the result through basename.
-  const refLabel = (ref.name ? `${ref.name}@${shortHash}` : shortHash).replace(/\//g, '\u2009\u2215\u2009');
-  uri = uri.with({
-    scheme: Constants.MagitHistoryUriScheme,
-    authority: ref.commit!,
-    query: JSON.stringify({ ref: refLabel }),
-  });
+export async function openUriAtRevision(repository: MagitRepository, fileUri: Uri, ref: Ref, selection?: Range) {
+  const uri = buildHistoryUri(repository.uri, fileUri, ref);
   console.log('[magit:openUriAtRevision] showing uri=%s', uri.toString());
-  return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: selection });
+  return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection });
 }
+
 
 async function visitHunk(repository: MagitRepository, selectedView: HunkView, activePosition?: Position, worktree: boolean = false) {
 
@@ -193,7 +185,7 @@ async function visitHunk(repository: MagitRepository, selectedView: HunkView, ac
     await window.showTextDocument(fileUri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false, selection: relevantSelection});
   } else {
     console.log('[magit:visit] visitHunk → openUriAtRevision');
-    await openUriAtRevision(fileUri, ref, relevantSelection);
+    await openUriAtRevision(repository, fileUri, ref, relevantSelection);
   }
 
 }

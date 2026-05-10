@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { promisify } from 'util';
 import { gitRunInUri, LogLevel } from '../utils/gitRawRunner';
+import { parseHistoryUri } from '../common/historyUri';
 
 
 export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
@@ -32,39 +32,32 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
         console.log('[magit:gitHistoryFs.readFile] uri=%s', uri.toString());
-        const fileUri = uri.with({ scheme: 'file', authority: '' });
-        const fileDir = vscode.Uri.file(path.dirname(fileUri.fsPath));
+        const parts = parseHistoryUri(uri);
+        if (!parts) throw vscode.FileSystemError.FileNotFound(uri);
 
-        // Resolve the repo via `git rev-parse --show-toplevel` from the file's
-        // directory so worktrees pick the right root — VS Code's workspace
-        // folder may be the main repo while the file lives inside a worktree
-        // checkout, in which case `asRelativePath` would yield a path that
-        // doesn't exist at the commit being shown. gitRunInUri rejects on
-        // non-zero exit, so failures surface here as FileNotFound.
+        const repoUri = vscode.Uri.file(parts.repoFsPath);
+        const relativePath = path.relative(parts.repoFsPath, parts.fileFsPath);
+        console.log('[magit:gitHistoryFs.readFile] repoRoot=%s relativePath=%s commit=%s',
+            parts.repoFsPath, relativePath, parts.commit);
+
         try {
-            const top = await gitRunInUri(fileDir, ['rev-parse', '--show-toplevel'], {}, LogLevel.Error);
-            const repoRoot = vscode.Uri.file(top.stdout.trimEnd());
-
-            const commit = uri.authority;
-            const relativePath = path.relative(repoRoot.fsPath, fileUri.fsPath);
-            console.log('[magit:gitHistoryFs.readFile] repoRoot=%s relativePath=%s commit=%s', repoRoot.fsPath, relativePath, commit);
-            try {
-                const result = await gitRunInUri(repoRoot, ['show', `${commit}:${relativePath}`], {}, LogLevel.Error);
-                return Buffer.from(result.stdout, 'utf8');
-            } catch (e: any) {
-                // The file may not exist at <commit> because the commit *deleted*
-                // it — in a commit detail view, the user expects to see the
-                // file's content, which only exists at the parent. Fall back to
-                // <commit>~. If that also fails, surface the original error.
-                console.log('[magit:gitHistoryFs.readFile] git show failed: %o', e?.stderr ?? e?.message ?? e);
-                if (typeof e?.stderr === 'string' && /does not exist in/.test(e.stderr)) {
-                    console.log('[magit:gitHistoryFs.readFile] retrying at %s~', commit);
-                    const fallback = await gitRunInUri(repoRoot, ['show', `${commit}~:${relativePath}`], {}, LogLevel.Error);
-                    return Buffer.from(fallback.stdout, 'utf8');
-                }
-                throw e;
-            }
+            const result = await gitRunInUri(repoUri, ['show', `${parts.commit}:${relativePath}`], {}, LogLevel.Error);
+            return Buffer.from(result.stdout, 'utf8');
         } catch (e: any) {
+            // The file may not exist at <commit> because the commit *deleted*
+            // it — in a commit detail view, the user expects to see the file's
+            // content, which only exists at the parent. Fall back to <commit>~.
+            // If that also fails, surface the original error.
+            console.log('[magit:gitHistoryFs.readFile] git show failed: %o', e?.stderr ?? e?.message ?? e);
+            if (typeof e?.stderr === 'string' && /does not exist in/.test(e.stderr)) {
+                console.log('[magit:gitHistoryFs.readFile] retrying at %s~', parts.commit);
+                try {
+                    const fallback = await gitRunInUri(repoUri, ['show', `${parts.commit}~:${relativePath}`], {}, LogLevel.Error);
+                    return Buffer.from(fallback.stdout, 'utf8');
+                } catch (fallbackErr: any) {
+                    throw vscode.FileSystemError.FileNotFound(fallbackErr?.stderr ?? fallbackErr?.message ?? String(fallbackErr));
+                }
+            }
             throw vscode.FileSystemError.FileNotFound(e?.stderr ?? e?.message ?? String(e));
         }
     }
@@ -80,11 +73,5 @@ export class GitHistoryFileSystemProvider implements vscode.FileSystemProvider {
 
     rename(oldUri: vscode.Uri, newUri: vscode.Uri, options: { overwrite: boolean }): void | Thenable<void> {
         throw vscode.FileSystemError.NoPermissions(oldUri);
-    }
-
-    private parseUri(uri: vscode.Uri): { commit: string; filePath: string } {
-        const commit = uri.authority;
-        const filePath = uri.path.slice(1); // Remove leading slash
-        return { commit, filePath };
     }
 }
