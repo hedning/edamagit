@@ -29,4 +29,6 @@ export class BlameView extends DocumentView {
       fragment: `${fileUri.path}#${BlameView.index++}`,
     });
   }
+  // No `static rebuild`: would require re-running `git blame` against the
+  // file in the fragment. Skipped for now; tab drops on reload.
 }

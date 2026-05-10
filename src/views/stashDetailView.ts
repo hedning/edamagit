@@ -41,4 +41,7 @@ export class StashDetailView extends DocumentView {
       fragment: `stash@{${stash.index}}#${StashDetailView.index++}`,
     });
   }
+  // No `static rebuild`: would require re-running `git stash show` against
+  // the index in the fragment. Doable but skipped until someone hits the
+  // regression. Tab drops on reload.
 }

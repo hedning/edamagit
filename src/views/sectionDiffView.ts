@@ -51,4 +51,6 @@ export default class SectionDiffView extends DocumentView {
       fragment: `${SectionDiffView.index++}`,
     });
   }
+  // No `static rebuild`: the section (staged/unstaged) is a constructor
+  // arg, not in the URI. Step 5 will encode it and add a real rebuild.
 }

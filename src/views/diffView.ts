@@ -29,4 +29,7 @@ export class DiffView extends DocumentView {
       fragment: `${diffId}${DiffView.index++}`,
     });
   }
+  // No `static rebuild`: DiffView holds the parsed output of a specific
+  // `git diff` invocation whose args aren't in the URI. Across a window
+  // reload the FS provider returns FileNotFound, and the tab is dropped.
 }

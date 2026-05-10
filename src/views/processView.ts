@@ -64,4 +64,8 @@ export default class ProcessView extends DocumentView {
       fragment: 'process',
     });
   }
+
+  static async rebuild(uri: MagitUri): Promise<ProcessView | undefined> {
+    return new ProcessView(uri);
+  }
 }

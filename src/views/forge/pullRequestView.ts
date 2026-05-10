@@ -42,6 +42,8 @@ export class PullRequestView extends DocumentView {
       fragment: `${pullRequest.number}`,
     });
   }
+  // No `static rebuild`: requires forge state which isn't fetched on demand.
+  // Tab drops on reload; reopen via the status view to refetch.
 }
 
 class PullRequestHeader extends View {
