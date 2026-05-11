@@ -1,6 +1,6 @@
 import { MagitRepository } from '../models/magitRepository';
 import { View } from '../views/general/view';
-import { Selection, Position, Uri, workspace, window, TextDocumentShowOptions, ViewColumn } from 'vscode';
+import { Selection, Position, Uri, workspace, window, TextDocumentShowOptions, ViewColumn, TabInputTerminal } from 'vscode';
 import { Ref, RefType } from '../typings/git';
 import { Token } from '../views/general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
@@ -54,6 +54,12 @@ export default class ViewUtils {
 
     if (magitConfig.displayBufferSameColumn) {
       return activeColumn;
+    }
+
+    // Triggered from a terminal tab: assume the column is "for terminals"
+    // (commonly a locked right-side group) and send status to column 1.
+    if (window.tabGroups.activeTabGroup.activeTab?.input instanceof TabInputTerminal) {
+      return ViewColumn.One;
     }
 
     if (activeColumn > ViewColumn.One) {
