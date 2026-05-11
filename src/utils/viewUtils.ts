@@ -45,13 +45,18 @@ export default class ViewUtils {
   }
 
   public static showDocumentColumn(): ViewColumn {
-    const activeColumn = window.activeTextEditor?.viewColumn;
+    // Fall back to the active tab group's column when no text editor is
+    // focused — covers editor-terminals, custom editors, etc. Without this,
+    // invoking magit from a terminal-in-editor would always create a new
+    // ViewColumn.Two split, even when you only have one column open.
+    const activeColumn = window.activeTextEditor?.viewColumn
+      ?? window.tabGroups.activeTabGroup.viewColumn;
 
-    if (magitConfig.displayBufferSameColumn && activeColumn !== undefined) {
+    if (magitConfig.displayBufferSameColumn) {
       return activeColumn;
     }
 
-    if (activeColumn !== undefined && activeColumn > ViewColumn.One) {
+    if (activeColumn > ViewColumn.One) {
       return ViewColumn.One;
     }
     return ViewColumn.Two;
