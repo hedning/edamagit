@@ -47,6 +47,19 @@ export async function rebasing(repository: MagitRepository) {
     });
   }
 
+  const originRemote = repository.remotes.find(r => r.name === 'origin');
+  if (originRemote?.defaultBranch) {
+    const originHead = `origin/${originRemote.defaultBranch}`;
+    const pushBranch = HEAD?.pushRemote && `${HEAD.pushRemote.remote}/${HEAD.pushRemote.name}`;
+    const upstreamBranch = HEAD?.upstreamRemote && `${HEAD.upstreamRemote.remote}/${HEAD.upstreamRemote.name}`;
+    if (originHead !== pushBranch && originHead !== upstreamBranch) {
+      commands.push({
+        label: 'o', description: `onto ${originHead}`,
+        action: ({ switches }: MenuState) => _rebase(repository, originHead, switches)
+      });
+    }
+  }
+
   commands.push(...[
     { label: 'e', description: `onto elsewhere`, action: rebase },
     { label: 'i', description: `interactively`, action: rebaseInteractively }
