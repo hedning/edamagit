@@ -8,6 +8,7 @@ import { buildHistoryUri } from '../common/historyUri';
 import { CommitDetail, CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { WorktreeItemView } from '../views/worktrees/worktreeSectionView';
+import { TerminalItemView } from '../views/terminals/terminalsSectionView';
 import { ChangeView } from '../views/changes/changeView';
 import { MagitCommit } from '../models/magitCommit';
 import { HunkView } from '../views/changes/hunkView';
@@ -93,6 +94,9 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
   } else if (selectedView instanceof WorktreeItemView) {
     if (selectedView.worktree.bare) return;
     return magitStatusForPath(selectedView.worktree.path);
+
+  } else if (selectedView instanceof TerminalItemView) {
+    return selectedView.terminal.show();
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;

@@ -6,6 +6,7 @@ export enum Section {
   Staged = 'Staged changes',
   Stashes = 'Stashes',
   Worktrees = 'Worktrees',
+  Terminals = 'Terminals',
   RecentCommits = 'Recent commits',
   UnmergedInto = 'Unmerged into',
   UnpushedTo = 'Unpushed to',

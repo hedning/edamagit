@@ -21,6 +21,7 @@ import { PullRequestSectionView } from './forge/pullRequestSectionView';
 import { IssueSectionView } from './forge/issueSectionView';
 import { ErrorMessageView } from './errorMessageView';
 import { WorktreeSectionView } from './worktrees/worktreeSectionView';
+import { TerminalsSectionView, terminalsForWorktree } from './terminals/terminalsSectionView';
 
 export default class MagitStatusView extends DocumentView {
 
@@ -43,6 +44,14 @@ export default class MagitStatusView extends DocumentView {
     if (magitState.worktrees.length > 1 && !magitConfig.hiddenStatusSections.has('worktrees')) {
       header.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
       header.addSubview(new LineBreakView());
+    }
+
+    if (!magitConfig.hiddenStatusSections.has('terminals')) {
+      const terminals = terminalsForWorktree(magitState.uri, magitState.worktrees);
+      if (terminals.length > 0) {
+        header.addSubview(new TerminalsSectionView(terminals, magitState.uri));
+        header.addSubview(new LineBreakView());
+      }
     }
 
     if (magitState.mergingState) {
