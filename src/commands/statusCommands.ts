@@ -1,5 +1,5 @@
 import { MagitChange } from '../models/magitChange';
-import { workspace, window, Uri } from 'vscode';
+import { workspace, window, Uri, TabInputTerminal } from 'vscode';
 import { magitRepositories, views } from '../extension';
 import FilePathUtils from '../utils/filePathUtils';
 import GitTextUtils from '../utils/gitTextUtils';
@@ -33,7 +33,33 @@ import {
 
 export async function magitRefresh() { }
 
+/**
+ * If an editor-area terminal is the active tab, return its worktree root.
+ * Panel terminals are intentionally ignored — they don't appear in tabGroups,
+ * so we only react to terminals the user opened "in editor area".
+ */
+async function activeEditorTerminalWorktreeRoot(): Promise<Uri | undefined> {
+  const activeTab = window.tabGroups.activeTabGroup.activeTab;
+  if (!(activeTab?.input instanceof TabInputTerminal)) return undefined;
+
+  const cwd = window.activeTerminal?.shellIntegration?.cwd;
+  if (!cwd) return undefined;
+
+  try {
+    const result = await gitRunInUri(cwd, ['rev-parse', '--show-toplevel'], {}, LogLevel.None);
+    const top = result.stdout.replace(Constants.FinalLineBreakRegex, '');
+    return top ? Uri.file(top) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function magitStatus(): Promise<any> {
+
+  const terminalWorktree = await activeEditorTerminalWorktreeRoot();
+  if (terminalWorktree) {
+    return magitStatusForPath(terminalWorktree);
+  }
 
   const editor = window.activeTextEditor;
 
