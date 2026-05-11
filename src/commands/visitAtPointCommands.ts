@@ -96,12 +96,9 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     return magitStatusForPath(selectedView.worktree.path);
 
   } else if (selectedView instanceof TerminalItemView) {
-    // terminal.show() opens with activation:PRESERVE — sets the terminal as
-    // active but doesn't activate its tab group, so a maximized neighbour stays
-    // maximized. The terminal.focus command moves DOM focus into the terminal,
-    // which activates the group and triggers unmaximize via doRestoreGroup.
-    selectedView.terminal.show();
-    return commands.executeCommand('workbench.action.terminal.focus');
+    // Note: if editor group is hidden this doesn't work
+    // The alternative is ugly hacks though:/
+    return selectedView.terminal.show();
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;
