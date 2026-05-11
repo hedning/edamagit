@@ -93,7 +93,9 @@ function findGitWin32(onValidate: (path: string) => boolean): Promise<IGit> {
     .then(undefined, () => findGitWin32InPath(onValidate));
 }
 
-export async function findGit(hints: string[], onValidate: (path: string) => boolean): Promise<IGit> {
+let cachedGit: Promise<IGit> | undefined;
+
+async function locateGit(hints: string[], onValidate: (path: string) => boolean): Promise<IGit> {
   for (const hint of hints) {
     try {
       return await findSpecificGit(hint, onValidate);
@@ -113,4 +115,17 @@ export async function findGit(hints: string[], onValidate: (path: string) => boo
   }
 
   throw new Error('Git installation not found.');
+}
+
+export function findGit(hints: string[], onValidate: (path: string) => boolean): Promise<IGit> {
+  // Memoize: locating the git binary spawns child processes (e.g. `git --version`,
+  // `which git`, `xcode-select -p`), and a typical magit status refresh fires
+  // a dozen+ parallel git invocations — each was paying that tax.
+  if (!cachedGit) {
+    cachedGit = locateGit(hints, onValidate).catch(err => {
+      cachedGit = undefined;
+      throw err;
+    });
+  }
+  return cachedGit;
 }
