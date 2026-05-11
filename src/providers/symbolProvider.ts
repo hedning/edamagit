@@ -7,6 +7,10 @@ import { Status } from '../typings/git';
 import { getStatusText } from '../utils/gitTextUtils';
 import { ChangeSectionView } from '../views/changes/changesSectionView';
 import { BranchHeaderSectionView } from '../views/branches/branchHeaderSectionView';
+import { WorktreeSectionView, WorktreeItemView } from '../views/worktrees/worktreeSectionView';
+import { TerminalsSectionView, TerminalItemView } from '../views/terminals/terminalsSectionView';
+import { StashSectionView } from '../views/stashes/stashSectionView';
+import { Section } from '../views/general/sectionHeader';
 
 
 function createSymbol(view: ChangeView) {
@@ -47,6 +51,34 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
             } else if (view instanceof ChangeView) {
                 // Commit views doesn't have a section
                 scope.push(createSymbol(view));
+                return;
+            }
+            if (view instanceof WorktreeSectionView) {
+                const children: vscode.DocumentSymbol[] = [];
+                for (const sub of view.subViews) {
+                    if (!(sub instanceof WorktreeItemView)) continue;
+                    const wt = sub.worktree;
+                    const name = wt.branch || (wt.bare ? '(bare)' : wt.detached ? '(detached)' : wt.path.fsPath);
+                    children.push(new vscode.DocumentSymbol(name, wt.path.fsPath, vscode.SymbolKind.Module, sub.range, sub.range));
+                }
+                const section = new vscode.DocumentSymbol(Section.Worktrees, '', vscode.SymbolKind.Namespace, view.range, view.range);
+                section.children = children;
+                scope.push(section);
+                return;
+            }
+            if (view instanceof TerminalsSectionView) {
+                const children: vscode.DocumentSymbol[] = [];
+                for (const sub of view.subViews) {
+                    if (!(sub instanceof TerminalItemView)) continue;
+                    children.push(new vscode.DocumentSymbol(sub.terminal.name, '', vscode.SymbolKind.Event, sub.range, sub.range));
+                }
+                const section = new vscode.DocumentSymbol(Section.Terminals, '', vscode.SymbolKind.Namespace, view.range, view.range);
+                section.children = children;
+                scope.push(section);
+                return;
+            }
+            if (view instanceof StashSectionView) {
+                scope.push(new vscode.DocumentSymbol(Section.Stashes, '', vscode.SymbolKind.Namespace, view.range, view.range));
                 return;
             }
             // todo: add branch symbols in the log view
