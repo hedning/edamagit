@@ -37,7 +37,6 @@ export async function magitRefresh() { }
 export async function openTerminal(repository: MagitRepository): Promise<void> {
   const cwd = repository.uri;
   const terminal = window.createTerminal({
-    name: `magit:${path.basename(cwd.fsPath)}`,
     cwd,
     location: { viewColumn: ViewUtils.showDocumentColumn() },
   });
