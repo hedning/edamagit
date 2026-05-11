@@ -45,6 +45,13 @@ export function terminalsForWorktree(currentRoot: Uri, worktrees: Worktree[]): T
     .sort((a, b) => b.length - a.length);
   const currentPath = normalize(currentRoot.fsPath);
 
+  console.log('[magit:terminals] currentPath=%s worktreePaths=%o', currentPath, sortedPaths);
+  for (const t of window.terminals) {
+    const creationCwd = 'cwd' in t.creationOptions ? t.creationOptions.cwd : undefined;
+    console.log('[magit:terminals]   term=%s isEditor=%s integrationCwd=%s creationCwd=%o',
+      t.name, isEditorTerminal(t), t.shellIntegration?.cwd?.fsPath, creationCwd);
+  }
+
   return window.terminals.filter(t => {
     if (!isEditorTerminal(t)) return false;
     const cwd = t.shellIntegration?.cwd;
