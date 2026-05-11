@@ -1,4 +1,5 @@
 import { MagitChange } from '../models/magitChange';
+import * as path from 'path';
 import { workspace, window, Uri, TabInputTerminal } from 'vscode';
 import { magitRepositories, views } from '../extension';
 import FilePathUtils from '../utils/filePathUtils';
@@ -32,6 +33,16 @@ import {
 } from '../utils/repoStatus';
 
 export async function magitRefresh() { }
+
+export async function openTerminal(repository: MagitRepository): Promise<void> {
+  const cwd = repository.uri;
+  const terminal = window.createTerminal({
+    name: `magit:${path.basename(cwd.fsPath)}`,
+    cwd,
+    location: { viewColumn: ViewUtils.showDocumentColumn() },
+  });
+  terminal.show();
+}
 
 /**
  * If an editor-area terminal is the active tab, return its worktree root.

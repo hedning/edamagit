@@ -10,7 +10,7 @@ import { GitExtension, API } from './typings/git';
 import { pushing } from './commands/pushingCommands';
 import { branching, showRefs } from './commands/branchingCommands';
 import { magitDispatch, magitHelp } from './commands/helpCommands';
-import { magitStatus, magitRefresh } from './commands/statusCommands';
+import { magitStatus, magitRefresh, openTerminal } from './commands/statusCommands';
 import { magitOpenFileAtRevision, magitVisitAtPoint, magitVisitAtPointInref } from './commands/visitAtPointCommands';
 import { MagitRepository } from './models/magitRepository';
 import { magitCommit, setCodePath } from './commands/commitCommands';
@@ -252,6 +252,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.reverting', CommandPrimer.primeRepo(reverting)),
     commands.registerTextEditorCommand('magit.ignoring', CommandPrimer.primeRepo(ignoring)),
     commands.registerTextEditorCommand('magit.running', CommandPrimer.primeRepo(running)),
+    commands.registerTextEditorCommand('magit.open-terminal', CommandPrimer.primeRepo(openTerminal, false)),
     commands.registerTextEditorCommand('magit.worktree', CommandPrimer.primeRepo(worktree)),
     commands.registerTextEditorCommand('magit.submodules', CommandPrimer.primeRepo(submodules)),
     commands.registerTextEditorCommand('magit.process-log', CommandPrimer.primeRepo(processView, false)),

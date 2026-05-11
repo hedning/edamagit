@@ -149,6 +149,10 @@
         "title": "Magit Running"
       },
       {
+        "command": "magit.open-terminal",
+        "title": "Magit Open Terminal"
+      },
+      {
         "command": "magit.worktree",
         "title": "Magit Worktree"
       },
@@ -283,6 +287,10 @@
         },
         {
           "command": "magit.running",
+          "when": "activeEditor"
+        },
+        {
+          "command": "magit.open-terminal",
           "when": "activeEditor"
         },
         {
@@ -692,6 +700,11 @@
       {
         "command": "magit.running",
         "key": "shift+1",
+        "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
+      },
+      {
+        "command": "magit.open-terminal",
+        "key": "shift+t",
         "when": "editorTextFocus && editorLangId == 'magit' && vim.mode =~ /^(?!SearchInProgressMode|CommandlineInProgress).*$/"
       },
       {
