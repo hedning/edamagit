@@ -1,6 +1,6 @@
 import { MagitRepository } from '../models/magitRepository';
 import { View } from '../views/general/view';
-import { Selection, Position, Uri, workspace, window, TextDocumentShowOptions, ViewColumn, TabInputTerminal } from 'vscode';
+import { Selection, Position, Uri, workspace, window, TextDocumentShowOptions, ViewColumn } from 'vscode';
 import { Ref, RefType } from '../typings/git';
 import { Token } from '../views/general/semanticTextView';
 import { SemanticTokenTypes } from '../common/constants';
@@ -45,27 +45,11 @@ export default class ViewUtils {
   }
 
   public static showDocumentColumn(): ViewColumn {
-    // Fall back to the active tab group's column when no text editor is
-    // focused — covers editor-terminals, custom editors, etc. Without this,
-    // invoking magit from a terminal-in-editor would always create a new
-    // ViewColumn.Two split, even when you only have one column open.
-    const activeColumn = window.activeTextEditor?.viewColumn
-      ?? window.tabGroups.activeTabGroup.viewColumn;
-
-    if (magitConfig.displayBufferSameColumn) {
-      return activeColumn;
-    }
-
-    // Triggered from a terminal tab: assume the column is "for terminals"
-    // (commonly a locked right-side group) and send status to column 1.
-    if (window.tabGroups.activeTabGroup.activeTab?.input instanceof TabInputTerminal) {
-      return ViewColumn.One;
-    }
-
-    if (activeColumn > ViewColumn.One) {
-      return ViewColumn.One;
-    }
-    return ViewColumn.Two;
+    // Both symbolic values are lock-aware in VS Code's editor group finder:
+    // ACTIVE walks MOST_RECENTLY_ACTIVE for a non-locked group; SIDE_GROUP
+    // creates a new group if the side candidate is locked. Specific numeric
+    // columns bypass this routing and would land in the locked group.
+    return magitConfig.displayBufferSameColumn ? ViewColumn.Active : ViewColumn.Beside;
   }
 
   public static async applyActionForSelection(repository: MagitRepository, currentView: View, selection: Selection, multiSelectableViewTypes: any[], action: Function): Promise<any> {
