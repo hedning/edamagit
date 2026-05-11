@@ -34,7 +34,7 @@ export async function readPorcelainStatus(rootUri: Uri): Promise<PorcelainStatus
 export async function readRefs(rootUri: Uri): Promise<ParsedRefs> {
   const result = await gitRunInUri(
     rootUri,
-    ['for-each-ref', `--format=%(refname)${FIELD}%(objectname)${FIELD}%(*objectname)${FIELD}%(symref)`, 'refs/heads', 'refs/remotes', 'refs/tags'],
+    ['for-each-ref', '--sort=-committerdate', `--format=%(refname)${FIELD}%(objectname)${FIELD}%(*objectname)${FIELD}%(symref)`, 'refs/heads', 'refs/remotes', 'refs/tags'],
     {},
     LogLevel.None
   );
