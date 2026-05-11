@@ -4,6 +4,7 @@ import { magitFileSystemProvider } from './providers/magitFileSystemProvider';
 import { registerMagitViewBuilders } from './providers/magitViewBuilders';
 import { asMagitUri, repoFsPathFromMagitUri } from './common/magitUri';
 import FilePathUtils from './utils/filePathUtils';
+import { isInsideGitDir, repoFingerprint } from './utils/repoFingerprint';
 import MagitUtils from './utils/magitUtils';
 import { GitExtension, API } from './typings/git';
 import { pushing } from './commands/pushingCommands';
@@ -174,23 +175,44 @@ export async function activate(context: ExtensionContext) {
   );
 
   // Refresh visible magit status views when files change in their repository.
+  // Watcher events for `.git/index` fire on every `git status` invocation (the
+  // stat-cache refresh rewrites the file), so an unfiltered handler loops:
+  // `magitStatusAndUpdate` runs git → git rewrites index → watcher fires → …
+  // The `repoFingerprint` dedup breaks the loop by skipping refreshes when
+  // only `.git/` files changed and HEAD/refs/state are still the same.
   {
     let changed: vscode.Uri[] = [];
     let timeout: NodeJS.Timeout | undefined;
+    const lastFingerprints = new Map<string, string>();
     const update = async () => {
       const repositories = new Map<string, MagitRepository>();
+      const changesByRepo = new Map<string, vscode.Uri[]>();
       for (const visibleEditor of vscode.window.visibleTextEditors) {
         const magitUri = asMagitUri(visibleEditor.document.uri);
         if (!magitUri) continue;
+        const repoFsPath = repoFsPathFromMagitUri(magitUri);
         for (const uri of changed) {
-          if (!FilePathUtils.isDescendant(repoFsPathFromMagitUri(magitUri), uri.fsPath)) continue;
+          if (!FilePathUtils.isDescendant(repoFsPath, uri.fsPath)) continue;
           const repo = await MagitUtils.getCurrentMagitRepo(magitUri);
           if (!repo) continue;
           repositories.set(repo.uri.fsPath, repo);
+          const list = changesByRepo.get(repo.uri.fsPath) ?? [];
+          list.push(uri);
+          changesByRepo.set(repo.uri.fsPath, list);
         }
       }
       changed = [];
-      for (const repo of repositories.values()) MagitUtils.magitStatusAndUpdate(repo);
+      for (const repo of repositories.values()) {
+        const repoPath = repo.uri.fsPath;
+        const repoChanges = changesByRepo.get(repoPath) ?? [];
+        const allInGitDir = repoChanges.every(u => isInsideGitDir(u.fsPath, repoPath));
+        if (allInGitDir) {
+          const fp = await repoFingerprint(repoPath);
+          if (lastFingerprints.get(repoPath) === fp) continue;
+        }
+        await MagitUtils.magitStatusAndUpdate(repo);
+        lastFingerprints.set(repoPath, await repoFingerprint(repoPath));
+      }
     };
     const debounceChange = (uri: vscode.Uri) => {
       changed.push(uri);
