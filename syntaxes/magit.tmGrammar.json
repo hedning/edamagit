@@ -87,13 +87,15 @@
       "name": "meta.diff.range.unified"
     },
     "pythonHunk": {
-      "begin": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.pyi?$)",
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.pyi?$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
       "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.python",
       "patterns": [
-        {
-          "include": "#modified"
-        },
         {
           "include": "#hunkHeader"
         },

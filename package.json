@@ -507,7 +507,10 @@
       {
         "language": "magit",
         "scopeName": "source.magit",
-        "path": "./syntaxes/magit.tmGrammar.json"
+        "path": "./syntaxes/magit.tmGrammar.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.python": "python"
+        }
       }
     ],
     "semanticTokenTypes": [
