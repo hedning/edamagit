@@ -37,6 +37,7 @@ import { processView } from './commands/processCommands';
 import { resetting, resetMixed, resetHard } from './commands/resettingCommands';
 import { tagging } from './commands/taggingCommands';
 import { worktree } from './commands/worktreeCommands';
+import { findFile } from './commands/findFileCommands';
 import { diffing, diffFile } from './commands/diffingCommands';
 import { ignoring } from './commands/ignoringCommands';
 import { running } from './commands/runningCommands';
@@ -236,6 +237,7 @@ export async function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     commands.registerCommand('magit.status', magitStatus),
+    commands.registerCommand('magit.find-file', findFile),
     commands.registerTextEditorCommand('magit.help', CommandPrimer.primeRepo(magitHelp, false)),
     commands.registerTextEditorCommand('magit.dispatch', CommandPrimer.primeRepo(magitDispatch, false)),
 

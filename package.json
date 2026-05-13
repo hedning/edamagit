@@ -53,6 +53,10 @@
         "title": "Magit Status"
       },
       {
+        "command": "magit.find-file",
+        "title": "Magit Find File"
+      },
+      {
         "command": "magit.dispatch",
         "title": "Magit Dispatch"
       },
@@ -229,6 +233,9 @@
       "commandPalette": [
         {
           "command": "magit.status"
+        },
+        {
+          "command": "magit.find-file"
         },
         {
           "command": "magit.dispatch"
