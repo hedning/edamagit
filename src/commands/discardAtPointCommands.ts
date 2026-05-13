@@ -1,4 +1,4 @@
-import { window, commands, workspace, Selection } from 'vscode';
+import { window, workspace, Selection } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
 import { DocumentView } from '../views/general/documentView';
 import { gitRun, gitRunInUri } from '../utils/gitRawRunner';
@@ -76,13 +76,17 @@ async function discard(repository: MagitRepository, selection: Selection, select
       case Section.Untracked:
         fileNameList = changeSectionView.changes.map(change => FilePathUtils.fileName(change.uri)).join(', ');
         if (await MagitUtils.confirmAction(`Trash ${fileNameList}?`)) {
-          return commands.executeCommand('git.cleanAllUntracked');
+          await Promise.all(
+            changeSectionView.changes.map(change =>
+              workspace.fs.delete(change.uri, { recursive: true, useTrash: false }))
+          );
         }
 
         break;
       case Section.Unstaged:
         if (await MagitUtils.confirmAction('Discard all unstaged changes?')) {
-          return commands.executeCommand('git.cleanAllTracked');
+          const args = ['checkout', '--', ...changeSectionView.changes.map(change => change.uri.fsPath)];
+          return gitRunInUri(repository.uri, args);
         }
         break;
       case Section.Staged:
