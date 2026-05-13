@@ -76,10 +76,8 @@ async function discard(repository: MagitRepository, selection: Selection, select
       case Section.Untracked:
         fileNameList = changeSectionView.changes.map(change => FilePathUtils.fileName(change.uri)).join(', ');
         if (await MagitUtils.confirmAction(`Trash ${fileNameList}?`)) {
-          await Promise.all(
-            changeSectionView.changes.map(change =>
-              workspace.fs.delete(change.uri, { recursive: true, useTrash: false }))
-          );
+          const args = ['clean', '-fd', '--', ...changeSectionView.changes.map(change => change.uri.fsPath)];
+          return gitRunInUri(repository.uri, args);
         }
 
         break;
