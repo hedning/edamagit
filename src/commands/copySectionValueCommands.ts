@@ -9,6 +9,7 @@ import { RemoteBranchListingView } from '../views/remotes/remoteBranchListingVie
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { TagListingView } from '../views/tags/tagListingView';
 import { ChangeView } from '../views/changes/changeView';
+import { HunkView } from '../views/changes/hunkView';
 
 export async function copySectionValueCommand(repository: MagitRepository, currentView: DocumentView) {
 
@@ -19,6 +20,7 @@ export async function copySectionValueCommand(repository: MagitRepository, curre
   }
 
   let sectionValue: string | undefined;
+  let statusMessage: string | undefined;
   const selectedView = currentView.click(activePosition);
   if (selectedView instanceof CommitItemView) {
     sectionValue = selectedView.commit.hash;
@@ -35,10 +37,17 @@ export async function copySectionValueCommand(repository: MagitRepository, curre
     selectedView instanceof ChangeHeaderView
   ) {
     sectionValue = selectedView.change.relativePath;
+  } else if (selectedView instanceof HunkView) {
+    // Hunks render with the +/-/space prefix stripped, so the visible buffer
+    // isn't a valid patch. Reassemble the on-disk patch (file header + hunk)
+    // so the clipboard payload is `git apply`-ready.
+    const hunk = selectedView.changeHunk;
+    sectionValue = `${hunk.diffHeader}${hunk.diff}\n`;
+    statusMessage = `Copied patch for hunk in ${hunk.relativePath}`;
   }
 
   if (sectionValue) {
     await env.clipboard.writeText(sectionValue);
-    window.setStatusBarMessage(sectionValue, Constants.StatusMessageDisplayTimeout);
+    window.setStatusBarMessage(statusMessage ?? sectionValue, Constants.StatusMessageDisplayTimeout);
   }
 }
