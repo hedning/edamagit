@@ -21,7 +21,8 @@ export async function findFile() {
   }
 
   let initialFilter = '';
-  while (true) {
+  const MAX_SWITCHES = 1000;
+  for (let i = 0; i < MAX_SWITCHES; i++) {
     const result = await pickFile(worktreeRoot, initialFilter);
     if (!result) return;
 
