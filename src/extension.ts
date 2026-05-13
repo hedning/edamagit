@@ -18,6 +18,7 @@ import { magitStage, magitStageAll, magitUnstageAll, magitUnstage, stageFile, un
 import { saveClose, clearSaveClose, quitMagitView, toggleAllFoldsInChangeSection, moveToPreviousEntity, moveToNextEntity } from './commands/macros';
 import HighlightProvider from './providers/highlightProvider';
 import SemanticTokensProvider from './providers/semanticTokensProvider';
+import { ViewDecorationProvider } from './providers/viewDecorationProvider';
 import { CommandPrimer } from './commands/commandPrimer';
 import * as Constants from './common/constants';
 import { fetching } from './commands/fetchingCommands';
@@ -155,6 +156,24 @@ export async function activate(context: ExtensionContext) {
     languages.registerFoldingRangeProvider({ pattern: '**/.git/COMMIT_EDITMSG' }, new GitCommitFolding()),
   );
   context.subscriptions.push(providerRegistrations);
+
+  const viewDecorationProvider = new ViewDecorationProvider();
+  context.subscriptions.push(
+    { dispose: () => viewDecorationProvider.dispose() },
+    // Re-apply when the doc content swaps (after fireChanged), when an
+    // editor becomes visible (split, reopen, tab move), and when the
+    // active editor changes (first-frame after open).
+    workspace.onDidChangeTextDocument(e => {
+      if (e.document.uri.scheme === Constants.MagitUriScheme) {
+        viewDecorationProvider.applyToEditorsFor(e.document.uri);
+      }
+    }),
+    window.onDidChangeVisibleTextEditors(() => viewDecorationProvider.applyToAllVisible()),
+    window.onDidChangeActiveTextEditor(editor => {
+      if (editor) viewDecorationProvider.apply(editor);
+    }),
+  );
+  viewDecorationProvider.applyToAllVisible();
 
   // Drop the cached view when its editor closes so the next open rebuilds.
   context.subscriptions.push(
