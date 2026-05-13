@@ -86,8 +86,13 @@ export class WorktreeStatusBar implements Disposable {
     // `<main>/.git/worktrees/<name>/…`, which is inside the main repo's root.
     // `getRepository` would resolve that to the main repo; redirect to the
     // actual worktree by reading the `gitdir` pointer.
-    const worktreeRepo = repoFromWorktreeGitDir(uri);
-    if (worktreeRepo) return worktreeRepo;
+    const wtGitDir = uri.scheme === 'file'
+      ? uri.fsPath.match(/^(.*[\\/]\.git[\\/]worktrees[\\/][^\\/]+)[\\/]/)?.[1]
+      : undefined;
+    if (wtGitDir) {
+      const repo = repoFromWorktreeGitDir(wtGitDir);
+      if (repo) return repo;
+    }
     return gitApi.getRepository(uri) ?? undefined;
   }
 
@@ -111,14 +116,9 @@ export class WorktreeStatusBar implements Disposable {
   }
 }
 
-function repoFromWorktreeGitDir(uri: Uri): Repository | undefined {
-  if (uri.scheme !== 'file') return undefined;
-  // Match `<main-repo>/.git/worktrees/<name>/<rest>` on either path separator.
-  const m = uri.fsPath.match(/^(.*)[\\/]\.git[\\/]worktrees[\\/]([^\\/]+)[\\/]/);
-  if (!m) return undefined;
-  const [, mainRepo, name] = m;
+function repoFromWorktreeGitDir(worktreeGitDir: string): Repository | undefined {
   try {
-    const gitdir = fs.readFileSync(path.join(mainRepo, '.git', 'worktrees', name, 'gitdir'), 'utf8').trim();
+    const gitdir = fs.readFileSync(path.join(worktreeGitDir, 'gitdir'), 'utf8').trim();
     return gitApi.getRepository(Uri.file(path.dirname(gitdir))) ?? undefined;
   } catch {
     return undefined;
