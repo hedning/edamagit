@@ -2,6 +2,9 @@
   "scopeName": "source.magit",
   "patterns": [
     {
+      "include": "#pythonHunk"
+    },
+    {
       "include": "#expression"
     },
     {
@@ -82,6 +85,28 @@
     "hunkHeader": {
       "match": "^@@.*@@.*$",
       "name": "meta.diff.range.unified"
+    },
+    "pythonHunk": {
+      "begin": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.pyi?$)",
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.python",
+      "patterns": [
+        {
+          "include": "#modified"
+        },
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.python"
+        }
+      ]
     },
     "helpKey": {
       "match": "  ([^\\s]|!|\\$|\\%|TAB|RET|\\_|-|(shift(\\+|-)[^a-zA-Z])) ",
