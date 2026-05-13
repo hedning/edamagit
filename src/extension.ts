@@ -51,6 +51,7 @@ import { View } from './views/general/view';
 import { SymbolProvider } from './providers/symbolProvider';
 import { GitHistoryFileSystemProvider } from './providers/gitHistoryFileSystemProvider';
 import { GitCommitFolding, GitSymbolProvider } from './providers/gitProviders';
+import { WorktreeStatusBar } from './providers/worktreeStatusBar';
 
 class MagitFolding implements vscode.FoldingRangeProvider {
   onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
@@ -127,25 +128,13 @@ export async function activate(context: ExtensionContext) {
     if (configChangedEvent.affectsConfiguration('magit')) loadConfig();
   });
 
-  const statusbar = window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100000);
-  context.subscriptions.push(statusbar);
-  /** vscode reloads when switching to another workspace, so no need for listeners here
-   *
-   * Would have to look at the active editor to support multi workspace windows
-   *
-  */
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (workspaceFolders && workspaceFolders[0]) {
-    /** add color stuff here */
-    statusbar.text = workspaceFolders[0]?.name;
-    statusbar.show();
-  }
-
   context.subscriptions.push(gitExtensionExports.onDidChangeEnablement(enabled => {
     if (!enabled) throw new Error('vscode.git Git extension was disabled');
   }));
 
   gitApi = gitExtensionExports.getAPI(1);
+
+  context.subscriptions.push(new WorktreeStatusBar());
   logPath = context.logUri.fsPath;
 
   context.subscriptions.push(gitApi.onDidCloseRepository(repository => {
