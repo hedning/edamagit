@@ -92,6 +92,10 @@ async function unstage(repository: MagitRepository, selection: Selection, select
       }
     }
   } else if (selectedView instanceof ChangeView) {
+    if (selectedView.section === Section.Changes) {
+      if (!selectedView.change.diff) return;
+      return ApplyAtPoint.apply(repository, selectedView.change.diff, { index: true, reverse: true });
+    }
     return unstageFile(repository, selectedView.change.uri);
 
   } else if (selectedView instanceof ChangeSectionView) {
