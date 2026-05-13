@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Disposable, StatusBarItem, Uri, window, workspace } from 'vscode';
@@ -81,6 +82,12 @@ export class WorktreeStatusBar implements Disposable {
     if (magitUri) {
       return gitApi.getRepository(repoUriFromMagitUri(magitUri)) ?? undefined;
     }
+    // Files like COMMIT_EDITMSG for a worktree live under
+    // `<main>/.git/worktrees/<name>/…`, which is inside the main repo's root.
+    // `getRepository` would resolve that to the main repo; redirect to the
+    // actual worktree by reading the `gitdir` pointer.
+    const worktreeRepo = repoFromWorktreeGitDir(uri);
+    if (worktreeRepo) return worktreeRepo;
     return gitApi.getRepository(uri) ?? undefined;
   }
 
@@ -101,6 +108,20 @@ export class WorktreeStatusBar implements Disposable {
   dispose() {
     this.currentRepoSub?.dispose();
     this.disposables.forEach(d => d.dispose());
+  }
+}
+
+function repoFromWorktreeGitDir(uri: Uri): Repository | undefined {
+  if (uri.scheme !== 'file') return undefined;
+  // Match `<main-repo>/.git/worktrees/<name>/<rest>` on either path separator.
+  const m = uri.fsPath.match(/^(.*)[\\/]\.git[\\/]worktrees[\\/]([^\\/]+)[\\/]/);
+  if (!m) return undefined;
+  const [, mainRepo, name] = m;
+  try {
+    const gitdir = fs.readFileSync(path.join(mainRepo, '.git', 'worktrees', name, 'gitdir'), 'utf8').trim();
+    return gitApi.getRepository(Uri.file(path.dirname(gitdir))) ?? undefined;
+  } catch {
+    return undefined;
   }
 }
 
