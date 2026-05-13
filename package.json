@@ -509,7 +509,30 @@
         "scopeName": "source.magit",
         "path": "./syntaxes/magit.tmGrammar.json",
         "embeddedLanguages": {
-          "meta.embedded.block.python": "python"
+          "meta.embedded.block.python": "python",
+          "meta.embedded.block.typescript": "typescript",
+          "meta.embedded.block.typescriptreact": "typescriptreact",
+          "meta.embedded.block.javascript": "javascript",
+          "meta.embedded.block.javascriptreact": "javascriptreact",
+          "meta.embedded.block.json": "json",
+          "meta.embedded.block.jsonc": "jsonc",
+          "meta.embedded.block.yaml": "yaml",
+          "meta.embedded.block.go": "go",
+          "meta.embedded.block.rust": "rust",
+          "meta.embedded.block.ruby": "ruby",
+          "meta.embedded.block.java": "java",
+          "meta.embedded.block.c": "c",
+          "meta.embedded.block.cpp": "cpp",
+          "meta.embedded.block.csharp": "csharp",
+          "meta.embedded.block.shellscript": "shellscript",
+          "meta.embedded.block.markdown": "markdown",
+          "meta.embedded.block.html": "html",
+          "meta.embedded.block.css": "css",
+          "meta.embedded.block.scss": "scss",
+          "meta.embedded.block.xml": "xml",
+          "meta.embedded.block.php": "php",
+          "meta.embedded.block.lua": "lua",
+          "meta.embedded.block.swift": "swift"
         }
       }
     ],
@@ -811,7 +834,8 @@
     "test": "vscode-test",
     "pretest:unit": "tsc -p ./",
     "test:unit": "mocha --ui tdd --require ./out/src/test/unit/setup.js \"./out/src/test/unit/**/*.test.js\"",
-    "test:gen-fixtures": "tsc -p ./ && node -r ./out/src/test/unit/setup.js ./out/src/test/unit/fixtures/log/generate.js"
+    "test:gen-fixtures": "tsc -p ./ && node -r ./out/src/test/unit/setup.js ./out/src/test/unit/fixtures/log/generate.js",
+    "gen-grammar": "node scripts/gen-grammar.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",

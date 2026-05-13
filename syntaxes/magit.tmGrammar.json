@@ -5,6 +5,75 @@
       "include": "#pythonHunk"
     },
     {
+      "include": "#typescriptHunk"
+    },
+    {
+      "include": "#typescriptreactHunk"
+    },
+    {
+      "include": "#javascriptHunk"
+    },
+    {
+      "include": "#javascriptreactHunk"
+    },
+    {
+      "include": "#jsonHunk"
+    },
+    {
+      "include": "#jsoncHunk"
+    },
+    {
+      "include": "#yamlHunk"
+    },
+    {
+      "include": "#goHunk"
+    },
+    {
+      "include": "#rustHunk"
+    },
+    {
+      "include": "#rubyHunk"
+    },
+    {
+      "include": "#javaHunk"
+    },
+    {
+      "include": "#cHunk"
+    },
+    {
+      "include": "#cppHunk"
+    },
+    {
+      "include": "#csharpHunk"
+    },
+    {
+      "include": "#shellscriptHunk"
+    },
+    {
+      "include": "#markdownHunk"
+    },
+    {
+      "include": "#htmlHunk"
+    },
+    {
+      "include": "#cssHunk"
+    },
+    {
+      "include": "#scssHunk"
+    },
+    {
+      "include": "#xmlHunk"
+    },
+    {
+      "include": "#phpHunk"
+    },
+    {
+      "include": "#luaHunk"
+    },
+    {
+      "include": "#swiftHunk"
+    },
+    {
       "include": "#expression"
     },
     {
@@ -87,7 +156,7 @@
       "name": "meta.diff.range.unified"
     },
     "pythonHunk": {
-      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.pyi?$",
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(py|pyi)$",
       "beginCaptures": {
         "0": {
           "name": "strong magit.subheader"
@@ -107,6 +176,558 @@
         },
         {
           "include": "source.python"
+        }
+      ]
+    },
+    "typescriptHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(ts|mts|cts)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.typescript",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.ts"
+        }
+      ]
+    },
+    "typescriptreactHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.tsx$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.typescriptreact",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.tsx"
+        }
+      ]
+    },
+    "javascriptHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(js|mjs|cjs)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.javascript",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.js"
+        }
+      ]
+    },
+    "javascriptreactHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.jsx$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.javascriptreact",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.js.jsx"
+        }
+      ]
+    },
+    "jsonHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.json$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.json",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.json"
+        }
+      ]
+    },
+    "jsoncHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.jsonc$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.jsonc",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.json.comments"
+        }
+      ]
+    },
+    "yamlHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(yaml|yml)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.yaml",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.yaml"
+        }
+      ]
+    },
+    "goHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.go$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.go",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.go"
+        }
+      ]
+    },
+    "rustHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.rs$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.rust",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.rust"
+        }
+      ]
+    },
+    "rubyHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.rb$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.ruby",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.ruby"
+        }
+      ]
+    },
+    "javaHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.java$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.java",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.java"
+        }
+      ]
+    },
+    "cHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(c|h)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.c",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.c"
+        }
+      ]
+    },
+    "cppHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(cpp|cc|cxx|hpp|hh|hxx)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.cpp",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.cpp"
+        }
+      ]
+    },
+    "csharpHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.cs$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.csharp",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.cs"
+        }
+      ]
+    },
+    "shellscriptHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(sh|bash|zsh)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.shellscript",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.shell"
+        }
+      ]
+    },
+    "markdownHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(md|markdown)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.markdown",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "text.html.markdown"
+        }
+      ]
+    },
+    "htmlHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(html|htm)$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.html",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "text.html.derivative"
+        }
+      ]
+    },
+    "cssHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.css$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.css",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.css"
+        }
+      ]
+    },
+    "scssHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.scss$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.scss",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.css.scss"
+        }
+      ]
+    },
+    "xmlHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.xml$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.xml",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "text.xml"
+        }
+      ]
+    },
+    "phpHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.php$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.php",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.php"
+        }
+      ]
+    },
+    "luaHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.lua$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.lua",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.lua"
+        }
+      ]
+    },
+    "swiftHunk": {
+      "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.swift$",
+      "beginCaptures": {
+        "0": {
+          "name": "strong magit.subheader"
+        }
+      },
+      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged)   |^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "contentName": "meta.embedded.block.swift",
+      "patterns": [
+        {
+          "include": "#hunkHeader"
+        },
+        {
+          "include": "#wordinserted"
+        },
+        {
+          "include": "#worddeleted"
+        },
+        {
+          "include": "source.swift"
         }
       ]
     },
