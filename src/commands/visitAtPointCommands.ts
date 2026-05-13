@@ -160,7 +160,7 @@ async function visitHunk(repository: MagitRepository, selectedView: HunkView, ac
       if (activePosition && activePosition.line > selectedView.range.start.line) {
 
         activeLineRelativeToDiff = activePosition.line - (selectedView.range.start.line + 1); // +1 to get past line denoting start line of diff hunk
-        relevantCharacterSelection = activePosition.character > 0 ? activePosition.character - 1 : activePosition.character;
+        relevantCharacterSelection = activePosition.character;
 
       } else {
 
