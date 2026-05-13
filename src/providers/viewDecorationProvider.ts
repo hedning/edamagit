@@ -4,9 +4,10 @@ import { visitVisibleViews } from '../utils/viewUtils';
 import { DecorationKind, DecorationRange, isDecoratableView } from '../views/general/decoratableView';
 import * as Constants from '../common/constants';
 
-// Paints overview-ruler marks for diff lines in magit views. Ranges come
-// from the view tree (DecoratableView), not from scanning rendered text,
-// so commit-message lines starting with +/- can't be misclassified.
+// Paints line backgrounds and overview-ruler marks for diff lines in magit
+// views. Ranges come from the view tree (DecoratableView), not from scanning
+// rendered text, so the +/- char no longer needs to live at column 0 and
+// commit-message lines containing +/- can't be misclassified.
 export class ViewDecorationProvider {
 
   private readonly types: Record<DecorationKind, vscode.TextEditorDecorationType>;
@@ -14,10 +15,14 @@ export class ViewDecorationProvider {
   constructor() {
     this.types = {
       added: vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: new vscode.ThemeColor('diffEditor.insertedLineBackground'),
         overviewRulerLane: vscode.OverviewRulerLane.Left,
         overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.addedForeground'),
       }),
       removed: vscode.window.createTextEditorDecorationType({
+        isWholeLine: true,
+        backgroundColor: new vscode.ThemeColor('diffEditor.removedLineBackground'),
         overviewRulerLane: vscode.OverviewRulerLane.Left,
         overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.deletedForeground'),
       }),
