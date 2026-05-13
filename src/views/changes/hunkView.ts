@@ -3,9 +3,14 @@ import { MagitChangeHunk } from '../../models/magitChangeHunk';
 import { Ref } from '../../typings/git';
 import { Section } from '../general/sectionHeader';
 import { TextView } from '../general/textView';
-import { DecoratableView, DecorationRange } from '../general/decoratableView';
+import { DecoratableView, DecorationKind, DecorationRange } from '../general/decoratableView';
 import * as Constants from '../../common/constants';
 
+// Renders a hunk with the leading +/-/space stripped — the patch character
+// at column 0 is line metadata, not source content, and trips up grep, copy,
+// and indentation. The raw patch stays on `changeHunk.diff` for stage/apply/
+// discard; only the on-screen text is stripped. Added/removed lines are
+// reported as `DecorationRange`s so the decoration provider can paint them.
 export class HunkView extends TextView implements DecoratableView {
   isFoldable = true;
 
@@ -14,39 +19,57 @@ export class HunkView extends TextView implements DecoratableView {
   get id() { return this.changeHunk.diff; }
 
   constructor(public section: Section, public changeHunk: MagitChangeHunk, public ref?: Ref) {
-    super(changeHunk.diff);
+    // textContent is unused — `render` derives display text from the patch.
+    super('');
   }
 
   render(startLineNumber: number): string[] {
+    this.retrieveFold();
     this._decorations = [];
-    const lines = super.render(startLineNumber);
 
-    // When folded only the first line is visible; the diff body isn't on
-    // screen so don't emit any ranges. The visible line is the hunk header
-    // (e.g. `@@ -1,5 +1,7 @@`), not a +/- line.
-    if (!this.folded) {
-      const diffLines = this.changeHunk.diff.split(Constants.LineSplitterRegex);
-      diffLines.forEach((line, i) => {
-        const kind = classifyDiffLine(line);
-        if (!kind) return;
-        const docLine = startLineNumber + i;
-        this._decorations.push({
-          kind,
-          range: new Range(docLine, 0, docLine, line.length),
-        });
-      });
+    const rawLines = this.changeHunk.diff.split(Constants.LineSplitterRegex);
+    const displayLines: string[] = new Array(rawLines.length);
+
+    for (let i = 0; i < rawLines.length; i++) {
+      const raw = rawLines[i];
+      // Line 0 is the `@@ -a,b +c,d @@` header — keep as-is.
+      if (i === 0) {
+        displayLines[i] = raw;
+        continue;
+      }
+      const lead = raw.charCodeAt(0);
+      // 0x2B '+', 0x2D '-', 0x20 ' '
+      if (lead === 0x2B || lead === 0x2D || lead === 0x20) {
+        displayLines[i] = raw.slice(1);
+      } else {
+        displayLines[i] = raw;
+      }
+      if (!this.folded) {
+        let kind: DecorationKind | undefined;
+        if (lead === 0x2B) kind = 'added';
+        else if (lead === 0x2D) kind = 'removed';
+        if (kind) {
+          const docLine = startLineNumber + i;
+          this._decorations.push({
+            kind,
+            range: new Range(docLine, 0, docLine, displayLines[i].length),
+          });
+        }
+      }
     }
 
-    return lines;
+    // Range covers the full unfolded extent regardless of fold state — the
+    // base TextView convention; sibling views' line bookkeeping depends on it.
+    const lastLine = displayLines[displayLines.length - 1];
+    this.range = new Range(
+      startLineNumber, 0,
+      startLineNumber + displayLines.length - 1, lastLine.length,
+    );
+
+    return [this.folded ? displayLines[0] : displayLines.join('\n')];
   }
 
   getDecorations(): DecorationRange[] {
     return this._decorations;
   }
-}
-
-function classifyDiffLine(line: string): 'added' | 'removed' | undefined {
-  if (line.startsWith('+') && !line.startsWith('+++')) return 'added';
-  if (line.startsWith('-') && !line.startsWith('---')) return 'removed';
-  return undefined;
 }

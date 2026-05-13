@@ -74,9 +74,9 @@ Push:     fork/main Pushed tip`
         `Unstaged changes (1)
 modified   src/foo.ts
 @@ -1,2 +1,2 @@
- line one
--old
-+new`
+line one
+old
+new`
       );
     });
 
@@ -135,11 +135,11 @@ unmerged   conflict.ts (both modified)`
         renderView(view),
         `modified   src/foo.ts
 @@ -1,1 +1,1 @@
--old
-+new
+old
+new
 @@ -10,1 +10,1 @@
--also old
-+also new`
+also old
+also new`
       );
     });
   });
