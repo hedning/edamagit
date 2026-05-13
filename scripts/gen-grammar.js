@@ -48,7 +48,7 @@ const LANGUAGES = [
 ];
 
 const FILE_HEADER_PREFIX = '^(modified|new file|deleted|renamed|copied|unmerged)   ';
-// Lookahead targets that end the embedded region: the next file's header
+// Terminators that force the embedded region closed: the next file's header
 // in the same section, or the start of any other magit section.
 const SECTION_HEADERS = [
   'Untracked files',
@@ -71,7 +71,13 @@ const SECTION_HEADERS = [
   'Reverting',
   'Stash@\\{\\d+\\}',
 ];
-const END_REGEX = `(?=${FILE_HEADER_PREFIX}|^(${SECTION_HEADERS.join('|')}))`;
+// `while`, not `end`: an unclosed multi-line construct in the embedded
+// language (Python triple-quoted string, JSX expression, etc.) would
+// otherwise swallow the next file header and prevent the region from
+// closing. `while` is checked per-line at the parent level, so it pops
+// any nested state when the line is a file/section header.
+const WHILE_REGEX =
+  `^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(${SECTION_HEADERS.join('|')}))`;
 
 function ruleName(lang) { return `${lang.language}Hunk`; }
 
@@ -83,7 +89,7 @@ function buildRule(lang) {
   return {
     begin: `${FILE_HEADER_PREFIX}.*\\.${extPattern(lang)}$`,
     beginCaptures: { '0': { name: 'strong magit.subheader' } },
-    end: END_REGEX,
+    while: WHILE_REGEX,
     contentName: `meta.embedded.block.${lang.language}`,
     patterns: [
       { include: '#hunkHeader' },
