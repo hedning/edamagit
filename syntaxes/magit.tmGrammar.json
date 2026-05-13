@@ -5,9 +5,6 @@
       "include": "#expression"
     },
     {
-      "include": "#diff"
-    },
-    {
       "include": "#wordinserted"
     },
     {
@@ -19,6 +16,9 @@
       "patterns": [
         {
           "include": "#sectionHeader"
+        },
+        {
+          "include": "#hunkHeader"
         },
         {
           "include": "#highlight"
@@ -79,14 +79,9 @@
       "match": "\\[-.*-\\]",
       "name": "markup.deleted.diff"
     },
-    "diff": {
-      "begin": "(?=^@@)",
-      "end": "(?=^(modified|new file|deleted|renamed|copied|unmerged))|(?=$^)",
-      "patterns": [
-        {
-          "include": "source.diff"
-        }
-      ]
+    "hunkHeader": {
+      "match": "^@@.*@@.*$",
+      "name": "meta.diff.range.unified"
     },
     "helpKey": {
       "match": "  ([^\\s]|!|\\$|\\%|TAB|RET|\\_|-|(shift(\\+|-)[^a-zA-Z])) ",
