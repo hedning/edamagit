@@ -3,10 +3,9 @@ import { MenuUtil, MenuState } from '../menu/menu';
 import { gitRunInUri } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import { window } from 'vscode';
-import { listWorktrees, Worktree } from '../utils/worktreeUtils';
+import { listWorktrees, Worktree, worktreeDescription } from '../utils/worktreeUtils';
 import { PickMenuItem, PickMenuUtil } from '../menu/pickMenu';
 import { magitStatusForPath } from './statusCommands';
-import GitTextUtils from '../utils/gitTextUtils';
 
 const worktreeMenu = {
   title: 'Worktree',
@@ -72,15 +71,4 @@ async function listAndOpenWorktree({ repository }: MenuState) {
   if (!chosen || chosen.bare) return;
 
   return magitStatusForPath(chosen.path);
-}
-
-function worktreeDescription(wt: Worktree): string {
-  if (wt.bare) return 'bare';
-  const parts: string[] = [];
-  if (wt.branch) parts.push(wt.branch);
-  else if (wt.detached) parts.push('(detached)');
-  if (wt.head) parts.push(GitTextUtils.shortHash(wt.head));
-  if (wt.locked !== undefined) parts.push(wt.locked ? `locked: ${wt.locked}` : 'locked');
-  if (wt.prunable !== undefined) parts.push('prunable');
-  return parts.join(' · ');
 }
