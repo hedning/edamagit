@@ -8,6 +8,20 @@ import GitTextUtils from './gitTextUtils';
 import { DocumentView, RebuildableViewKind } from '../views/general/documentView';
 import { magitConfig, views } from '../extension';
 
+// Walk the view tree honoring fold state. When a view is folded, only its
+// first subview is visited (and not recursed into) — magit folded sections
+// always have a leaf header view as their first child, which is the line
+// that remains visible. Used by providers that derive per-line data from
+// the view tree (SemanticTokensProvider, ViewDecorationProvider).
+export function visitVisibleViews(root: View, visit: (v: View) => void): void {
+  visit(root);
+  if (!root.folded) {
+    root.subViews.forEach(v => visitVisibleViews(v, visit));
+  } else if (root.subViews.length) {
+    visit(root.subViews[0]);
+  }
+}
+
 export default class ViewUtils {
 
   public static createOrUpdateView<T extends DocumentView>(repository: MagitRepository, uri: Uri, viewFactory: () => T): T {
