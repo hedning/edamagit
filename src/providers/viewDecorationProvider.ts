@@ -15,11 +15,11 @@ export class ViewDecorationProvider {
     this.types = {
       added: vscode.window.createTextEditorDecorationType({
         overviewRulerLane: vscode.OverviewRulerLane.Left,
-        overviewRulerColor: new vscode.ThemeColor('diffEditor.insertedLineBackground'),
+        overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.addedForeground'),
       }),
       removed: vscode.window.createTextEditorDecorationType({
         overviewRulerLane: vscode.OverviewRulerLane.Left,
-        overviewRulerColor: new vscode.ThemeColor('diffEditor.removedLineBackground'),
+        overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.deletedForeground'),
       }),
     };
   }
