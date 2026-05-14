@@ -157,6 +157,10 @@
         "title": "Magit Open Terminal"
       },
       {
+        "command": "magit.terminal",
+        "title": "Magit Terminal"
+      },
+      {
         "command": "magit.worktree",
         "title": "Magit Worktree"
       },
@@ -298,6 +302,10 @@
         },
         {
           "command": "magit.open-terminal",
+          "when": "activeEditor"
+        },
+        {
+          "command": "magit.terminal",
           "when": "activeEditor"
         },
         {

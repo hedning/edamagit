@@ -37,6 +37,7 @@ import { processView } from './commands/processCommands';
 import { resetting, resetMixed, resetHard } from './commands/resettingCommands';
 import { tagging } from './commands/taggingCommands';
 import { worktree } from './commands/worktreeCommands';
+import { terminal } from './commands/terminalCommands';
 import { findFile } from './commands/findFileCommands';
 import { diffing, diffFile } from './commands/diffingCommands';
 import { ignoring } from './commands/ignoringCommands';
@@ -263,6 +264,7 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.ignoring', CommandPrimer.primeRepo(ignoring)),
     commands.registerTextEditorCommand('magit.running', CommandPrimer.primeRepo(running)),
     commands.registerTextEditorCommand('magit.open-terminal', CommandPrimer.primeRepo(openTerminal, false)),
+    commands.registerTextEditorCommand('magit.terminal', CommandPrimer.primeRepo(terminal)),
     commands.registerTextEditorCommand('magit.worktree', CommandPrimer.primeRepo(worktree)),
     commands.registerTextEditorCommand('magit.submodules', CommandPrimer.primeRepo(submodules)),
     commands.registerTextEditorCommand('magit.process-log', CommandPrimer.primeRepo(processView, false)),

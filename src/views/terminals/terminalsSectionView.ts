@@ -21,15 +21,21 @@ export class TerminalsSectionView extends View {
 
 export class TerminalItemView extends TextView {
   constructor(public terminal: Terminal, currentRoot: Uri) {
-    super(TerminalItemView.format(terminal, currentRoot));
+    const { label, description } = formatTerminalEntry(terminal, currentRoot);
+    super(`  ${label}  ${description}`);
   }
+}
 
-  private static format(t: Terminal, currentRoot: Uri): string {
-    const cwd = t.shellIntegration?.cwd;
-    const rel = cwd ? path.relative(currentRoot.fsPath, cwd.fsPath) : '';
-    const cwdLabel = rel === '' ? '.' : rel;
-    return `  ${t.name}  ${cwdLabel}`;
-  }
+/**
+ * Shared formatter for the in-buffer terminal list and the terminal menu's
+ * pick list. The View renders `label` and `description` as one line; the
+ * menu maps them to QuickPickItem fields.
+ */
+export function formatTerminalEntry(t: Terminal, currentRoot: Uri): { label: string; description: string } {
+  const cwd = t.shellIntegration?.cwd;
+  const rel = cwd ? path.relative(currentRoot.fsPath, cwd.fsPath) : '';
+  const cwdLabel = rel === '' ? '.' : rel;
+  return { label: t.name, description: cwdLabel };
 }
 
 /**
