@@ -125,7 +125,7 @@ export default class MagitStatusView extends DocumentView {
 
 export const MagitStatus: RebuildableViewKind<[]> = {
   authority: 'status',
-  buildUri: (repo) => buildMagitUri(repo.uri, 'status', { authority: MagitStatus.authority }),
+  buildUri: (repo) => buildMagitUri(repo, 'status', { authority: MagitStatus.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;

@@ -102,6 +102,6 @@ Essential commands
 
 export const Help: RebuildableViewKind<[]> = {
   authority: 'help',
-  buildUri: (repo) => buildMagitUri(repo.uri, 'help', { authority: Help.authority }),
+  buildUri: (repo) => buildMagitUri(repo, 'help', { authority: Help.authority }),
   build: async (uri) => new HelpView(uri, await loadUserKeyBindings()),
 };

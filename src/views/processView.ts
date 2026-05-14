@@ -55,7 +55,7 @@ export default class ProcessView extends DocumentView {
 
 export const Process: RebuildableViewKind<[]> = {
   authority: 'process',
-  buildUri: (repo) => buildMagitUri(repo.uri, 'process', {
+  buildUri: (repo) => buildMagitUri(repo, 'process', {
     authority: Process.authority,
     fragment: 'process',
   }),

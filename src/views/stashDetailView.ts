@@ -50,8 +50,9 @@ export class StashDetailView extends DocumentView {
 
 export const StashDetail: RebuildableViewKind<[Stash]> = {
   authority: 'stash',
-  buildUri: (repo, stash) => buildMagitUri(repo.uri, 'stash', {
+  buildUri: (repo, stash) => buildMagitUri(repo, 'stash', {
     authority: StashDetail.authority,
+    title: `stash@{${stash.index}} ${stash.description}`.replace(/\//g, '∕'),
     fragment: `stash@{${stash.index}}`,
   }),
   build: async (uri) => {

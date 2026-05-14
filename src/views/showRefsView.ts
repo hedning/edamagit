@@ -28,7 +28,7 @@ export default class ShowRefsView extends DocumentView {
 
 export const ShowRefs: RebuildableViewKind<[]> = {
   authority: 'refs',
-  buildUri: (repo) => buildMagitUri(repo.uri, 'refs', { authority: ShowRefs.authority }),
+  buildUri: (repo) => buildMagitUri(repo, 'refs', { authority: ShowRefs.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;

@@ -57,7 +57,11 @@ export const SectionDiff: RebuildableViewKind<[SectionDiffSection]> = {
   authority: 'sectionDiff',
   buildUri: (repo, section) => {
     const leaf = section === Section.Staged ? 'staged' : 'unstaged';
-    return buildMagitUri(repo.uri, leaf, { authority: SectionDiff.authority, fragment: leaf });
+    return buildMagitUri(repo, leaf, {
+      authority: SectionDiff.authority,
+      title: leaf,
+      fragment: leaf,
+    });
   },
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);

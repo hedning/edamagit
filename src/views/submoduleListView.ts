@@ -20,7 +20,7 @@ export default class SubmoduleListView extends DocumentView {
 
 export const SubmoduleList: RebuildableViewKind<[]> = {
   authority: 'submodules',
-  buildUri: (repo) => buildMagitUri(repo.uri, 'submodules', { authority: SubmoduleList.authority }),
+  buildUri: (repo) => buildMagitUri(repo, 'submodules', { authority: SubmoduleList.authority }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
     if (!repo) return undefined;

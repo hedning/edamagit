@@ -39,8 +39,9 @@ export class PullRequestView extends DocumentView {
 // Tab drops on reload; reopen via the status view to refetch.
 export const PullRequest: ViewKind<[PullRequestModel]> = {
   authority: 'pr',
-  buildUri: (repo, pr) => buildMagitUri(repo.uri, 'pr', {
+  buildUri: (repo, pr) => buildMagitUri(repo, 'pr', {
     authority: PullRequest.authority,
+    title: `#${pr.number} ${pr.title}`,
     fragment: `${pr.number}`,
   }),
 };

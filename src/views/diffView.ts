@@ -32,9 +32,10 @@ export class DiffView extends DocumentView {
 
 export const Diff: RebuildableViewKind<[DiffSpec]> = {
   authority: 'diff',
-  buildUri: (repo, spec) => buildMagitUri(repo.uri, 'diff', {
+  buildUri: (repo, spec) => buildMagitUri(repo, 'diff', {
     authority: Diff.authority,
-    query: { ...specToQuery(spec), label: labelFor(spec) },
+    title: labelFor(spec),
+    query: specToQuery(spec),
   }),
   build: async (uri) => {
     const repo = await MagitUtils.ensureRepoForMagitUri(uri);
@@ -81,7 +82,7 @@ function basename(p: string): string {
 }
 
 // U+2215 division slash so VS Code's `getUriBasenameLabel` doesn't chop the
-// `Diff: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
+// `diff: ` prefix off rev specs like `origin/main..HEAD`. Mirrors the
 // log/commit-detail trick.
 function labelFor(spec: DiffSpec): string {
   switch (spec.kind) {

@@ -61,22 +61,24 @@ export class CommitDetailView extends DocumentView {
   }
 }
 
+// Tab subjects are truncated to keep labels reasonably bounded — the full
+// message is always visible inside the view itself.
+const SubjectMaxWidth = 40;
+
 export const CommitDetail: RebuildableViewKind<[Commit]> = {
   authority: 'commit',
-  // VS Code's `getUriBasenameLabel` formats the label and then runs
-  // `basename` on it with the formatter's separator, so a literal `/` in
-  // the summary (`feat/foo: bar`) would chop the `Commit <hash>: ` prefix
-  // off the tab title. Substitute U+2215 DIVISION SLASH like we do for the
-  // path leaf — visually identical, opaque to `basename`.
-  // Path leaf is just `commit.magit`; the human label is composed by the
-  // `magit` + `commit` authority `resourceLabelFormatters` entry from these
-  // query keys. Full hash stays in the fragment for `build`.
+  // VS Code's `getUriBasenameLabel` formats the label and then runs `basename`
+  // on it with the formatter's separator, so a literal `/` in the summary
+  // (`feat/foo: bar`) would chop the `commit: ` prefix off the tab title.
+  // Substitute U+2215 DIVISION SLASH — visually identical, opaque to
+  // `basename`. Full hash stays in the fragment for `build`.
   buildUri: (repo, commit) => {
-    const summary = GitTextUtils.shortCommitMessage(commit.message).replace(/\//g, '∕');
+    const subject = GitTextUtils.shortCommitMessage(commit.message).replace(/\//g, '∕');
+    const truncated = subject.length > SubjectMaxWidth ? subject.slice(0, SubjectMaxWidth - 1) + '…' : subject;
     const shortHash = GitTextUtils.shortHash(commit.hash);
-    return buildMagitUri(repo.uri, 'commit', {
+    return buildMagitUri(repo, 'commit', {
       authority: CommitDetail.authority,
-      query: { summary, shortHash },
+      title: `${truncated} (${shortHash})`,
       fragment: commit.hash,
     });
   },

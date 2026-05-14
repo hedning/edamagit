@@ -39,8 +39,9 @@ export class IssueView extends DocumentView {
 // Tab drops on reload; reopen via the status view to refetch.
 export const Issue: ViewKind<[IssueModel]> = {
   authority: 'issue',
-  buildUri: (repo, issue) => buildMagitUri(repo.uri, 'issue', {
+  buildUri: (repo, issue) => buildMagitUri(repo, 'issue', {
     authority: Issue.authority,
+    title: `#${issue.number} ${issue.title}`,
     fragment: `${issue.number}`,
   }),
 };

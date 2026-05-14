@@ -26,8 +26,9 @@ export const Blame: RebuildableViewKind<[Uri]> = {
   authority: 'blame',
   buildUri: (repo, fileUri) => {
     const basename = fileUri.path.slice(fileUri.path.lastIndexOf('/') + 1);
-    return buildMagitUri(repo.uri, `Blame: ${basename}`, {
+    return buildMagitUri(repo, 'blame', {
       authority: Blame.authority,
+      title: basename,
       fragment: fileUri.path,
     });
   },

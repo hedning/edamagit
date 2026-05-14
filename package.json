@@ -414,37 +414,7 @@
       {
         "scheme": "magit",
         "formatting": {
-          "label": "${path}",
-          "separator": "/",
-          "stripPathSegments": 1000,
-          "stripPathStartingSeparator": true,
-          "tildify": true,
-          "workspaceSuffix": "magit"
-        }
-      },
-      {
-        "scheme": "magit",
-        "authority": "commit",
-        "formatting": {
-          "label": "${query.summary} (${query.shortHash})",
-          "separator": "/",
-          "workspaceSuffix": "magit"
-        }
-      },
-      {
-        "scheme": "magit",
-        "authority": "log",
-        "formatting": {
-          "label": "Log: ${query.revs}",
-          "separator": "/",
-          "workspaceSuffix": "magit"
-        }
-      },
-      {
-        "scheme": "magit",
-        "authority": "diff",
-        "formatting": {
-          "label": "Diff: ${query.label}",
+          "label": "${authority}${query.title}${query.worktree}",
           "separator": "/",
           "workspaceSuffix": "magit"
         }
