@@ -57,8 +57,7 @@ export default class ViewUtils {
 
   public static async showView(uri: Uri, view: DocumentView, textDocumentShowOptions: TextDocumentShowOptions = { preview: false, preserveFocus: false }) {
     views.set(uri.toString(), view);
-    let doc = await workspace.openTextDocument(uri);
-    return window.showTextDocument(doc, { viewColumn: ViewUtils.showDocumentColumn(), ...textDocumentShowOptions });
+    return await window.showTextDocument(uri, { viewColumn: ViewUtils.showDocumentColumn(), ...textDocumentShowOptions });
   }
 
   public static showDocumentColumn(): ViewColumn {
