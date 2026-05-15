@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { suite, test } from 'mocha';
 import { Uri } from 'vscode';
 
@@ -16,7 +15,7 @@ import MagitStatusView, { MagitStatus } from '../../../views/magitStatusView';
 
 import {
   REPO_URI,
-  fileUri,
+  assertView,
   makeBranch,
   makeChange,
   makeCommit,
@@ -25,7 +24,6 @@ import {
   makeRepository,
   makeStash,
   makeUpstream,
-  renderView,
 } from './fixtures';
 
 suite('views (text snapshot)', () => {
@@ -33,13 +31,13 @@ suite('views (text snapshot)', () => {
   suite('BranchHeaderSectionView', () => {
     test('empty repo (no HEAD commitDetails)', () => {
       const view = new BranchHeaderSectionView(REPO_URI, []);
-      assert.strictEqual(renderView(view), 'In the beginning there was darkness');
+      assertView(view, 'In the beginning there was darkness');
     });
 
     test('HEAD on main worktree renders repo basename and branch', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'aaaaaaa', message: 'Tip' });
       const view = new BranchHeaderSectionView(REPO_URI, [], HEAD);
-      assert.strictEqual(renderView(view), 'HEAD: repo main');
+      assertView(view, 'HEAD: repo main');
     });
 
     test('HEAD with log renders commits beneath the header line', () => {
@@ -50,12 +48,11 @@ suite('views (text snapshot)', () => {
         makeCommit({ hash: 'bbbbbbb', message: 'Earlier' }),
       ];
       const view = new BranchHeaderSectionView(REPO_URI, [], HEAD, log, refs);
-      assert.strictEqual(
-        renderView(view),
-        `HEAD: repo main
+      assertView(view, `
+HEAD: repo main
 aaaaaaa main Tip
-bbbbbbb Earlier`
-      );
+bbbbbbb Earlier
+`);
     });
 
     test('linked worktree adds <repo>/<worktree-basename> to the header', () => {
@@ -64,7 +61,7 @@ bbbbbbb Earlier`
       const linkedUri = Uri.parse('file:///repo/wt/feature');
       const linked = { path: linkedUri, head: 'aaaaaaa', branch: 'feature', bare: false, detached: false };
       const view = new BranchHeaderSectionView(linkedUri, [mainWorktree, linked], HEAD);
-      assert.strictEqual(renderView(view), 'HEAD: repo/feature feature');
+      assertView(view, 'HEAD: repo/feature feature');
     });
 
     test('upstream renders Merge: label and one-line ref summary', () => {
@@ -86,13 +83,12 @@ bbbbbbb Earlier`
         refs,
       );
 
-      assert.strictEqual(
-        renderView(view),
-        `HEAD: repo main
+      assertView(view, `
+HEAD: repo main
 aaaaaaa origin/main Initial commit
 Merge:
-origin/main Upstream tip`
-      );
+origin/main Upstream tip
+`);
     });
   });
 
@@ -104,15 +100,14 @@ origin/main Upstream tip`
         hunks: [makeHunk('@@ -1,2 +1,2 @@\n line one\n-old\n+new')],
       });
       const view = new ChangeSectionView(Section.Unstaged, [change]);
-      assert.strictEqual(
-        renderView(view),
-        `Unstaged changes (1)
+      assertView(view, `
+Unstaged changes (1)
 modified   src/foo.ts
 @@ -1,2 +1,2 @@
 line one
 old
-new`
-      );
+new
+`);
     });
 
     test('untracked files render path only', () => {
@@ -120,12 +115,11 @@ new`
         makeChange({ path: 'a.txt', status: Status.UNTRACKED }),
         makeChange({ path: 'b.txt', status: Status.UNTRACKED }),
       ]);
-      assert.strictEqual(
-        renderView(view),
-        `Untracked files (2)
+      assertView(view, `
+Untracked files (2)
 a.txt
-b.txt`
-      );
+b.txt
+`);
     });
 
     test('staged changes mix new file and modified', () => {
@@ -134,24 +128,22 @@ b.txt`
         makeChange({ path: 'changed.ts', status: Status.INDEX_MODIFIED }),
         makeChange({ path: 'gone.ts', status: Status.INDEX_DELETED }),
       ]);
-      assert.strictEqual(
-        renderView(view),
-        `Staged changes (3)
+      assertView(view, `
+Staged changes (3)
 new file   added.ts
 modified   changed.ts
-deleted    gone.ts`
-      );
+deleted    gone.ts
+`);
     });
 
     test('merging conflict adds parenthetical label', () => {
       const view = new ChangeSectionView(Section.Unstaged, [
         makeChange({ path: 'conflict.ts', status: Status.BOTH_MODIFIED }),
       ]);
-      assert.strictEqual(
-        renderView(view),
-        `Unstaged changes (1)
-unmerged   conflict.ts (both modified)`
-      );
+      assertView(view, `
+Unstaged changes (1)
+unmerged   conflict.ts (both modified)
+`);
     });
   });
 
@@ -166,16 +158,15 @@ unmerged   conflict.ts (both modified)`
         ],
       });
       const view = new ChangeView(Section.Unstaged, change);
-      assert.strictEqual(
-        renderView(view),
-        `modified   src/foo.ts
+      assertView(view, `
+modified   src/foo.ts
 @@ -1,1 +1,1 @@
 old
 new
 @@ -10,1 +10,1 @@
 also old
-also new`
-      );
+also new
+`);
     });
   });
 
@@ -190,13 +181,12 @@ also new`
         ],
         [head],
       );
-      assert.strictEqual(
-        renderView(view),
-        `Recent commits
+      assertView(view, `
+Recent commits
 aaaaaaa main Most recent
 bbbbbbb Older commit
-`
-      );
+
+`);
     });
 
     test('Recent commits decorated with local branch, tracking remote, and tag', () => {
@@ -219,15 +209,14 @@ bbbbbbb Older commit
         ],
         refs,
       );
-      assert.strictEqual(
-        renderView(view),
-        `Recent commits
+      assertView(view, `
+Recent commits
 aaaaaaa origin/main Tip with tracking remote
 bbbbbbb v1.0 Tagged release
 ccccccc feature On a side branch
 ddddddd Plain commit, no decorations
-`
-      );
+
+`);
     });
   });
 
@@ -240,12 +229,11 @@ ddddddd Plain commit, no decorations
         [makeCommit({ hash: 'aaaaaaa', message: 'Pending push' })],
         [],
       );
-      assert.strictEqual(
-        renderView(view),
-        `Unpushed to origin/main (1)
+      assertView(view, `
+Unpushed to origin/main (1)
 aaaaaaa Pending push
-`
-      );
+
+`);
     });
   });
 
@@ -255,12 +243,11 @@ aaaaaaa Pending push
         makeStash(0, 'WIP on main: aaa quick fix'),
         makeStash(1, 'On feature: experimental work'),
       ]);
-      assert.strictEqual(
-        renderView(view),
-        `Stashes (2)
+      assertView(view, `
+Stashes (2)
 stash@{0} WIP on main: aaa quick fix
-stash@{1} On feature: experimental work`
-      );
+stash@{1} On feature: experimental work
+`);
     });
   });
 
@@ -275,23 +262,19 @@ stash@{1} On feature: experimental work`
         ],
         main,
       );
-      assert.strictEqual(
-        renderView(view),
-        `Worktrees (3)
+      assertView(view, `
+Worktrees (3)
 * main        aaaaaaa  /repo/main
   feature/x   bbbbbbb  /repo/feat  locked
-  (detached)  ccccccc  /repo/dt`
-      );
+  (detached)  ccccccc  /repo/dt
+`);
     });
   });
 
   suite('ErrorMessageView', () => {
     test('truncates and prefixes git errors', () => {
       const view = new ErrorMessageView('fatal: something\nmore lines\n');
-      assert.strictEqual(
-        renderView(view),
-        'GitError! fatal: something [ $ for detailed log ]'
-      );
+      assertView(view, 'GitError! fatal: something [ $ for detailed log ]');
     });
   });
 
@@ -302,11 +285,10 @@ stash@{1} On feature: experimental work`
       const view = new MagitStatusView(MagitStatus.buildUri(repo));
       view.update(repo);
 
-      assert.strictEqual(
-        renderView(view),
-        `HEAD: repo main
-`
-      );
+      assertView(view, `
+HEAD: repo main
+
+`);
     });
 
     test('comprehensive repo: changes, stashes, untracked, and inline log under HEAD:', () => {
@@ -335,9 +317,8 @@ stash@{1} On feature: experimental work`
       const view = new MagitStatusView(MagitStatus.buildUri(repo));
       view.update(repo);
 
-      assert.strictEqual(
-        renderView(view),
-        `HEAD: repo main
+      assertView(view, `
+HEAD: repo main
 aaaaaaa main Initial commit
 bbbbbbb Earlier work
 
@@ -352,8 +333,8 @@ stash@{0} WIP on main: tinkering
 
 Untracked files (1)
 tmp.log
-`
-      );
+
+`);
     });
 
     test('upstream ahead/behind fold into the combined log under HEAD:', () => {
@@ -379,16 +360,15 @@ tmp.log
       const view = new MagitStatusView(MagitStatus.buildUri(repo));
       view.update(repo);
 
-      assert.strictEqual(
-        renderView(view),
-        `HEAD: repo feature
+      assertView(view, `
+HEAD: repo feature
 ddddddd Remote-only commit
 ccccccc Local-only commit
 aaaaaaa Local tip
 Merge:
 origin/feature Upstream tip
-`
-      );
+
+`);
     });
 
   });

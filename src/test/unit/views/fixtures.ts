@@ -1,3 +1,4 @@
+import * as assert from 'assert';
 import { Uri } from 'vscode';
 import {
   Commit,
@@ -124,4 +125,11 @@ export function makeRepository(overrides: Partial<MagitRepository> = {}): MagitR
  */
 export function renderView(view: View): string {
   return view.render(0).join('\n');
+}
+
+// Assert that a view renders to `expected`. Strips one leading and one trailing
+// newline from `expected` so callers can write the snapshot flush-left between
+// blank lines, e.g. assertView(view, `\nHEAD: repo main\naaaaaaa main Tip\n`).
+export function assertView(view: View, expected: string): void {
+  assert.strictEqual(renderView(view), expected.replace(/^\n/, '').replace(/\n$/, ''));
 }
