@@ -323,6 +323,9 @@ export default class LogView extends DocumentView {
   args: string[];
   revs: string[];
   paths: string[];
+  // First-line summary surfaced by the symbol provider so sticky scroll keeps
+  // "Commits in <rev>" pinned while scrolling through the commit list.
+  public headerText: string = '';
 
   constructor(uri: MagitUri) {
     super(uri);
@@ -344,6 +347,7 @@ export default class LogView extends DocumentView {
 
     const logEntries = parseLog(output.stdout);
     const revName = this.revs.join(' ');
+    this.headerText = `Commits in ${revName}`;
 
     const refMap: { [commit: string]: Ref[] } = {};
 
@@ -354,7 +358,7 @@ export default class LogView extends DocumentView {
     }
 
     this.subViews = [
-      new TextView(`Commits in ${revName}`),
+      new TextView(this.headerText),
       ...logEntries.map(entry => new CommitLongFormItemView(entry, refMap[entry.commit.hash], state.HEAD?.name, defaultBranches)),
     ];
 

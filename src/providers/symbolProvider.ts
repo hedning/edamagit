@@ -8,6 +8,7 @@ import { WorktreeSectionView, WorktreeItemView } from '../views/worktrees/worktr
 import { TerminalsSectionView, TerminalItemView } from '../views/terminals/terminalsSectionView';
 import { StashSectionView } from '../views/stashes/stashSectionView';
 import { Section } from '../views/general/sectionHeader';
+import LogView from '../views/logView';
 
 
 function createSymbol(view: ChangeView) {
@@ -60,6 +61,13 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
     provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken) {
         const currentView = views.get(document.uri.toString());
         if (!currentView) return;
+
+        if (currentView instanceof LogView) {
+            const header = currentView.subViews[0];
+            if (!header) return [];
+            const range = new vscode.Range(header.range.start, currentView.range.end);
+            return [new vscode.DocumentSymbol(currentView.headerText, '', vscode.SymbolKind.Namespace, range, header.range)];
+        }
 
         // BranchHeaderSectionView is a fold sibling of the other sections (so
         // folding the HEAD block doesn't collapse the whole buffer), but we
