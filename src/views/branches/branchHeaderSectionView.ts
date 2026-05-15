@@ -10,7 +10,7 @@ import { CommitItemView } from '../commits/commitSectionView';
 import GitTextUtils from '../../utils/gitTextUtils';
 import { Worktree } from '../../utils/worktreeParsers';
 
-const LOG_LIMIT = 10;
+const LOG_LIMIT = 5;
 
 export class BranchHeaderSectionView extends View {
   isFoldable = true;
@@ -47,10 +47,10 @@ export class BranchHeaderSectionView extends View {
     ));
 
     for (const commit of behind.slice(0, LOG_LIMIT)) {
-      this.addSubview(new CommitItemView(commit, undefined, refs));
+      this.addSubview(new CommitItemView(commit, undefined, []));
     }
     for (const commit of log.slice(0, LOG_LIMIT)) {
-      this.addSubview(new CommitItemView(commit, undefined, refs));
+      this.addSubview(new CommitItemView(commit, undefined, []));
     }
 
     if (HEAD.upstreamRemote) {
