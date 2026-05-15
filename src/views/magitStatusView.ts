@@ -48,63 +48,63 @@ export default class MagitStatusView extends DocumentView {
     );
     this.addSubview(header);
 
-    header.addSubview(new LineBreakView());
+    this.addSubview(new LineBreakView());
 
     if (magitState.worktrees.length > 1 && !magitConfig.hiddenStatusSections.has('worktrees')) {
-      header.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
-      header.addSubview(new LineBreakView());
+      this.addSubview(new WorktreeSectionView(magitState.worktrees, magitState.uri));
+      this.addSubview(new LineBreakView());
     }
 
     if (!magitConfig.hiddenStatusSections.has('terminals')) {
       const terminals = terminalsForWorktree(magitState.uri, magitState.worktrees);
       if (terminals.length > 0) {
-        header.addSubview(new TerminalsSectionView(terminals, magitState.uri));
-        header.addSubview(new LineBreakView());
+        this.addSubview(new TerminalsSectionView(terminals, magitState.uri));
+        this.addSubview(new LineBreakView());
       }
     }
 
     if (magitState.mergingState) {
-      header.addSubview(new MergingSectionView(magitState.mergingState));
+      this.addSubview(new MergingSectionView(magitState.mergingState));
     }
 
     if (magitState.rebasingState) {
-      header.addSubview(new RebasingSectionView(magitState.rebasingState));
+      this.addSubview(new RebasingSectionView(magitState.rebasingState));
     }
 
     if (magitState.cherryPickingState) {
-      header.addSubview(new CherryPickingSectionView(magitState.cherryPickingState, magitState.log));
+      this.addSubview(new CherryPickingSectionView(magitState.cherryPickingState, magitState.log));
     }
 
     if (magitState.revertingState) {
-      header.addSubview(new RevertingSectionView(magitState.revertingState, magitState.log));
+      this.addSubview(new RevertingSectionView(magitState.revertingState, magitState.log));
     }
 
     if ((magitState.workingTreeChanges.length) && !magitConfig.hiddenStatusSections.has('unstaged')) {
-      header.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
-      header.addSubview(new LineBreakView());
+      this.addSubview(new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.indexChanges.length && !magitConfig.hiddenStatusSections.has('staged')) {
-      header.addSubview(new ChangeSectionView(Section.Staged, magitState.indexChanges));
-      header.addSubview(new LineBreakView());
+      this.addSubview(new ChangeSectionView(Section.Staged, magitState.indexChanges));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.stashes?.length && !magitConfig.hiddenStatusSections.has('stashes')) {
-      header.addSubview(new StashSectionView(magitState.stashes));
-      header.addSubview(new LineBreakView());
+      this.addSubview(new StashSectionView(magitState.stashes));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
-      header.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
-      header.addSubview(new LineBreakView());
+      this.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
+      this.addSubview(new LineBreakView());
     }
 
     if (magitState.forgeState?.pullRequests?.length && !magitConfig.hiddenStatusSections.has('pull requests')) {
-      header.addSubview(new PullRequestSectionView(magitState.forgeState?.pullRequests));
+      this.addSubview(new PullRequestSectionView(magitState.forgeState?.pullRequests));
     }
 
     if (magitState.forgeState?.issues?.length && !magitConfig.hiddenStatusSections.has('issues')) {
-      header.addSubview(new IssueSectionView(magitState.forgeState?.issues));
+      this.addSubview(new IssueSectionView(magitState.forgeState?.issues));
     }
   }
 

@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
 import { views } from '../extension';
-import { HunkView } from '../views/changes/hunkView';
 import { ChangeView } from '../views/changes/changeView';
 import { View } from '../views/general/view';
-import { Status } from '../typings/git';
-import { getStatusText } from '../utils/gitTextUtils';
 import { ChangeSectionView } from '../views/changes/changesSectionView';
 import { BranchHeaderSectionView } from '../views/branches/branchHeaderSectionView';
 import { WorktreeSectionView, WorktreeItemView } from '../views/worktrees/worktreeSectionView';
@@ -18,73 +15,81 @@ function createSymbol(view: ChangeView) {
     return new vscode.DocumentSymbol(change.relativePath || change.uri.path, '', vscode.SymbolKind.File, view.range, view.range);
 }
 
+function buildSectionSymbol(view: View): vscode.DocumentSymbol | undefined {
+    if (view instanceof ChangeSectionView) {
+        const children: vscode.DocumentSymbol[] = [];
+        for (const changeView of view.subViews) {
+            if (changeView instanceof ChangeView) children.push(createSymbol(changeView));
+        }
+        const sym = new vscode.DocumentSymbol(view.section, '', vscode.SymbolKind.Namespace, view.range, view.range);
+        sym.children = children;
+        return sym;
+    }
+    if (view instanceof ChangeView) {
+        return createSymbol(view);
+    }
+    if (view instanceof WorktreeSectionView) {
+        const children: vscode.DocumentSymbol[] = [];
+        for (const sub of view.subViews) {
+            if (!(sub instanceof WorktreeItemView)) continue;
+            const wt = sub.worktree;
+            const name = wt.branch || (wt.bare ? '(bare)' : wt.detached ? '(detached)' : wt.path.fsPath);
+            children.push(new vscode.DocumentSymbol(name, wt.path.fsPath, vscode.SymbolKind.Module, sub.range, sub.range));
+        }
+        const sym = new vscode.DocumentSymbol(Section.Worktrees, '', vscode.SymbolKind.Namespace, view.range, view.range);
+        sym.children = children;
+        return sym;
+    }
+    if (view instanceof TerminalsSectionView) {
+        const children: vscode.DocumentSymbol[] = [];
+        for (const sub of view.subViews) {
+            if (!(sub instanceof TerminalItemView)) continue;
+            children.push(new vscode.DocumentSymbol(sub.terminal.name, '', vscode.SymbolKind.Event, sub.range, sub.range));
+        }
+        const sym = new vscode.DocumentSymbol(Section.Terminals, '', vscode.SymbolKind.Namespace, view.range, view.range);
+        sym.children = children;
+        return sym;
+    }
+    if (view instanceof StashSectionView) {
+        return new vscode.DocumentSymbol(Section.Stashes, '', vscode.SymbolKind.Namespace, view.range, view.range);
+    }
+    return undefined;
+}
+
 export class SymbolProvider implements vscode.DocumentSymbolProvider {
     provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken) {
         const currentView = views.get(document.uri.toString());
         if (!currentView) return;
 
+        // BranchHeaderSectionView is a fold sibling of the other sections (so
+        // folding the HEAD block doesn't collapse the whole buffer), but we
+        // still want sticky scroll to keep "HEAD: <repo> <branch>" pinned for
+        // the entire document. That requires the HEAD symbol's range to
+        // contain every other section: build the sibling symbols first, then
+        // attach them as children of a HEAD symbol whose range spans from the
+        // header line to the end of the document.
         const symbols: vscode.DocumentSymbol[] = [];
-        // Sticky scroll only shows containers that are *nested ancestors* of
-        // the current symbol, not flat siblings. So when we enter HEAD we
-        // redirect subsequent pushes into its children for the duration.
-        let scope: vscode.DocumentSymbol[] = symbols;
-        function iter(view: View) {
-            if (view instanceof BranchHeaderSectionView) {
-                const head = new vscode.DocumentSymbol(view.headerText, '', vscode.SymbolKind.Namespace, view.range, view.range);
-                scope.push(head);
-                const outer = scope; scope = head.children;
-                for (const sub of view.subViews) iter(sub);
-                scope = outer;
-                return;
-            }
-            if (view instanceof ChangeSectionView) {
-                const changes: vscode.DocumentSymbol[] = [];
-                for (const changeView of view.subViews) {
-                    if (!(changeView instanceof ChangeView)) continue;
-                    changes.push(createSymbol(changeView));
-                }
-                const section = new vscode.DocumentSymbol(view.section, '', vscode.SymbolKind.Namespace, view.range, view.range);
-                section.children = changes;
-                scope.push(section);
-                return;
+        let headerView: BranchHeaderSectionView | undefined;
+        const siblings: vscode.DocumentSymbol[] = [];
 
-            } else if (view instanceof ChangeView) {
-                // Commit views doesn't have a section
-                scope.push(createSymbol(view));
-                return;
+        for (const sub of currentView.subViews) {
+            if (sub instanceof BranchHeaderSectionView) {
+                headerView = sub;
+                continue;
             }
-            if (view instanceof WorktreeSectionView) {
-                const children: vscode.DocumentSymbol[] = [];
-                for (const sub of view.subViews) {
-                    if (!(sub instanceof WorktreeItemView)) continue;
-                    const wt = sub.worktree;
-                    const name = wt.branch || (wt.bare ? '(bare)' : wt.detached ? '(detached)' : wt.path.fsPath);
-                    children.push(new vscode.DocumentSymbol(name, wt.path.fsPath, vscode.SymbolKind.Module, sub.range, sub.range));
-                }
-                const section = new vscode.DocumentSymbol(Section.Worktrees, '', vscode.SymbolKind.Namespace, view.range, view.range);
-                section.children = children;
-                scope.push(section);
-                return;
-            }
-            if (view instanceof TerminalsSectionView) {
-                const children: vscode.DocumentSymbol[] = [];
-                for (const sub of view.subViews) {
-                    if (!(sub instanceof TerminalItemView)) continue;
-                    children.push(new vscode.DocumentSymbol(sub.terminal.name, '', vscode.SymbolKind.Event, sub.range, sub.range));
-                }
-                const section = new vscode.DocumentSymbol(Section.Terminals, '', vscode.SymbolKind.Namespace, view.range, view.range);
-                section.children = children;
-                scope.push(section);
-                return;
-            }
-            if (view instanceof StashSectionView) {
-                scope.push(new vscode.DocumentSymbol(Section.Stashes, '', vscode.SymbolKind.Namespace, view.range, view.range));
-                return;
-            }
-            // todo: add branch symbols in the log view
-            for (const sub of view.subViews) iter(sub);
+            const sym = buildSectionSymbol(sub);
+            if (sym) siblings.push(sym);
         }
-        iter(currentView);
+
+        if (headerView) {
+            const end = currentView.range.end.isAfter(headerView.range.end) ? currentView.range.end : headerView.range.end;
+            const range = new vscode.Range(headerView.range.start, end);
+            const head = new vscode.DocumentSymbol(headerView.headerText, '', vscode.SymbolKind.Namespace, range, headerView.range);
+            head.children = siblings;
+            symbols.push(head);
+        } else {
+            symbols.push(...siblings);
+        }
 
         return symbols;
     }
