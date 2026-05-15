@@ -6,7 +6,6 @@ import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
 import { StashSectionView } from './stashes/stashSectionView';
-import { CommitItemView } from './commits/commitSectionView';
 import { LineBreakView } from './general/lineBreakView';
 import { BranchHeaderSectionView } from './branches/branchHeaderSectionView';
 import { MergingSectionView } from './merging/mergingSectionView';
@@ -35,20 +34,17 @@ export default class MagitStatusView extends DocumentView {
       this.addSubview(new ErrorMessageView(latestGitError));
     }
 
-    const header = new BranchHeaderSectionView(magitState.HEAD);
-    this.addSubview(header);
-
     const refs = magitState.remotes.reduce((prev, remote) => remote.branches.concat(prev), magitState.branches.concat(magitState.tags));
+    const showLog = !magitConfig.hiddenStatusSections.has('recent commits');
+    const behind = magitState.HEAD?.upstreamRemote?.commitsBehind ?? magitState.HEAD?.pushRemote?.commitsBehind ?? [];
 
-    if (magitState.HEAD?.commitDetails && !magitConfig.hiddenStatusSections.has('recent commits')) {
-      const behind = magitState.HEAD.upstreamRemote?.commitsBehind ?? magitState.HEAD.pushRemote?.commitsBehind ?? [];
-      for (const commit of behind.slice(0, 10)) {
-        header.addSubview(new CommitItemView(commit, undefined, refs));
-      }
-      for (const commit of magitState.log.slice(0, 10)) {
-        header.addSubview(new CommitItemView(commit, undefined, refs));
-      }
-    }
+    const header = new BranchHeaderSectionView(
+      magitState.HEAD,
+      showLog ? magitState.log : [],
+      refs,
+      showLog ? behind : [],
+    );
+    this.addSubview(header);
 
     header.addSubview(new LineBreakView());
 

@@ -30,7 +30,6 @@ import { getCommit } from '../utils/commitCache';
 import { Ref, RefType, Repository } from '../typings/git';
 import path = require('path');
 import { ca } from 'date-fns/locale';
-import { BranchHeaderView } from '../views/branches/branchHeaderView';
 import { MagitChange } from '../models/magitChange';
 import { diffToMagitChanges } from '../utils/diffParser';
 import MagitUtils from '../utils/magitUtils';
@@ -83,8 +82,7 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
   } else if (
     selectedView instanceof BranchListingView ||
     selectedView instanceof RemoteBranchListingView ||
-    selectedView instanceof TagListingView ||
-    selectedView instanceof BranchHeaderView
+    selectedView instanceof TagListingView
   ) {
     return visitCommit(repository, selectedView.ref.commit!);
 

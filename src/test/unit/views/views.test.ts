@@ -36,27 +36,52 @@ suite('views (text snapshot)', () => {
       assert.strictEqual(renderView(view), 'In the beginning there was darkness');
     });
 
-    test('HEAD only', () => {
+    test('HEAD only renders just the Head: label when no log is supplied', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'abcdef0123456', message: 'Initial commit' });
       const view = new BranchHeaderSectionView(HEAD);
-      assert.strictEqual(renderView(view), 'Head:     main Initial commit');
+      assert.strictEqual(renderView(view), 'Head:');
     });
 
-    test('HEAD with upstream and push remote', () => {
+    test('HEAD with log renders commits beneath the Head: label', () => {
+      const HEAD = makeBranch({ name: 'main', commit: 'aaaaaaa', message: 'Tip' });
+      const refs = [makeRef({ name: 'main', commit: 'aaaaaaa' })];
+      const log = [
+        makeCommit({ hash: 'aaaaaaa', message: 'Tip' }),
+        makeCommit({ hash: 'bbbbbbb', message: 'Earlier' }),
+      ];
+      const view = new BranchHeaderSectionView(HEAD, log, refs);
+      assert.strictEqual(
+        renderView(view),
+        `Head:
+aaaaaaa main Tip
+bbbbbbb Earlier`
+      );
+    });
+
+    test('HEAD with upstream and push remote labels each on its own line', () => {
       const HEAD = makeBranch({
         name: 'main',
-        commit: 'abcdef0123456',
+        commit: 'aaaaaaa',
         message: 'Initial commit',
         upstreamRemote: makeUpstream({ remote: 'origin', name: 'main', commitMessage: 'Upstream tip' }),
         pushRemote: makeUpstream({ remote: 'fork', name: 'main', commitMessage: 'Pushed tip' }),
       });
-      const view = new BranchHeaderSectionView(HEAD);
+      // Remote-first mirrors MagitStatusView ordering; the local branch then
+      // folds into the remote token on the shared commit.
+      const refs = [
+        makeRef({ name: 'origin/main', commit: 'aaaaaaa', type: RefType.RemoteHead, remote: 'origin' }),
+        makeRef({ name: 'main', commit: 'aaaaaaa' }),
+      ];
+      const view = new BranchHeaderSectionView(HEAD, [makeCommit({ hash: 'aaaaaaa', message: 'Initial commit' })], refs);
 
       assert.strictEqual(
         renderView(view),
-        `Head:     main Initial commit
-Merge:    origin/main Upstream tip
-Push:     fork/main Pushed tip`
+        `Head:
+aaaaaaa origin/main Initial commit
+Merge:
+origin/main Upstream tip
+Push:
+fork/main Pushed tip`
       );
     });
   });
@@ -261,7 +286,7 @@ stash@{1} On feature: experimental work`
   });
 
   suite('MagitStatusView', () => {
-    test('clean repo with HEAD shows just the header line', () => {
+    test('clean repo with HEAD shows just the Head: label', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'abc123def', message: 'Initial commit' });
       const repo = makeRepository({ HEAD });
       const view = new MagitStatusView(MagitStatus.buildUri(repo));
@@ -269,12 +294,12 @@ stash@{1} On feature: experimental work`
 
       assert.strictEqual(
         renderView(view),
-        `Head:     main Initial commit
+        `Head:
 `
       );
     });
 
-    test('comprehensive repo: changes, stashes, untracked, recent commits', () => {
+    test('comprehensive repo: changes, stashes, untracked, and inline log under Head:', () => {
       const HEAD = makeBranch({ name: 'main', commit: 'aaaaaaa', message: 'Initial commit' });
       const headRef = makeRef({ name: 'main', commit: 'aaaaaaa' });
 
@@ -302,7 +327,9 @@ stash@{1} On feature: experimental work`
 
       assert.strictEqual(
         renderView(view),
-        `Head:     main Initial commit
+        `Head:
+aaaaaaa main Initial commit
+bbbbbbb Earlier work
 
 Unstaged changes (1)
 modified   src/foo.ts
@@ -315,15 +342,11 @@ stash@{0} WIP on main: tinkering
 
 Untracked files (1)
 tmp.log
-
-Recent commits
-aaaaaaa main Initial commit
-bbbbbbb Earlier work
 `
       );
     });
 
-    test('upstream ahead/behind drives unmerged and unpulled sections', () => {
+    test('upstream ahead/behind fold into the combined log under Head:', () => {
       const HEAD = makeBranch({
         name: 'feature',
         commit: 'aaaaaaa',
@@ -336,20 +359,24 @@ bbbbbbb Earlier work
           commitsBehind: [makeCommit({ hash: 'ddddddd', message: 'Remote-only commit' })],
         }),
       });
-      const repo = makeRepository({ HEAD });
+      const repo = makeRepository({
+        HEAD,
+        log: [
+          makeCommit({ hash: 'ccccccc', message: 'Local-only commit' }),
+          makeCommit({ hash: 'aaaaaaa', message: 'Local tip' }),
+        ],
+      });
       const view = new MagitStatusView(MagitStatus.buildUri(repo));
       view.update(repo);
 
       assert.strictEqual(
         renderView(view),
-        `Head:     feature Local tip
-Merge:    origin/feature Upstream tip
-
-Unmerged into origin/feature (1)
-ccccccc Local-only commit
-
-Unpulled from origin/feature (1)
+        `Head:
 ddddddd Remote-only commit
+ccccccc Local-only commit
+aaaaaaa Local tip
+Merge:
+origin/feature Upstream tip
 `
       );
     });
