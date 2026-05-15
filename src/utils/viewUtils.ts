@@ -47,7 +47,8 @@ export default class ViewUtils {
     const uri = kind.buildUri(repository, ...args);
     const cached = views.get(uri.toString());
     if (cached) {
-      cached.update(repository);
+      // This might guard against a race making ViewDecorationProvider not provide diff highlighting
+      await cached.update(repository);
       return cached;
     }
     return await kind.build(uri);
