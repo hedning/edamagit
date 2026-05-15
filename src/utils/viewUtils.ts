@@ -48,7 +48,8 @@ export default class ViewUtils {
     const cached = views.get(uri.toString());
     if (cached) {
       // This might guard against a race making ViewDecorationProvider not provide diff highlighting
-      await cached.update(repository);
+      // Doing await here gets annoying, as it genuinely slows eg. `l l` down if it.
+      cached.update(repository);
       return cached;
     }
     return await kind.build(uri);
