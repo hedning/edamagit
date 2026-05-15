@@ -146,6 +146,21 @@ export enum FileChangeType {
   Deleted = 3,
 }
 
+// Minimal stubs to satisfy code that walks editor tabs while building views.
+export const window = {
+  tabGroups: { all: [] as Array<{ tabs: unknown[] }> },
+  terminals: [] as unknown[],
+};
+
+export enum TerminalLocation {
+  Panel = 1,
+  Editor = 2,
+}
+
+export class TabInputTerminal {
+  constructor(public readonly name: string) {}
+}
+
 export class FileSystemError extends Error {
   constructor(message?: string) { super(message); this.name = 'FileSystemError'; }
   static FileNotFound(messageOrUri?: unknown): FileSystemError { return new FileSystemError(String(messageOrUri ?? 'FileNotFound')); }
