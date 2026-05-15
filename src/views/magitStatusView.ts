@@ -39,6 +39,8 @@ export default class MagitStatusView extends DocumentView {
     const behind = magitState.HEAD?.upstreamRemote?.commitsBehind ?? magitState.HEAD?.pushRemote?.commitsBehind ?? [];
 
     const header = new BranchHeaderSectionView(
+      magitState.uri,
+      magitState.worktrees,
       magitState.HEAD,
       showLog ? magitState.log : [],
       refs,

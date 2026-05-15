@@ -30,7 +30,7 @@ export class SymbolProvider implements vscode.DocumentSymbolProvider {
         let scope: vscode.DocumentSymbol[] = symbols;
         function iter(view: View) {
             if (view instanceof BranchHeaderSectionView) {
-                const head = new vscode.DocumentSymbol('HEAD', '', vscode.SymbolKind.Namespace, view.range, view.range);
+                const head = new vscode.DocumentSymbol(view.headerText, '', vscode.SymbolKind.Namespace, view.range, view.range);
                 scope.push(head);
                 const outer = scope; scope = head.children;
                 for (const sub of view.subViews) iter(sub);
