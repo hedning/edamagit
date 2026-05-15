@@ -6,11 +6,10 @@ import { ChangeSectionView } from './changes/changesSectionView';
 import { Section } from './general/sectionHeader';
 import { DocumentView } from './general/documentView';
 import { StashSectionView } from './stashes/stashSectionView';
-import { CommitSectionView } from './commits/commitSectionView';
+import { CommitItemView } from './commits/commitSectionView';
 import { LineBreakView } from './general/lineBreakView';
 import { BranchHeaderSectionView } from './branches/branchHeaderSectionView';
 import { MergingSectionView } from './merging/mergingSectionView';
-import { UnsourcedCommitSectionView } from './commits/unsourcedCommitsSectionView';
 import { MagitRepository } from '../models/magitRepository';
 import { RebasingSectionView } from './rebasing/rebasingSectionView';
 import { CherryPickingSectionView } from './cherryPicking/cherryPickingSectionView';
@@ -36,8 +35,20 @@ export default class MagitStatusView extends DocumentView {
       this.addSubview(new ErrorMessageView(latestGitError));
     }
 
-    const header = new BranchHeaderSectionView(magitState.HEAD)
+    const header = new BranchHeaderSectionView(magitState.HEAD);
     this.addSubview(header);
+
+    const refs = magitState.remotes.reduce((prev, remote) => remote.branches.concat(prev), magitState.branches.concat(magitState.tags));
+
+    if (magitState.HEAD?.commitDetails && !magitConfig.hiddenStatusSections.has('recent commits')) {
+      const behind = magitState.HEAD.upstreamRemote?.commitsBehind ?? magitState.HEAD.pushRemote?.commitsBehind ?? [];
+      for (const commit of behind.slice(0, 10)) {
+        header.addSubview(new CommitItemView(commit, undefined, refs));
+      }
+      for (const commit of magitState.log.slice(0, 10)) {
+        header.addSubview(new CommitItemView(commit, undefined, refs));
+      }
+    }
 
     header.addSubview(new LineBreakView());
 
@@ -88,23 +99,6 @@ export default class MagitStatusView extends DocumentView {
     if (magitState.untrackedFiles.length && !magitConfig.hiddenStatusSections.has('untracked')) {
       header.addSubview(new ChangeSectionView(Section.Untracked, magitState.untrackedFiles));
       header.addSubview(new LineBreakView());
-    }
-
-    const refs = magitState.remotes.reduce((prev, remote) => remote.branches.concat(prev), magitState.branches.concat(magitState.tags));
-
-    if (magitState.HEAD?.upstreamRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('unmerged')) {
-      header.addSubview(new UnsourcedCommitSectionView(Section.UnmergedInto, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsAhead, refs));
-    } else if (magitState.HEAD?.pushRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('unpushed')) {
-      header.addSubview(new UnsourcedCommitSectionView(Section.UnpushedTo, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsAhead, refs));
-    }
-    if (magitState.log.length > 0 && !magitState.HEAD?.upstreamRemote?.commitsAhead?.length && !magitConfig.hiddenStatusSections.has('recent commits')) {
-      header.addSubview(new CommitSectionView(Section.RecentCommits, magitState.log.slice(0, 10), refs));
-    }
-
-    if (magitState.HEAD?.upstreamRemote?.commitsBehind?.length && !magitConfig.hiddenStatusSections.has('unpulled')) {
-      header.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.upstreamRemote, magitState.HEAD.upstreamRemote.commitsBehind, refs));
-    } else if (magitState.HEAD?.pushRemote?.commitsBehind?.length) {
-      header.addSubview(new UnsourcedCommitSectionView(Section.UnpulledFrom, magitState.HEAD.pushRemote, magitState.HEAD.pushRemote.commitsBehind, refs));
     }
 
     if (magitState.forgeState?.pullRequests?.length && !magitConfig.hiddenStatusSections.has('pull requests')) {
