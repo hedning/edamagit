@@ -9,12 +9,25 @@ import { BranchListingView } from '../views/branches/branchListingView';
 import { RemoteBranchListingView } from '../views/remotes/remoteBranchListingView';
 import { TagListingView } from '../views/tags/tagListingView';
 import MagitUtils from '../utils/magitUtils';
+import { HunkView } from '../views/changes/hunkView';
+import { Section } from '../views/general/sectionHeader';
+import GitTextUtils from '../utils/gitTextUtils';
+import { ChangeView } from '../views/changes/changeView';
 
 export async function magitApplyEntityAtPoint(repository: MagitRepository, currentView: DocumentView): Promise<any> {
 
   const selectedView = currentView.click(window.activeTextEditor!.selection.active);
 
-  if (selectedView instanceof CommitItemView) {
+  if (selectedView instanceof HunkView) {
+    if (selectedView.section !== Section.Staged) {
+      const patch = GitTextUtils.generatePatchFromChangeHunkView(selectedView);
+      return apply(repository, patch, { index: false });
+    }
+
+  } else if (selectedView instanceof ChangeView) {
+    const change = selectedView.change;
+    return apply(repository, change.diff!, { index: false });
+  } else if (selectedView instanceof CommitItemView) {
     const commit = selectedView.commit;
     return CherryPicking.cherryPick(repository, commit.hash, { noCommit: true });
 
