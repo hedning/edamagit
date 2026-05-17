@@ -8,7 +8,9 @@ import { Section } from './general/sectionHeader';
 import { MagitChange } from '../models/magitChange';
 import { Stash } from '../models/stash';
 import { getRef } from '../commands/visitAtPointCommands';
-import { Status } from '../typings/git';
+import { RefType, Status } from '../typings/git';
+import { gitRunInUri } from '../utils/gitRawRunner';
+import { diffToMagitChanges } from '../utils/diffParser';
 
 export class StashDetailView extends DocumentView {
 
@@ -18,32 +20,17 @@ export class StashDetailView extends DocumentView {
     const indexStr = this.uri.fragment.match(/^stash@\{(\d+)\}$/)?.[1];
     if (indexStr === undefined) return;
     const index = Number.parseInt(indexStr, 10);
-
     const stash = state.stashes?.find(s => s.index === index);
     if (!stash) return;
-
+    
     const ref = `refs/stash@{${index}}`;
-    const { commit, changes: unstaged } = await getRef(state, ref);
-    const { changes: staged } = await getRef(state, commit.parents[1]);
-
-    let untracked: MagitChange[] = [];
-    if (commit.parents.length === 3) {
-      const { changes } = await getRef(state, commit.parents[2]);
-      untracked = changes.map(c => ({ ...c, status: Status.UNTRACKED, section: Section.Untracked }));
-    }
-
-    this.subViews = [];
+    
+    let diff = (await gitRunInUri(state.uri, ['stash', 'show', '-p', `stash@{${index}}`])).stdout;
+    let changes: MagitChange[] = diffToMagitChanges(diff, state.uri, { commit: ref, type: RefType.Head });
     this.addSubview(new TextView(`Stash@{${stash.index}} ${stash.description}`));
-    if (unstaged.length > 0) {
-      this.addSubview(new ChangeSectionView(Section.Unstaged, unstaged, `-stashDetail@{${stash.index}}`));
+    if (changes.length > 0) {
+      this.addSubview(new ChangeSectionView(Section.Changes, changes, `-stashDetail@{${stash.index}}`));
     }
-    if (staged.length > 0) {
-      this.addSubview(new ChangeSectionView(Section.Staged, staged, `-stashDetail@{${stash.index}}`));
-    }
-    if (untracked.length > 0) {
-      this.addSubview(new ChangeSectionView(Section.Untracked, untracked, `-stashDetail@{${stash.index}}`));
-    }
-
     this.triggerUpdate();
   }
 }
