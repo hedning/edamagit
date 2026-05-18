@@ -1,4 +1,3 @@
-import { Range, workspace, WorkspaceEdit } from 'vscode';
 import { View } from './view';
 import { MagitRepository } from '../../models/magitRepository';
 import { magitFileSystemProvider } from '../../providers/magitFileSystemProvider';
@@ -16,23 +15,7 @@ export abstract class DocumentView extends View {
 
   public abstract update(state: MagitRepository): void | Promise<void>;
 
-  // Refresh strategy: when the doc is open, push the new content as a
-  // WorkspaceEdit. applyEdit routes the full-range replace through
-  // computeMoreMinimalEdits, producing small surgical edits — VS Code's
-  // edit-tracker then shifts cursor positions naturally instead of collapsing
-  // them to the end (which is what `fireChanged` → `readFile` does, since the
-  // FS-provider reload path's prefix/suffix diff degenerates to one big
-  // middle-range replace). `fireChanged` is still fired so the FS provider
-  // bumps mtime; the actual content-reload it triggers is a no-op because the
-  // model is now dirty (textFileEditorModelManager skips dirty models).
-  public async triggerUpdate() {
-    const doc = workspace.textDocuments.find(d => d.uri.toString() === this.uri.toString());
-    if (doc) {
-      const newContent = this.render(0).join('\n');
-      const edit = new WorkspaceEdit();
-      edit.replace(this.uri, doc.validateRange(new Range(0, 0, Number.MAX_SAFE_INTEGER, 0)), newContent);
-      await workspace.applyEdit(edit);
-    }
+  public triggerUpdate() {
     magitFileSystemProvider.fireChanged(this.uri);
   }
 }
