@@ -1,25 +1,32 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { Uri } from 'vscode';
+import { resolveGitDir } from './gitDir';
 
-const REF_FILES = [
+// State-of-operation files are per-worktree; ref storage is shared.
+const PER_WORKTREE_STATE_FILES = [
   'HEAD', 'MERGE_HEAD', 'REBASE_HEAD', 'CHERRY_PICK_HEAD',
-  'REVERT_HEAD', 'FETCH_HEAD', 'ORIG_HEAD', 'packed-refs',
+  'REVERT_HEAD', 'FETCH_HEAD', 'ORIG_HEAD',
 ];
+const COMMON_STATE_FILES = ['packed-refs'];
 
-// Cheap content fingerprint over the bits of `.git/` that change when a magit
-// view's data would actually differ — HEAD, state-of-operation refs, and the
-// loose/packed ref tree. `.git/index` is intentionally excluded: every `git
-// status` invocation rewrites its stat cache, so including it would make the
-// fingerprint tick on every probe and defeat the dedup.
+// Cheap content fingerprint over the bits of the git dir that change when a
+// magit view's data would actually differ — HEAD, state-of-operation refs,
+// and the loose/packed ref tree. `index` is intentionally excluded: every
+// `git status` invocation rewrites its stat cache, so including it would
+// make the fingerprint tick on every probe and defeat the dedup.
 export async function repoFingerprint(repoFsPath: string): Promise<string> {
-  const gitDir = path.join(repoFsPath, '.git');
+  const { gitDir, commonDir } = await resolveGitDir(Uri.file(repoFsPath));
   const parts: string[] = [];
 
-  for (const name of REF_FILES) {
-    parts.push(`${name}:${await readOrEmpty(path.join(gitDir, name))}`);
+  for (const name of PER_WORKTREE_STATE_FILES) {
+    parts.push(`${name}:${await readOrEmpty(path.join(gitDir.fsPath, name))}`);
   }
-  parts.push(`refs:${(await collectRefs(path.join(gitDir, 'refs'))).join(';')}`);
+  for (const name of COMMON_STATE_FILES) {
+    parts.push(`${name}:${await readOrEmpty(path.join(commonDir.fsPath, name))}`);
+  }
+  parts.push(`refs:${(await collectRefs(path.join(commonDir.fsPath, 'refs'))).join(';')}`);
 
   return crypto.createHash('sha1').update(parts.join('|')).digest('hex');
 }

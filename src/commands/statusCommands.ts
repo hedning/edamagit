@@ -20,6 +20,7 @@ import { MagitRepository } from '../models/magitRepository';
 import ViewUtils from '../utils/viewUtils';
 import { scheduleForgeStatusAsync, forgeStatusCached } from '../forge';
 import { diffToMagitChanges } from '../utils/diffParser';
+import { resolveGitDir } from '../utils/gitDir';
 import { listWorktrees } from '../utils/worktreeUtils';
 import {
   readPorcelainStatus,
@@ -139,8 +140,8 @@ export async function magitStatusForPath(workTreeUri: Uri): Promise<any> {
 export async function internalMagitStatus(rootUri: Uri, gitRepository?: Repository): Promise<MagitRepository> {
 
   const repo = { rootUri };
-  const dotGitPath = rootUri + '/.git/';
 
+  const gitDirTask = resolveGitDir(rootUri);
   const porcelainTask = readPorcelainStatus(rootUri);
   const refsTask = readRefs(rootUri);
   const remotesTask = readRemotes(rootUri);
@@ -186,6 +187,13 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
 
   const conflictsTask = gitRunInUri(rootUri, ['status', '--porcelain', '-z'], {}, LogLevel.None)
     .then(res => GitTextUtils.parseConflictStatuses(res.stdout), () => new Map<string, Status>());
+
+  // In a linked worktree, state-of-operation files (rebase-merge, MERGE_HEAD,
+  // CHERRY_PICK_HEAD, ...) live in `<main>/.git/worktrees/<name>/`, not in
+  // `<worktree>/.git/` (which is a pointer file). resolveGitDir follows the
+  // pointer so the reads below land on the right files.
+  const { gitDir } = await gitDirTask;
+  const dotGitPath = gitDir.toString() + '/';
 
   const sequencerTodoPath = Uri.parse(dotGitPath + 'sequencer/todo');
   const sequencerHeadPath = Uri.parse(dotGitPath + 'sequencer/head');
