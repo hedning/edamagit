@@ -24,10 +24,9 @@ export abstract class DocumentView extends View {
   // `applyEdit` with a single full-range replace, because VS Code skips
   // `computeMoreMinimalEdits` for read-only editors. Supplying already-minimal
   // per-line edits sidesteps both and lets the model's edit-tracker shift
-  // cursor positions through inserts/deletes naturally. `fireChanged` is still
-  // fired so the FS provider's mtime advances; the reload it triggers is a
-  // no-op because the model is dirty by then (and the read-only capability
-  // keeps the dirty marker harmless).
+  // cursor positions through inserts/deletes naturally. `fireChanged` is fired
+  // only when there are actual diffs (so the FS provider's mtime advances); a
+  // no-op refresh skips it to avoid spurious reloads.
   public async triggerUpdate() {
     const doc = workspace.textDocuments.find(d => d.uri.toString() === this.uri.toString());
     if (doc) {
@@ -41,9 +40,11 @@ export abstract class DocumentView extends View {
           if (e) edit.replace(this.uri, e.range, e.text);
         }
         await workspace.applyEdit(edit);
+        magitFileSystemProvider.fireChanged(this.uri);
       }
+    } else {
+      magitFileSystemProvider.fireChanged(this.uri);
     }
-    magitFileSystemProvider.fireChanged(this.uri);
   }
 }
 
