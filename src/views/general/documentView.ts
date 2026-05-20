@@ -1,3 +1,4 @@
+import assert = require('assert');
 import { Range, TextDocument, workspace, WorkspaceEdit } from 'vscode';
 import { View } from './view';
 import { MagitRepository } from '../../models/magitRepository';
@@ -28,11 +29,11 @@ export abstract class DocumentView extends View {
   // only when there are actual diffs (so the FS provider's mtime advances); a
   // no-op refresh skips it to avoid spurious reloads.
   public async triggerUpdate() {
+    // const doc = await workspace.openTextDocument(this.uri)
     const doc = workspace.textDocuments.find(d => d.uri.toString() === this.uri.toString());
     if (doc) {
-      const oldLines: string[] = [];
-      for (let i = 0; i < doc.lineCount; i++) oldLines.push(doc.lineAt(i).text);
-      const hunks = computeLineDiff(oldLines, this.render(0));
+      const newText = this.render(0).join('\n');
+      const hunks = computeLineDiff(doc.getText(), newText);
       if (hunks.length > 0) {
         const edit = new WorkspaceEdit();
         for (const h of hunks) {
@@ -41,9 +42,15 @@ export abstract class DocumentView extends View {
         }
         await workspace.applyEdit(edit);
         magitFileSystemProvider.fireChanged(this.uri);
+
+        {
+          console.log('update', this.constructor.name);
+          assert(doc.getText() === newText, 'apply edit failed');
+          assert(computeLineDiff(doc.getText(), newText).length === 0, 'diff failed');
+        }
+      } else {
+        console.log('no update', this.constructor.name);
       }
-    } else {
-      magitFileSystemProvider.fireChanged(this.uri);
     }
   }
 }

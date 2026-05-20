@@ -5,15 +5,19 @@
 // what happens with the FS-provider reload path or with `workspace.applyEdit`
 // against a read-only editor — both skip `computeMoreMinimalEdits`).
 //
-// Two implementations:
-// - `computeLineDiffMyers` — Myers' O(N*D) algorithm. Default. Cheap when
-//   changes are sparse (the typical refresh after a magit action: a handful
-//   of lines change in a buffer of hundreds or thousands).
-// - `computeLineDiffLcs` — straightforward O(N*M) LCS DP. Kept for testing
-//   and as a sanity reference; its quadratic space gets ugly fast.
+// Input is full text (with `\n` or `\r\n` separators) — splitting into lines
+// is an internal detail. Hunks reference line indices in the split form of
+// `a`. Two implementations:
+// - `computeLineDiffMyers` — Myers' O(N*D) algorithm. Cheap when changes are
+//   sparse (the typical refresh after a magit action: a handful of lines
+//   change in a buffer of hundreds or thousands).
+// - `computeLineDiffLcs` — straightforward O(N*M) LCS DP. Default for now;
+//   kept as a sanity reference, though its quadratic space gets ugly fast.
+
+import { LineSplitterRegex } from '../common/constants';
 
 export interface LineDiffHunk {
-  // Range in `oldLines`, half-open: lines [oldStartLine, oldEndLine).
+  // Range in `a`'s split-line form, half-open: lines [oldStartLine, oldEndLine).
   oldStartLine: number;
   oldEndLine: number;
   // Replacement lines (may be empty for pure deletion).
@@ -23,9 +27,11 @@ export interface LineDiffHunk {
 // Edit-script ops: 0 = equal, 1 = delete from old, 2 = insert from new.
 type Op = 0 | 1 | 2;
 
-export const computeLineDiff = computeLineDiffMyers;
+export const computeLineDiff = computeLineDiffLcs;
 
-export function computeLineDiffMyers(a: string[], b: string[]): LineDiffHunk[] {
+export function computeLineDiffMyers(aText: string, bText: string): LineDiffHunk[] {
+  const a = aText.split(LineSplitterRegex);
+  const b = bText.split(LineSplitterRegex);
   const n = a.length;
   const m = b.length;
   const max = n + m;
@@ -77,7 +83,9 @@ export function computeLineDiffMyers(a: string[], b: string[]): LineDiffHunk[] {
   return opsToHunks(ops, b);
 }
 
-export function computeLineDiffLcs(a: string[], b: string[]): LineDiffHunk[] {
+export function computeLineDiffLcs(aText: string, bText: string): LineDiffHunk[] {
+  const a = aText.split(LineSplitterRegex);
+  const b = bText.split(LineSplitterRegex);
   const n = a.length;
   const m = b.length;
 
