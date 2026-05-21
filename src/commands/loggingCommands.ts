@@ -8,6 +8,7 @@ import { gitRun, LogLevel } from '../utils/gitRawRunner';
 import MagitUtils from '../utils/magitUtils';
 import ViewUtils from '../utils/viewUtils';
 import { Log } from '../views/logView';
+import { LogP } from '../views/logPView';
 
 const loggingMenu = {
   title: 'Logging',
@@ -24,7 +25,8 @@ const loggingMenu = {
 const switches: Switch[] = [
   { key: '-D', name: '--simplify-by-decoration', description: 'Simplify by decoration' },
   { key: '-g', name: '--graph', description: 'Show graph', activated: true },
-  { key: '-d', name: '--decorate', description: 'Show refnames', activated: true }
+  { key: '-d', name: '--decorate', description: 'Show refnames', activated: true },
+  { key: '-p', name: '--patch', description: 'Show patches' }
 ];
 
 const options: Option[] = [
@@ -94,7 +96,9 @@ export async function logFile(repository: MagitRepository, fileUri: Uri) {
 }
 
 async function log(repository: MagitRepository, args: string[], revs: string[], paths: string[] = []) {
-  const view = await ViewUtils.buildOrUpdate(repository, Log, revs, args, paths);
+  const isPatch = args.includes('--patch') || args.includes('-p');
+  const kind = isPatch ? LogP : Log;
+  const view = await ViewUtils.buildOrUpdate(repository, kind, revs, args, paths);
   if (view) return ViewUtils.showView(view.uri, view);
 }
 
@@ -114,14 +118,22 @@ function createLogArgs(switches: Switch[], options: Option[]) {
     return prev;
   }, {} as Record<string, Switch>);
 
-  const decorateFormat = switchMap['-d'].activated ? '%d' : '';
-  const formatArg = `--format=%H\x1f${decorateFormat}\x1f%an\x1f%at\x1f%s`;
+  const isPatch = switchMap['-p'].activated;
+  // The LogP parser brackets each commit with `%x00` and splits the diff out
+  // by NUL — graph rails would be interleaved into the patch lines and
+  // break that split, so they're disabled when `--patch` is on.
+  const formatArg = isPatch
+    ? `--format=%x00%H\x1f%an\x1f%at\x1f%s%n%b%x00`
+    : `--format=%H\x1f${switchMap['-d'].activated ? '%d' : ''}\x1f%an\x1f%at\x1f%s`;
   const args = ['log', formatArg, '--use-mailmap', ...MenuUtil.optionsToArgs(options)];
   if (switchMap['-D'].activated) {
     args.push(switchMap['-D'].name);
   }
-  if (switchMap['-g'].activated) {
+  if (switchMap['-g'].activated && !isPatch) {
     args.push(switchMap['-g'].name);
+  }
+  if (isPatch) {
+    args.push('--patch');
   }
   return args;
 }
