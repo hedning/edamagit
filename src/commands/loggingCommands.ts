@@ -29,8 +29,15 @@ const switches: Switch[] = [
   { key: '-p', name: '--patch', description: 'Show patches' }
 ];
 
+// `-n` default is per-mode: a wide net is fine for the one-line log, but
+// LogP renders the full patch under each commit so a 1000-commit default
+// chokes VS Code. We swap in the LogP default below when `-p` is on and
+// the user hasn't touched `-n`; explicit `=n` overrides survive.
+const DEFAULT_LIMIT_LOG = '1000';
+const DEFAULT_LIMIT_LOGP = '50';
+
 const options: Option[] = [
-  { key: '=n', name: '-n', description: 'Limit number of commits', value: '50', activated: true },
+  { key: '=n', name: '-n', description: 'Limit number of commits', value: DEFAULT_LIMIT_LOG, activated: true },
 ];
 
 export async function logging(repository: MagitRepository) {
@@ -125,7 +132,12 @@ function createLogArgs(switches: Switch[], options: Option[]) {
   const formatArg = isPatch
     ? `--format=%x00%H\x1f%an\x1f%at\x1f%s%n%b%x00`
     : `--format=%H\x1f${switchMap['-d'].activated ? '%d' : ''}\x1f%an\x1f%at\x1f%s`;
-  const args = ['log', formatArg, '--use-mailmap', ...MenuUtil.optionsToArgs(options)];
+  const effectiveOptions = options.map(o =>
+    (o.key === '=n' && isPatch && o.value === DEFAULT_LIMIT_LOG)
+      ? { ...o, value: DEFAULT_LIMIT_LOGP }
+      : o,
+  );
+  const args = ['log', formatArg, '--use-mailmap', ...MenuUtil.optionsToArgs(effectiveOptions)];
   if (switchMap['-D'].activated) {
     args.push(switchMap['-D'].name);
   }
