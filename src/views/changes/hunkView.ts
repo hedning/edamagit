@@ -24,7 +24,6 @@ export class HunkView extends TextView implements DecoratableView {
   }
 
   render(startLineNumber: number): string[] {
-    this.retrieveFold();
     this._decorations = [];
 
     const rawLines = this.changeHunk.diff.split(Constants.LineSplitterRegex);
@@ -44,29 +43,25 @@ export class HunkView extends TextView implements DecoratableView {
       } else {
         displayLines[i] = raw;
       }
-      if (!this.folded) {
-        let kind: DecorationKind | undefined;
-        if (lead === 0x2B) kind = 'added';
-        else if (lead === 0x2D) kind = 'removed';
-        if (kind) {
-          const docLine = startLineNumber + i;
-          this._decorations.push({
-            kind,
-            range: new Range(docLine, 0, docLine, displayLines[i].length),
-          });
-        }
+      let kind: DecorationKind | undefined;
+      if (lead === 0x2B) kind = 'added';
+      else if (lead === 0x2D) kind = 'removed';
+      if (kind) {
+        const docLine = startLineNumber + i;
+        this._decorations.push({
+          kind,
+          range: new Range(docLine, 0, docLine, displayLines[i].length),
+        });
       }
     }
 
-    // Range covers the full unfolded extent regardless of fold state — the
-    // base TextView convention; sibling views' line bookkeeping depends on it.
     const lastLine = displayLines[displayLines.length - 1];
     this.range = new Range(
       startLineNumber, 0,
       startLineNumber + displayLines.length - 1, lastLine.length,
     );
 
-    return [this.folded ? displayLines[0] : displayLines.join('\n')];
+    return [displayLines.join('\n')];
   }
 
   getDecorations(): DecorationRange[] {

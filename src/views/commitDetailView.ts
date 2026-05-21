@@ -50,11 +50,7 @@ export class CommitDetailView extends DocumentView {
     }
 
     this.addSubview(
-      ...changes.map(change => {
-        const view = new ChangeView(Section.Changes, change, commit.hash);
-        view.foldedByDefault = false;
-        return view;
-      }),
+      ...changes.map(change => new ChangeView(Section.Changes, change, commit.hash)),
     );
 
     this.triggerUpdate();

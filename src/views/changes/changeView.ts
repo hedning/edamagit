@@ -6,7 +6,6 @@ import { Section } from '../general/sectionHeader';
 
 export class ChangeView extends View {
   isFoldable = true;
-  foldedByDefault = true;
 
   get id() { return this.change.uri.toString() + this.section.toString() + this.context; }
 

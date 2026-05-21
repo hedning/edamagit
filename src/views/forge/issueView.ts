@@ -88,7 +88,6 @@ class IssueCommentHeaderView extends UnclickableTextView {
     super();
 
     let timeDistance = formatDistanceToNowStrict(Date.parse(comment.createdAt));
-    // let arrow = this.folded ? '▶' : '▼';
 
     this.textContent = `• ${comment.author} ${timeDistance}`;
   }

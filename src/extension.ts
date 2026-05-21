@@ -291,14 +291,9 @@ export async function activate(context: ExtensionContext) {
     commands.registerTextEditorCommand('magit.copy-buffer-revision', CommandPrimer.primeRepoAndView(copyBufferRevisionCommands))
   );
 
-  context.subscriptions.push(commands.registerTextEditorCommand('magit.toggle-fold', CommandPrimer.primeRepoAndView(async (repo: MagitRepository, view: DocumentView) => {
-    const selectedView = view.click(window.activeTextEditor!.selection.active);
-
-    if (selectedView?.isFoldable) {
-      selectedView.folded = !selectedView.folded;
-      view.triggerUpdate();
-    }
-  }, false)));
+  context.subscriptions.push(commands.registerTextEditorCommand('magit.toggle-fold', () => {
+    return commands.executeCommand('editor.toggleFold');
+  }));
 
   context.subscriptions.push(commands.registerTextEditorCommand('magit.quit', quitMagitView));
 

@@ -1,24 +1,11 @@
 import { Range, Position } from 'vscode';
 
-const viewFoldStatusMemory: Map<string, boolean> = new Map<string, boolean>();
-
 export abstract class View {
 
   private _range: Range = new Range(0, 0, 0, 0);
-  private _folded: boolean = false;
   subViews: View[] = [];
   isFoldable: boolean = false;
-  foldedByDefault: boolean = false;
   isHighlightable: boolean = true;
-
-  get folded(): boolean {
-    return this._folded;
-  }
-
-  set folded(value: boolean) {
-    if (this.id) viewFoldStatusMemory.set(this.id, value);
-    this._folded = value;
-  }
 
   get range(): Range {
     return this._range;
@@ -28,15 +15,7 @@ export abstract class View {
     this._range = value;
   }
 
-  protected retrieveFold() {
-    if (this.isFoldable && this.id) {
-      this._folded = viewFoldStatusMemory.get(this.id) ?? this.foldedByDefault;
-    }
-  }
-
   render(startLineNumber: number): string[] {
-
-    this.retrieveFold();
 
     let currentLineNumber = startLineNumber;
     const renderedContent: string[] = [];
@@ -61,8 +40,6 @@ export abstract class View {
     if (!this.range.contains(position)) return;
 
     const result = this.onClicked();
-    // Can't depend on folded being correct here I think
-    // if (this.folded) return result;
 
     let subResult: View | undefined = undefined;
     for (const subView of this.subViews) {

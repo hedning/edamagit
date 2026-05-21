@@ -22,7 +22,6 @@ export class PullRequestSectionView extends View {
 
 export class PullRequestItemView extends View {
   isFoldable = true;
-  foldedByDefault = true;
 
   get id() { return `pullRequestItem#${this.pullRequest.number}`; }
 

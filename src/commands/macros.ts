@@ -1,6 +1,5 @@
 import { commands, TextEditor, Range, window, Selection, TextEditorRevealType, Position } from 'vscode';
 import { MagitRepository } from '../models/magitRepository';
-import { ChangeSectionView } from '../views/changes/changesSectionView';
 import { DocumentView } from '../views/general/documentView';
 import { View } from '../views/general/view';
 
@@ -22,26 +21,13 @@ export async function quitMagitView() {
 }
 
 export async function toggleAllFoldsInChangeSection(repo: MagitRepository, view: DocumentView) {
-  const selectedView = view.click(window.activeTextEditor!.selection.active);
-
-  if (selectedView instanceof ChangeSectionView) {
-    let changeSectionView = selectedView as ChangeSectionView;
-    if (changeSectionView.subViews.length < 2) {
-      return;
-    }
-    let newFoldState = !changeSectionView.subViews[1].folded;
-
-    for (let i = 1; i < changeSectionView.subViews.length - 1; i++) {
-      changeSectionView.subViews[i].folded = newFoldState;
-    }
-  }
+  return commands.executeCommand('editor.toggleFoldRecursively');
 }
 
 const subViewDepthSearchFlatten = (view: View, depth: number = 0): View[] => {
-  if (view.folded || depth >= 3) {
+  if (depth >= 3) {
     return [];
   }
-  // .filter(v => v.isFoldable)
   return view.subViews.flatMap(v => [v, ...subViewDepthSearchFlatten(v, depth + 1)]);
 };
 

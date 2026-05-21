@@ -18,7 +18,7 @@ export default class SectionDiffView extends DocumentView {
     this.section = uri.fragment === 'staged' ? Section.Staged : Section.Unstaged;
   }
 
-  provideContent(magitState: MagitRepository, unfoldAll = false) {
+  provideContent(magitState: MagitRepository) {
 
     let changeSection;
 
@@ -30,24 +30,13 @@ export default class SectionDiffView extends DocumentView {
       changeSection = new ChangeSectionView(Section.Unstaged, magitState.workingTreeChanges, 'sectionDiffView');
     }
 
-    // Unfold to show diff
-    if (unfoldAll) {
-      changeSection.subViews.forEach(changeView => {
-        changeView.folded = false;
-        changeView.subViews.forEach(hunkView => hunkView.folded = false);
-      });
-    }
-
     this.subViews = [
       changeSection
     ];
   }
 
-  private initialUpdateDone = false;
-
   public update(state: MagitRepository): void {
-    this.provideContent(state, !this.initialUpdateDone);
-    this.initialUpdateDone = true;
+    this.provideContent(state);
     this.triggerUpdate();
   }
 
