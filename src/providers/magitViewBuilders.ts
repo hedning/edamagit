@@ -1,6 +1,7 @@
 import { MagitFileSystemProvider } from './magitFileSystemProvider';
 import { MagitStatus } from '../views/magitStatusView';
 import { Log } from '../views/logView';
+import { LogP } from '../views/logPView';
 import { CommitDetail } from '../views/commitDetailView';
 import { Help } from '../views/helpView';
 import { ShowRefs } from '../views/showRefsView';
@@ -18,6 +19,7 @@ import { Blame } from '../views/blameView';
 export function registerMagitViewBuilders(provider: MagitFileSystemProvider): void {
   provider.register(MagitStatus);
   provider.register(Log);
+  provider.register(LogP);
   provider.register(CommitDetail);
   provider.register(Help);
   provider.register(ShowRefs);
