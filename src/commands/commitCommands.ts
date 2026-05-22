@@ -130,7 +130,17 @@ export async function runCommitLikeCommand(
       // Fix for wayland only compositors like niri
       ozoneArgs = ' --enable-features=UseOzonePlatform --ozone-platform=wayland ';
     }
-    const editorString = `"${codePath}" ${ozoneArgs} -r --wait`;
+    // Pin the editor to the window that launched the commit. Without an
+    // explicit target, `code --reuse-window` lets VS Code's CLI pick the
+    // window — for a linked worktree it picks the main repo's window
+    // because COMMIT_EDITMSG lives under <main>/.git/worktrees/<name>/.
+    // See kahole/edamagit#301, #316.
+    const currentInstancePath =
+      vscode.workspace.workspaceFile?.fsPath ??
+      closestWorkspaceFolder(repository.uri)?.uri.fsPath ??
+      vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath ??
+      '';
+    const editorString = `"${codePath}" ${ozoneArgs} --wait --reuse-window "${currentInstancePath}" `;
     const env: NodeJS.ProcessEnv = { 'GIT_EDITOR': editorString };
     if (editor) env[editor] = editorString;
 
@@ -185,6 +195,21 @@ export async function runCommitLikeCommand(
       }
     }
   }
+}
+
+function closestWorkspaceFolder(repoUri: vscode.Uri): vscode.WorkspaceFolder | undefined {
+  const folders = vscode.workspace.workspaceFolders ?? [];
+  const repoPath = repoUri.fsPath;
+  let best: vscode.WorkspaceFolder | undefined;
+  for (const f of folders) {
+    const fPath = f.uri.fsPath;
+    if (repoPath === fPath || repoPath.startsWith(fPath + path.sep)) {
+      if (!best || fPath.length > best.uri.fsPath.length) {
+        best = f;
+      }
+    }
+  }
+  return best;
 }
 
 function findCodePath(): string {
