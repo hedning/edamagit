@@ -17,14 +17,16 @@ export class ViewDecorationProvider {
       added: vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: new vscode.ThemeColor('diffEditor.insertedLineBackground'),
-        overviewRulerLane: vscode.OverviewRulerLane.Left,
-        overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.addedForeground'),
+        // overviewRulerLane doesn't scale very well
+        // overviewRulerLane: vscode.OverviewRulerLane.Left,
+        // overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.addedForeground'),
       }),
       removed: vscode.window.createTextEditorDecorationType({
         isWholeLine: true,
         backgroundColor: new vscode.ThemeColor('diffEditor.removedLineBackground'),
-        overviewRulerLane: vscode.OverviewRulerLane.Left,
-        overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.deletedForeground'),
+        // Doesn't scale great
+        // overviewRulerLane: vscode.OverviewRulerLane.Left,
+        // overviewRulerColor: new vscode.ThemeColor('editorOverviewRuler.deletedForeground'),
       }),
     };
   }
