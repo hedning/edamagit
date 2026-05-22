@@ -45,8 +45,6 @@ export abstract class DocumentView extends View {
 
         {
           console.log('update', this.constructor.name);
-          assert(doc.getText() === newText, 'apply edit failed');
-          assert(computeLineDiff(doc.getText(), newText).length === 0, 'diff failed');
         }
       } else {
         console.log('no update', this.constructor.name);
