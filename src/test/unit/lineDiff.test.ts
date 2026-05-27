@@ -194,6 +194,39 @@ for (const [name, computeLineDiff] of impls) {
       assert.strictEqual(hunks.length, 1);
       assert.deepStrictEqual(applyHunks(a, hunks), b);
     });
+
+    test('huge fully-different buffers fall back to one replace hunk', () => {
+      // Past the size caps both impls stop diffing line-by-line and collapse
+      // the changed region into a single replace. With no shared prefix/suffix
+      // that region is the whole buffer, so we expect exactly one hunk that
+      // still reconstructs `b`.
+      const a: string[] = [];
+      const b: string[] = [];
+      for (let i = 0; i < 6000; i++) a.push(`old ${i}`);
+      for (let i = 0; i < 6000; i++) b.push(`new ${i}`);
+      const hunks = diff(computeLineDiff, a, b);
+      assertHunksWellFormed(hunks);
+      assert.strictEqual(hunks.length, 1);
+      assert.strictEqual(hunks[0].oldStartLine, 0);
+      assert.strictEqual(hunks[0].oldEndLine, a.length);
+      assert.deepStrictEqual(applyHunks(a, hunks), b);
+    });
+
+    test('fallback still preserves shared prefix and suffix', () => {
+      // Even when the middle is too big to diff finely, the trimmed
+      // prefix/suffix is left alone, so the single replace hunk covers only
+      // the changed span — not the whole buffer.
+      const a = ['HEAD', 'TAIL'];
+      const b = ['HEAD', 'TAIL'];
+      for (let i = 0; i < 6000; i++) a.splice(1, 0, `old ${i}`);
+      for (let i = 0; i < 6000; i++) b.splice(1, 0, `new ${i}`);
+      const hunks = diff(computeLineDiff, a, b);
+      assertHunksWellFormed(hunks);
+      assert.strictEqual(hunks.length, 1);
+      assert.strictEqual(hunks[0].oldStartLine, 1);
+      assert.strictEqual(hunks[0].oldEndLine, a.length - 1);
+      assert.deepStrictEqual(applyHunks(a, hunks), b);
+    });
   });
 }
 
