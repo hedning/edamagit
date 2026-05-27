@@ -27,7 +27,7 @@ export interface LineDiffHunk {
 // Edit-script ops: 0 = equal, 1 = delete from old, 2 = insert from new.
 type Op = 0 | 1 | 2;
 
-export const computeLineDiff = computeLineDiffMyers;
+export const computeLineDiff = computeLineDiffLcs;
 
 export function computeLineDiffMyers(aText: string, bText: string): LineDiffHunk[] {
   const a = aText.split(LineSplitterRegex);
