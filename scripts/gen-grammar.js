@@ -5,9 +5,10 @@
 //
 // Run: node scripts/gen-grammar.js
 //
-// Static parts of the grammar (section header, hunk header, modified, etc.)
-// stay editable directly in magit.tmGrammar.json — only rules whose name
-// ends in `Hunk` and their includes are touched here.
+// Static parts of the grammar (hunk header, word-diff markers, etc.) stay
+// editable directly in magit.tmGrammar.json — only rules whose name ends in
+// `Hunk` and their includes are touched here. Structural lines like section
+// and file headers are highlighted by the SemanticTokensProvider, not here.
 
 const fs = require('fs');
 const path = require('path');
@@ -86,9 +87,12 @@ function extPattern(lang) {
 }
 
 function buildRule(lang) {
+  // No `beginCaptures`: the file-header line that opens the region is colored
+  // by the SemanticTokensProvider (magit-file-header token from
+  // ChangeHeaderView), not by the grammar. `begin` still has to match it to
+  // enter the embedded region.
   return {
     begin: `${FILE_HEADER_PREFIX}.*\\.${extPattern(lang)}$`,
-    beginCaptures: { '0': { name: 'strong magit.subheader' } },
     while: WHILE_REGEX,
     contentName: `meta.embedded.block.${lang.language}`,
     patterns: [

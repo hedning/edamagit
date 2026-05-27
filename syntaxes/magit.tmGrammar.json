@@ -102,9 +102,6 @@
           "include": "#fixup"
         },
         {
-          "include": "#modified"
-        },
-        {
           "include": "#entity"
         },
         {
@@ -132,10 +129,6 @@
       "match": "(^stash@{\\d+}|((^)([0-9a-f]{7}) ))|(^#\\d+)",
       "name": "variable.object.property magit.entity"
     },
-    "modified": {
-      "match": "^(modified|new file|deleted|renamed|copied|unmerged)   .*$",
-      "name": "strong magit.subheader"
-    },
     "wordinserted": {
       "match": "{\\+.*\\+}",
       "name": "markup.inserted.diff"
@@ -150,12 +143,7 @@
     },
     "pythonHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(py|pyi)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.python",
       "patterns": [
         {
@@ -174,12 +162,7 @@
     },
     "typescriptHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(ts|mts|cts)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.typescript",
       "patterns": [
         {
@@ -198,12 +181,7 @@
     },
     "typescriptreactHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.tsx$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.typescriptreact",
       "patterns": [
         {
@@ -222,12 +200,7 @@
     },
     "javascriptHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(js|mjs|cjs)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.javascript",
       "patterns": [
         {
@@ -246,12 +219,7 @@
     },
     "javascriptreactHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.jsx$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.javascriptreact",
       "patterns": [
         {
@@ -270,12 +238,7 @@
     },
     "jsonHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.json$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.json",
       "patterns": [
         {
@@ -294,12 +257,7 @@
     },
     "jsoncHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.jsonc$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.jsonc",
       "patterns": [
         {
@@ -318,12 +276,7 @@
     },
     "yamlHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(yaml|yml)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.yaml",
       "patterns": [
         {
@@ -342,12 +295,7 @@
     },
     "goHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.go$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.go",
       "patterns": [
         {
@@ -366,12 +314,7 @@
     },
     "rustHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.rs$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.rust",
       "patterns": [
         {
@@ -390,12 +333,7 @@
     },
     "rubyHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.rb$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.ruby",
       "patterns": [
         {
@@ -414,12 +352,7 @@
     },
     "javaHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.java$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.java",
       "patterns": [
         {
@@ -438,12 +371,7 @@
     },
     "cHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(c|h)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.c",
       "patterns": [
         {
@@ -462,12 +390,7 @@
     },
     "cppHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(cpp|cc|cxx|hpp|hh|hxx)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.cpp",
       "patterns": [
         {
@@ -486,12 +409,7 @@
     },
     "csharpHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.cs$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.csharp",
       "patterns": [
         {
@@ -510,12 +428,7 @@
     },
     "shellscriptHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(sh|bash|zsh)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.shellscript",
       "patterns": [
         {
@@ -534,12 +447,7 @@
     },
     "markdownHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(md|markdown)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.markdown",
       "patterns": [
         {
@@ -558,12 +466,7 @@
     },
     "htmlHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.(html|htm)$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.html",
       "patterns": [
         {
@@ -582,12 +485,7 @@
     },
     "cssHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.css$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.css",
       "patterns": [
         {
@@ -606,12 +504,7 @@
     },
     "scssHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.scss$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.scss",
       "patterns": [
         {
@@ -630,12 +523,7 @@
     },
     "xmlHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.xml$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.xml",
       "patterns": [
         {
@@ -654,12 +542,7 @@
     },
     "phpHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.php$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.php",
       "patterns": [
         {
@@ -678,12 +561,7 @@
     },
     "luaHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.lua$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.lua",
       "patterns": [
         {
@@ -702,12 +580,7 @@
     },
     "swiftHunk": {
       "begin": "^(modified|new file|deleted|renamed|copied|unmerged)   .*\\.swift$",
-      "beginCaptures": {
-        "0": {
-          "name": "strong magit.subheader"
-        }
-      },
-      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
+      "while": "^(?!(modified|new file|deleted|renamed|copied|unmerged)   |(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD|Branches|Remote|Tags|Pull Requests|Issues|GitError!|Cherry Picking|Reverting|Stash@\\{\\d+\\}))",
       "contentName": "meta.embedded.block.swift",
       "patterns": [
         {

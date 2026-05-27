@@ -1,14 +1,21 @@
-import { UnclickableTextView } from '../general/textView';
+import { UnclickableSemanticTextView, Token } from '../general/semanticTextView';
 import { MagitChange } from '../../models/magitChange';
+import { SemanticTokenTypes } from '../../common/constants';
 import { Status } from '../../typings/git';
 
-export class ChangeHeaderView extends UnclickableTextView {
+export class ChangeHeaderView extends UnclickableSemanticTextView {
 
   constructor(public change: MagitChange) {
-    super();
-    const statusLabel = mapFileStatusToLabel(this.change.status);
-    const mergingStatusLabel = mapFileStatusToMergingLabel(this.change.status);
-    this.textContent = `${statusLabel ? statusLabel.padEnd(11) : ''}${this.change.relativePath}${mergingStatusLabel ? ` (${mergingStatusLabel})` : ''}`;
+    super(...ChangeHeaderView.buildContent(change));
+  }
+
+  // Untracked entries have no status-label prefix; the old grammar only
+  // highlighted lines that began with a status word, so leave those plain.
+  private static buildContent(change: MagitChange): (string | Token)[] {
+    const statusLabel = mapFileStatusToLabel(change.status);
+    const mergingStatusLabel = mapFileStatusToMergingLabel(change.status);
+    const text = `${statusLabel ? statusLabel.padEnd(11) : ''}${change.relativePath}${mergingStatusLabel ? ` (${mergingStatusLabel})` : ''}`;
+    return [statusLabel ? new Token(text, SemanticTokenTypes.FileHeader) : text];
   }
 }
 

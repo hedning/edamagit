@@ -9,6 +9,7 @@ import { Section, SectionHeaderView } from '../../../views/general/sectionHeader
 import { BranchHeaderSectionView } from '../../../views/branches/branchHeaderSectionView';
 import { ChangeSectionView } from '../../../views/changes/changesSectionView';
 import { ChangeView } from '../../../views/changes/changeView';
+import { ChangeHeaderView } from '../../../views/changes/changeHeaderView';
 import { CommitSectionView } from '../../../views/commits/commitSectionView';
 import { UnsourcedCommitSectionView } from '../../../views/commits/unsourcedCommitsSectionView';
 import { StashSectionView } from '../../../views/stashes/stashSectionView';
@@ -408,6 +409,23 @@ origin/feature Upstream tip
         sectionHeaders(new ErrorMessageView('fatal: boom')),
         ['GitError!'],
       );
+    });
+  });
+
+  suite('file header semantic tokens', () => {
+    const fileHeaders = (view: View) =>
+      collectTokens(view)
+        .filter(t => t.type === SemanticTokenTypes.FileHeader)
+        .map(t => t.text);
+
+    test('tracked change tokenizes the whole status line', () => {
+      const view = new ChangeHeaderView(makeChange({ path: 'src/foo.ts', status: Status.MODIFIED }));
+      assert.deepStrictEqual(fileHeaders(view), ['modified   src/foo.ts']);
+    });
+
+    test('untracked entry emits no file-header token', () => {
+      const view = new ChangeHeaderView(makeChange({ path: 'new.txt', status: Status.UNTRACKED }));
+      assert.deepStrictEqual(fileHeaders(view), []);
     });
   });
 });

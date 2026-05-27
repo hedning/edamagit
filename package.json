@@ -449,6 +449,9 @@
         "rules": {
           "magit-section-header": {
             "bold": true
+          },
+          "magit-file-header": {
+            "bold": true
           }
         }
       }
@@ -558,6 +561,10 @@
         "id": "magit-section-header",
         "superType": "keyword",
         "description": "A magit section header line (e.g. \"Unstaged changes\")."
+      },
+      {
+        "id": "magit-file-header",
+        "description": "A magit file-change header line (e.g. \"modified   path\")."
       }
     ],
     "semanticTokenScopes": [
