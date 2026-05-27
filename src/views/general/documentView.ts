@@ -32,8 +32,17 @@ export abstract class DocumentView extends View {
     // const doc = await workspace.openTextDocument(this.uri)
     const doc = workspace.textDocuments.find(d => d.uri.toString() === this.uri.toString());
     if (doc) {
-      const newText = this.render(0).join('\n');
-      const hunks = computeLineDiff(doc.getText(), newText);
+      const newLinesArr = this.render(0);
+      const newText = newLinesArr.join('\n');
+      const oldText = doc.getText();
+      console.log(
+        `triggerUpdate ${this.constructor.name}: ` +
+        `old ${doc.lineCount} lines / ${oldText.length} chars, ` +
+        `new ${newLinesArr.length} lines / ${newText.length} chars`
+      );
+      const t0 = Date.now();
+      const hunks = computeLineDiff(oldText, newText);
+      console.log(`  computeLineDiff -> ${hunks.length} hunks in ${Date.now() - t0}ms`);
       if (hunks.length > 0) {
         const edit = new WorkspaceEdit();
         for (const h of hunks) {
