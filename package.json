@@ -444,6 +444,13 @@
         "editor.lineNumbers": "off",
         "editor.minimap.enabled": false,
         "editor.renderWhitespace": "none"
+      },
+      "editor.semanticTokenColorCustomizations": {
+        "rules": {
+          "magit-section-header": {
+            "bold": true
+          }
+        }
       }
     },
     "configuration": {
