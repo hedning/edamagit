@@ -20,4 +20,5 @@ export enum SemanticTokenTypes {
   HeadName = 'magit-head-name',
   RemoteHeadName = 'magit-remote-head-name',
   TagName = 'magit-tag-name',
+  SectionHeader = 'magit-section-header',
 }

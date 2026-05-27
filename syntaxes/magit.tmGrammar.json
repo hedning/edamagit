@@ -87,9 +87,6 @@
     "expression": {
       "patterns": [
         {
-          "include": "#sectionHeader"
-        },
-        {
           "include": "#hunkHeader"
         },
         {
@@ -114,10 +111,6 @@
           "include": "#helpKey"
         }
       ]
-    },
-    "sectionHeader": {
-      "match": "^(Untracked files|((Unstaged|Staged) changes)|Stashes|Worktrees|Terminals|Recent commits|Unmerged into|Unpushed to|Unpulled from|HEAD:?|Merge:|Rebase:|Tag:|Branches|Remote|Tags|Pull Requests|Issues|GitError!|(Merging .*(?= \\())|(Rebasing .* onto .*$)|Cherry Picking|Reverting|Stash@{\\d+}|(Commits in .*$))",
-      "name": "strong keyword.operator.new.section.header.magit magit.header"
     },
     "highlight": {
       "match": "^(join|pick)",

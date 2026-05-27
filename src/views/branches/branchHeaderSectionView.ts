@@ -1,10 +1,10 @@
 import * as path from 'path';
 import { Uri } from 'vscode';
 import { View } from '../general/view';
-import { UnclickableTextView, TextView } from '../general/textView';
+import { TextView } from '../general/textView';
 import { MagitBranch, MagitUpstreamRef } from '../../models/magitBranch';
 import { Commit, Ref } from '../../typings/git';
-import { SemanticTextView, Token } from '../general/semanticTextView';
+import { SemanticTextView, UnclickableSemanticTextView, Token } from '../general/semanticTextView';
 import { SemanticTokenTypes } from '../../common/constants';
 import { CommitItemView } from '../commits/commitSectionView';
 import GitTextUtils from '../../utils/gitTextUtils';
@@ -42,7 +42,8 @@ export class BranchHeaderSectionView extends View {
     this.headerText = `HEAD: ${repoSegment} ${branchLabel}`;
 
     this.addSubview(new SemanticTextView(
-      `HEAD: ${repoSegment} `,
+      new Token('HEAD:', SemanticTokenTypes.SectionHeader),
+      ` ${repoSegment} `,
       new Token(branchLabel, SemanticTokenTypes.HeadName),
     ));
 
@@ -54,12 +55,13 @@ export class BranchHeaderSectionView extends View {
     }
 
     if (HEAD.upstreamRemote) {
-      this.addSubview(new UnclickableTextView(HEAD.upstreamRemote.rebase ? 'Rebase:' : 'Merge:'));
+      this.addSubview(new UnclickableSemanticTextView(
+        new Token(HEAD.upstreamRemote.rebase ? 'Rebase:' : 'Merge:', SemanticTokenTypes.SectionHeader)));
       this.addSubview(remoteSummary(HEAD.upstreamRemote));
     }
 
     if (HEAD.tag?.name) {
-      this.addSubview(new UnclickableTextView('Tag:'));
+      this.addSubview(new UnclickableSemanticTextView(new Token('Tag:', SemanticTokenTypes.SectionHeader)));
       this.addSubview(new SemanticTextView(new Token(HEAD.tag.name, SemanticTokenTypes.TagName)));
     }
   }

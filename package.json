@@ -546,6 +546,11 @@
         "id": "magit-tag-name",
         "superType": "label",
         "description": "Name of a git tag."
+      },
+      {
+        "id": "magit-section-header",
+        "superType": "keyword",
+        "description": "A magit section header line (e.g. \"Unstaged changes\")."
       }
     ],
     "semanticTokenScopes": [
@@ -565,6 +570,9 @@
           ],
           "magit-tag-name": [
             "string.highlight"
+          ],
+          "magit-section-header": [
+            "keyword.operator.new"
           ]
         }
       }

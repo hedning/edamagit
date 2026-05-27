@@ -12,6 +12,8 @@ import { DocumentView, RebuildableViewKind } from './general/documentView';
 import { Section } from './general/sectionHeader';
 import { LineBreakView } from './general/lineBreakView';
 import { TextView } from './general/textView';
+import { SemanticTextView, Token } from './general/semanticTextView';
+import { SemanticTokenTypes } from '../common/constants';
 import { View } from './general/view';
 
 // `git log -p` rendered with per-commit folds. Each commit's first line is
@@ -62,7 +64,7 @@ export class LogPView extends DocumentView {
     }
 
     this.subViews = [
-      new TextView(this.headerText),
+      new SemanticTextView(new Token(this.headerText, SemanticTokenTypes.SectionHeader)),
       ...entries.map(e => new CommitPItemView(e, refMap[e.commit.hash], state.HEAD?.name, defaultBranches)),
     ];
 

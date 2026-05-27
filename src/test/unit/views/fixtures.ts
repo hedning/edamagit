@@ -12,6 +12,8 @@ import { MagitBranch, MagitUpstreamRef } from '../../../models/magitBranch';
 import { MagitRepository } from '../../../models/magitRepository';
 import { Stash } from '../../../models/stash';
 import { View } from '../../../views/general/view';
+import { SemanticTextView } from '../../../views/general/semanticTextView';
+import { SemanticTokenTypes } from '../../../common/constants';
 
 export const REPO_URI = Uri.parse('file:///repo');
 
@@ -125,6 +127,24 @@ export function makeRepository(overrides: Partial<MagitRepository> = {}): MagitR
  */
 export function renderView(view: View): string {
   return view.render(0).join('\n');
+}
+
+/**
+ * Render a view tree and collect every semantic token it emits, in document
+ * order. Used to assert that highlighting migrated from the TextMate grammar
+ * to the SemanticTokensProvider actually produces the expected tokens.
+ */
+export function collectTokens(view: View): { text: string; type: SemanticTokenTypes }[] {
+  view.render(0);
+  const out: { text: string; type: SemanticTokenTypes }[] = [];
+  const walk = (v: View) => {
+    if (v instanceof SemanticTextView) {
+      v.tokens.forEach(t => out.push({ text: t.textContent, type: t.tokenType }));
+    }
+    v.subViews.forEach(walk);
+  };
+  walk(view);
+  return out;
 }
 
 // Assert that a view renders to `expected`. Strips one leading and one trailing

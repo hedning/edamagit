@@ -38,6 +38,10 @@ export class SemanticTextView extends TextView {
   }
 }
 
+export class UnclickableSemanticTextView extends SemanticTextView {
+  onClicked() { return undefined; }
+}
+
 export class Token {
   constructor(public textContent: string,
     public tokenType: SemanticTokenTypes,

@@ -1,4 +1,5 @@
-import { UnclickableTextView } from './textView';
+import { SemanticTokenTypes } from '../../common/constants';
+import { UnclickableSemanticTextView, Token } from './semanticTextView';
 
 export enum Section {
   Untracked = 'Untracked files',
@@ -24,9 +25,10 @@ export enum Section {
   Parents = 'Parents',
 }
 
-export class SectionHeaderView extends UnclickableTextView {
+export class SectionHeaderView extends UnclickableSemanticTextView {
 
   constructor(section: Section, count?: number, extraText?: string) {
-    super(`${section.valueOf()}${extraText ? ' ' + extraText + '' : ''}${count ? ' (' + count + ')' : ''}`);
+    const rest = `${extraText ? ' ' + extraText + '' : ''}${count ? ' (' + count + ')' : ''}`;
+    super(new Token(section.valueOf(), SemanticTokenTypes.SectionHeader), rest);
   }
 }

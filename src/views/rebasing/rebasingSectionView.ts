@@ -1,5 +1,6 @@
 import { View } from '../general/view';
-import { UnclickableTextView } from '../general/textView';
+import { UnclickableSemanticTextView, Token } from '../general/semanticTextView';
+import { SemanticTokenTypes } from '../../common/constants';
 import { LineBreakView } from '../general/lineBreakView';
 import { CommitItemView } from '../commits/commitSectionView';
 import { MagitRebasingState } from '../../models/magitRebasingState';
@@ -12,7 +13,9 @@ export class RebasingSectionView extends View {
   constructor(rebasingState: MagitRebasingState) {
     super();
     this.subViews = [
-      new UnclickableTextView(`Rebasing ${rebasingState.origBranchName} onto ${rebasingState.onto.name}`),
+      new UnclickableSemanticTextView(new Token(
+        `Rebasing ${rebasingState.origBranchName} onto ${rebasingState.onto.name}`,
+        SemanticTokenTypes.SectionHeader)),
       ...rebasingState.upcomingCommits.map(c => new CommitItemView(c, 'pick')),
       new CommitItemView(rebasingState.currentCommit, 'join'),
       ...rebasingState.doneCommits.map(c => new CommitItemView(c, 'done')),

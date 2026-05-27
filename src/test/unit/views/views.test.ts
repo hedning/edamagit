@@ -1,8 +1,11 @@
 import { suite, test } from 'mocha';
+import * as assert from 'assert';
 import { Uri } from 'vscode';
 
 import { Status, RefType } from '../../../typings/git';
-import { Section } from '../../../views/general/sectionHeader';
+import { View } from '../../../views/general/view';
+import { SemanticTokenTypes } from '../../../common/constants';
+import { Section, SectionHeaderView } from '../../../views/general/sectionHeader';
 import { BranchHeaderSectionView } from '../../../views/branches/branchHeaderSectionView';
 import { ChangeSectionView } from '../../../views/changes/changesSectionView';
 import { ChangeView } from '../../../views/changes/changeView';
@@ -16,6 +19,7 @@ import MagitStatusView, { MagitStatus } from '../../../views/magitStatusView';
 import {
   REPO_URI,
   assertView,
+  collectTokens,
   makeBranch,
   makeChange,
   makeCommit,
@@ -371,5 +375,39 @@ origin/feature Upstream tip
 `);
     });
 
+  });
+
+  suite('section header semantic tokens', () => {
+    const sectionHeaders = (view: View) =>
+      collectTokens(view)
+        .filter(t => t.type === SemanticTokenTypes.SectionHeader)
+        .map(t => t.text);
+
+    test('SectionHeaderView tokenizes the section name, not the count', () => {
+      assert.deepStrictEqual(
+        sectionHeaders(new SectionHeaderView(Section.Unstaged, 3)),
+        ['Unstaged changes'],
+      );
+    });
+
+    test('BranchHeaderSectionView tokenizes HEAD: and the upstream label', () => {
+      const HEAD = makeBranch({
+        name: 'main',
+        commit: 'aaaaaaa',
+        message: 'Tip',
+        upstreamRemote: makeUpstream({ remote: 'origin', name: 'main', commitMessage: 'Upstream tip' }),
+      });
+      assert.deepStrictEqual(
+        sectionHeaders(new BranchHeaderSectionView(REPO_URI, [], HEAD)),
+        ['HEAD:', 'Merge:'],
+      );
+    });
+
+    test('ErrorMessageView tokenizes the GitError! prefix', () => {
+      assert.deepStrictEqual(
+        sectionHeaders(new ErrorMessageView('fatal: boom')),
+        ['GitError!'],
+      );
+    });
   });
 });
