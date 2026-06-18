@@ -91,7 +91,13 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
 
   } else if (selectedView instanceof WorktreeItemView) {
     if (selectedView.worktree.bare) return;
-    return magitStatusForPath(selectedView.worktree.path);
+    if (worktree) {
+      return magitStatusForPath(selectedView.worktree.path);
+    }
+    // ctrl+enter: open the worktree folder in VS Code. Omit forceNewWindow so
+    // VS Code activates an existing window if the worktree is already open
+    // instead of forcing a duplicate.
+    return commands.executeCommand('vscode.openFolder', selectedView.worktree.path);
 
   } else if (selectedView instanceof TerminalItemView) {
     // Note: if editor group is hidden this doesn't work
