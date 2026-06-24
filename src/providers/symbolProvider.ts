@@ -6,6 +6,7 @@ import { ChangeSectionView } from '../views/changes/changesSectionView';
 import { BranchHeaderSectionView } from '../views/branches/branchHeaderSectionView';
 import { WorktreeSectionView, WorktreeItemView } from '../views/worktrees/worktreeSectionView';
 import { TerminalsSectionView, TerminalItemView } from '../views/terminals/terminalsSectionView';
+import { SessionFilesSectionView, SessionFileItemView } from '../views/sessionFiles/sessionFilesSectionView';
 import { StashSectionView } from '../views/stashes/stashSectionView';
 import { Section } from '../views/general/sectionHeader';
 import LogView from '../views/logView';
@@ -48,6 +49,16 @@ function buildSectionSymbol(view: View): vscode.DocumentSymbol | undefined {
             children.push(new vscode.DocumentSymbol(sub.terminal.name, '', vscode.SymbolKind.Event, sub.range, sub.range));
         }
         const sym = new vscode.DocumentSymbol(Section.Terminals, '', vscode.SymbolKind.Namespace, view.range, view.range);
+        sym.children = children;
+        return sym;
+    }
+    if (view instanceof SessionFilesSectionView) {
+        const children: vscode.DocumentSymbol[] = [];
+        for (const sub of view.subViews) {
+            if (!(sub instanceof SessionFileItemView)) continue;
+            children.push(new vscode.DocumentSymbol(sub.file.label, sub.file.relativePath, vscode.SymbolKind.File, sub.range, sub.range));
+        }
+        const sym = new vscode.DocumentSymbol(Section.Editing, '', vscode.SymbolKind.Namespace, view.range, view.range);
         sym.children = children;
         return sym;
     }
