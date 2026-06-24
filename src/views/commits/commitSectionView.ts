@@ -24,7 +24,7 @@ export class CommitSectionView extends View {
 
 export class CommitItemView extends SemanticTextView {
 
-  constructor(public commit: Commit, qualifier?: string, refs?: Ref[]) {
+  constructor(public commit: Commit, public qualifier?: string, refs?: Ref[]) {
     super();
 
     this.content = [

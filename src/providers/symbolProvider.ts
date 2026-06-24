@@ -8,7 +8,10 @@ import { WorktreeSectionView, WorktreeItemView } from '../views/worktrees/worktr
 import { TerminalsSectionView, TerminalItemView } from '../views/terminals/terminalsSectionView';
 import { SessionFilesSectionView, SessionFileItemView } from '../views/sessionFiles/sessionFilesSectionView';
 import { StashSectionView } from '../views/stashes/stashSectionView';
+import { RebasingSectionView } from '../views/rebasing/rebasingSectionView';
+import { CommitItemView } from '../views/commits/commitSectionView';
 import { Section } from '../views/general/sectionHeader';
+import GitTextUtils from '../utils/gitTextUtils';
 import LogView from '../views/logView';
 
 
@@ -59,6 +62,19 @@ function buildSectionSymbol(view: View): vscode.DocumentSymbol | undefined {
             children.push(new vscode.DocumentSymbol(sub.file.label, sub.file.relativePath, vscode.SymbolKind.File, sub.range, sub.range));
         }
         const sym = new vscode.DocumentSymbol(Section.Editing, '', vscode.SymbolKind.Namespace, view.range, view.range);
+        sym.children = children;
+        return sym;
+    }
+    if (view instanceof RebasingSectionView) {
+        const children: vscode.DocumentSymbol[] = [];
+        for (const sub of view.subViews) {
+            if (!(sub instanceof CommitItemView)) continue;
+            const c = sub.commit;
+            const name = GitTextUtils.shortCommitMessage(c.message) || GitTextUtils.shortHash(c.hash);
+            const detail = `${sub.qualifier ?? ''} ${GitTextUtils.shortHash(c.hash)}`.trim();
+            children.push(new vscode.DocumentSymbol(name, detail, vscode.SymbolKind.Object, sub.range, sub.range));
+        }
+        const sym = new vscode.DocumentSymbol(view.headerText, '', vscode.SymbolKind.Namespace, view.range, view.range);
         sym.children = children;
         return sym;
     }

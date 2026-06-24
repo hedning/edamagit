@@ -7,15 +7,15 @@ import { MagitRebasingState } from '../../models/magitRebasingState';
 
 export class RebasingSectionView extends View {
   isFoldable = true;
+  readonly headerText: string;
 
   get id() { return 'Rebasing'; }
 
   constructor(rebasingState: MagitRebasingState) {
     super();
+    this.headerText = `Rebasing ${rebasingState.origBranchName} onto ${rebasingState.onto.name}`;
     this.subViews = [
-      new UnclickableSemanticTextView(new Token(
-        `Rebasing ${rebasingState.origBranchName} onto ${rebasingState.onto.name}`,
-        SemanticTokenTypes.SectionHeader)),
+      new UnclickableSemanticTextView(new Token(this.headerText, SemanticTokenTypes.SectionHeader)),
       ...rebasingState.upcomingCommits.map(c => new CommitItemView(c, 'pick')),
       new CommitItemView(rebasingState.currentCommit, 'join'),
       ...rebasingState.doneCommits.map(c => new CommitItemView(c, 'done')),
