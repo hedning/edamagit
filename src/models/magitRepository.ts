@@ -32,6 +32,13 @@ export interface MagitRepository {
   readonly refs: Ref[];
   readonly submodules: Submodule[];
   readonly worktrees: Worktree[];
+  /**
+   * The per-worktree git directory (`<root>/.git` or, for a linked worktree,
+   * `<main>/.git/worktrees/<name>`). Editor session files like COMMIT_EDITMSG
+   * and rebase-merge/git-rebase-todo live here; the status view scans open
+   * tabs against it to list in-progress edit buffers.
+   */
+  readonly gitDir?: Uri;
   readonly gitRepository?: Repository;
 
   readonly forgeState?: ForgeState;

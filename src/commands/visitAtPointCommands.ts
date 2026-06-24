@@ -9,6 +9,7 @@ import { CommitDetail, CommitDetailView } from '../views/commitDetailView';
 import { StashItemView } from '../views/stashes/stashSectionView';
 import { WorktreeItemView } from '../views/worktrees/worktreeSectionView';
 import { TerminalItemView } from '../views/terminals/terminalsSectionView';
+import { SessionFileItemView } from '../views/sessionFiles/sessionFilesSectionView';
 import { ChangeView } from '../views/changes/changeView';
 import { MagitCommit } from '../models/magitCommit';
 import { HunkView } from '../views/changes/hunkView';
@@ -103,6 +104,10 @@ async function magitVisitAtPointInternal(repository: MagitRepository, currentVie
     // Note: if editor group is hidden this doesn't work
     // The alternative is ugly hacks though:/
     return selectedView.terminal.show();
+
+  } else if (selectedView instanceof SessionFileItemView) {
+    // Reveal the already-open editor tab for the commit/rebase/merge buffer.
+    return window.showTextDocument(selectedView.file.uri, { viewColumn: ViewUtils.showDocumentColumn(), preview: false });
 
   } else if (selectedView instanceof IssueItemView) {
     const issue = selectedView.issue;

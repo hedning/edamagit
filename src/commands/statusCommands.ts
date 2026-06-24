@@ -249,6 +249,7 @@ export async function internalMagitStatus(rootUri: Uri, gitRepository?: Reposito
     refs,
     submodules: await submodulesTask,
     worktrees: await worktreesTask,
+    gitDir,
     gitRepository,
     forgeState: forgeState,
   };

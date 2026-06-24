@@ -20,6 +20,7 @@ import { IssueSectionView } from './forge/issueSectionView';
 import { ErrorMessageView } from './errorMessageView';
 import { WorktreeSectionView } from './worktrees/worktreeSectionView';
 import { TerminalsSectionView, terminalsForWorktree } from './terminals/terminalsSectionView';
+import { SessionFilesSectionView, sessionFilesForWorktree } from './sessionFiles/sessionFilesSectionView';
 
 export default class MagitStatusView extends DocumentView {
 
@@ -59,6 +60,14 @@ export default class MagitStatusView extends DocumentView {
       const terminals = terminalsForWorktree(magitState.uri, magitState.worktrees);
       if (terminals.length > 0) {
         this.addSubview(new TerminalsSectionView(terminals, magitState.uri));
+        this.addSubview(new LineBreakView());
+      }
+    }
+
+    if (magitState.gitDir && !magitConfig.hiddenStatusSections.has('editing')) {
+      const sessionFiles = sessionFilesForWorktree(magitState.gitDir);
+      if (sessionFiles.length > 0) {
+        this.addSubview(new SessionFilesSectionView(sessionFiles));
         this.addSubview(new LineBreakView());
       }
     }

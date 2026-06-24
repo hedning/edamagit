@@ -8,6 +8,7 @@ export enum Section {
   Stashes = 'Stashes',
   Worktrees = 'Worktrees',
   Terminals = 'Terminals',
+  Editing = 'Editing',
   RecentCommits = 'Recent commits',
   UnmergedInto = 'Unmerged into',
   UnpushedTo = 'Unpushed to',

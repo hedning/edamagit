@@ -14,6 +14,7 @@ import { CommitSectionView } from '../../../views/commits/commitSectionView';
 import { UnsourcedCommitSectionView } from '../../../views/commits/unsourcedCommitsSectionView';
 import { StashSectionView } from '../../../views/stashes/stashSectionView';
 import { WorktreeSectionView } from '../../../views/worktrees/worktreeSectionView';
+import { SessionFilesSectionView } from '../../../views/sessionFiles/sessionFilesSectionView';
 import { ErrorMessageView } from '../../../views/errorMessageView';
 import MagitStatusView, { MagitStatus } from '../../../views/magitStatusView';
 
@@ -272,6 +273,20 @@ Worktrees (3)
 * main        aaaaaaa  /repo/main
   feature/x   bbbbbbb  /repo/feat  locked
   (detached)  ccccccc  /repo/dt
+`);
+    });
+  });
+
+  suite('SessionFilesSectionView', () => {
+    test('lists open git edit buffers with aligned labels', () => {
+      const view = new SessionFilesSectionView([
+        { uri: Uri.file('/repo/.git/COMMIT_EDITMSG'), label: 'commit message', relativePath: 'COMMIT_EDITMSG' },
+        { uri: Uri.file('/repo/.git/rebase-merge/git-rebase-todo'), label: 'rebase todo', relativePath: 'rebase-merge/git-rebase-todo' },
+      ]);
+      assertView(view, `
+Editing (2)
+  commit message  COMMIT_EDITMSG
+  rebase todo     rebase-merge/git-rebase-todo
 `);
     });
   });
