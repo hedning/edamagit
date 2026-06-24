@@ -25,6 +25,7 @@ import { fetching } from './commands/fetchingCommands';
 import { pulling } from './commands/pullingCommands';
 import { stashing } from './commands/stashingCommands';
 import { DocumentView } from './views/general/documentView';
+import MagitStatusView from './views/magitStatusView';
 import { magitApplyEntityAtPoint } from './commands/applyAtPointCommands';
 import { magitDiscardAtPoint } from './commands/discardAtPointCommands';
 import { merging } from './commands/mergingCommands';
@@ -234,6 +235,32 @@ export async function activate(context: ExtensionContext) {
     fsWatcher.onDidCreate(debounceChange);
     fsWatcher.onDidDelete(debounceChange);
     context.subscriptions.push(fsWatcher);
+  }
+
+  // Re-render visible status views when editor tabs open or close, so the
+  // live-scanned sections (Editing, Terminals) appear and disappear together
+  // with their buffers. This rebuilds from the cached repository — no git is
+  // run — and the `repoFingerprint` dedup on the fs watcher wouldn't fire for a
+  // COMMIT_EDITMSG/git-rebase-todo buffer opening anyway.
+  {
+    let timeout: NodeJS.Timeout | undefined;
+    const rerender = () => {
+      for (const editor of window.visibleTextEditors) {
+        const magitUri = asMagitUri(editor.document.uri);
+        if (!magitUri) continue;
+        const view = views.get(editor.document.uri.toString());
+        if (!(view instanceof MagitStatusView)) continue;
+        const repo = magitRepositories.get(repoFsPathFromMagitUri(magitUri));
+        if (repo) view.update(repo);
+      }
+    };
+    context.subscriptions.push(
+      window.tabGroups.onDidChangeTabs(e => {
+        if (e.opened.length === 0 && e.closed.length === 0) return;
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(rerender, 150);
+      })
+    );
   }
 
   context.subscriptions.push(
