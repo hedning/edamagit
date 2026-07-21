@@ -1,9 +1,29 @@
 import * as assert from 'assert';
+import { spawnSync } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { Uri } from 'vscode';
 import { diffToMagitChange, diffToMagitChanges } from '../../utils/diffParser';
 import { Status } from '../../typings/git';
 
 const ROOT = Uri.parse('file:///repo');
+
+const gitEnv = {
+  ...process.env,
+  GIT_AUTHOR_NAME: 'Alice',
+  GIT_AUTHOR_EMAIL: 'alice@example.com',
+  GIT_COMMITTER_NAME: 'Alice',
+  GIT_COMMITTER_EMAIL: 'alice@example.com',
+};
+
+function git(cwd: string, args: string[]): string {
+  const result = spawnSync('git', args, { cwd, env: gitEnv, encoding: 'utf8' });
+  if (result.status !== 0) {
+    throw new Error(`git ${args.join(' ')} failed (status ${result.status}): ${result.stderr}`);
+  }
+  return result.stdout;
+}
 
 suite('diffParser.diffToMagitChange', () => {
 
@@ -150,5 +170,38 @@ suite('diffParser.diffToMagitChanges', () => {
     const changes = diffToMagitChanges(text, ROOT);
     assert.strictEqual(changes.length, 1);
     assert.strictEqual(changes[0].relativePath, 'a.txt');
+  });
+});
+
+// Real git output rather than a handcrafted string: git marks the end of a
+// filename containing a space with a trailing tab on the ---/+++ lines. This
+// exercises the actual bytes git produces so the parser keeps stripping it.
+suite('diffParser with real git output', () => {
+  let tmp: string;
+
+  setup(() => {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'edamagit-diffparser-'));
+    git(tmp, ['init', '-q', '-b', 'main']);
+  });
+
+  teardown(() => {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
+
+  test('parses a filename containing a space (trailing tab in header)', () => {
+    const name = 'my file.txt';
+    fs.writeFileSync(path.join(tmp, name), 'one\ntwo\n');
+    git(tmp, ['add', '.']);
+    git(tmp, ['commit', '-qm', 'init']);
+    fs.writeFileSync(path.join(tmp, name), 'one\nTWO\n');
+
+    const rawDiff = git(tmp, ['diff']);
+    // Guard the precondition: git really does append the trailing tab here.
+    assert.ok(rawDiff.includes(`--- a/${name}\t`), `expected trailing tab in header:\n${rawDiff}`);
+
+    const changes = diffToMagitChanges(rawDiff, ROOT);
+    assert.strictEqual(changes.length, 1);
+    assert.strictEqual(changes[0].relativePath, name);
+    assert.ok(changes[0].uri.path.endsWith(`/repo/${name}`));
   });
 });
