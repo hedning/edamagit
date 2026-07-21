@@ -7,9 +7,57 @@ import GitTextUtils from './gitTextUtils';
 
 // Git appends a single trailing tab to `---`/`+++` header lines when the
 // filename contains a space, to mark where the name ends. Tabs *within* a
-// filename are C-quoted by git, so the only raw tab here is that delimiter.
+// filename are C-quoted (see unquoteCStyle), so the only raw tab here is that
+// delimiter.
 function stripTabSuffix(file: string): string {
   return file.endsWith('\t') ? file.slice(0, -1) : file;
+}
+
+// Decode a git C-quoted path (`"a/ta\tb.txt"`) back to its literal name. git
+// wraps paths containing control characters — or, with core.quotePath on
+// (the default), any byte >= 0x80 — in double quotes, escaping \a \b \t \n \v
+// \f \r \" \\ and emitting every other byte as octal \NNN. We rebuild the raw
+// bytes and UTF-8 decode, so a multibyte name spread across octal escapes
+// reassembles correctly.
+function unquoteCStyle(quoted: string): string {
+  const SIMPLE: { [key: string]: number } = {
+    a: 0x07, b: 0x08, t: 0x09, n: 0x0a, v: 0x0b, f: 0x0c, r: 0x0d,
+    '"': 0x22, '\\': 0x5c,
+  };
+  const bytes: number[] = [];
+  const pushUtf8 = (ch: string) => { for (const byte of Buffer.from(ch, 'utf8')) { bytes.push(byte); } };
+
+  let i = 1; // skip the opening quote
+  while (i < quoted.length && quoted[i] !== '"') {
+    const ch = quoted[i];
+    if (ch !== '\\') { pushUtf8(ch); i++; continue; }
+
+    const esc = quoted[i + 1];
+    if (esc === undefined) { break; } // dangling backslash; git never emits this
+    if (esc in SIMPLE) { bytes.push(SIMPLE[esc]); i += 2; continue; }
+    if (esc >= '0' && esc <= '7') {
+      i++; // skip the backslash
+      let octal = '';
+      while (octal.length < 3 && quoted[i] >= '0' && quoted[i] <= '7') { octal += quoted[i]; i++; }
+      bytes.push(parseInt(octal, 8) & 0xff);
+      continue;
+    }
+    pushUtf8(esc); i += 2; // unknown escape: keep the character literally
+  }
+  return Buffer.from(bytes).toString('utf8');
+}
+
+// git prefixes the working-tree path with `a/` or `b/`; drop it, but leave
+// sentinels like /dev/null (and anything else without the prefix) untouched.
+function stripABPrefix(path: string): string {
+  return path.startsWith('a/') || path.startsWith('b/') ? path.slice(2) : path;
+}
+
+// Extract the repo-relative path from the part of a `---`/`+++` line that
+// follows the `--- `/`+++ ` marker, handling both the quoted and plain forms.
+function parseDiffHeaderPath(afterMarker: string): string {
+  const path = afterMarker.startsWith('"') ? unquoteCStyle(afterMarker) : stripTabSuffix(afterMarker);
+  return stripABPrefix(path);
 }
 
 /**
@@ -23,6 +71,14 @@ function findFileFromHeader(text: string) {
   assert(text.startsWith(prefix), text);
 
   const double_string = text.slice(prefix.length);
+
+  // Quoted form: ` "a/<path>" "b/<path>"`. unquoteCStyle stops at the first
+  // closing quote, so it yields just the `a/<path>` half.
+  const trimmed = double_string.trimStart();
+  if (trimmed.startsWith('"')) {
+    return stripABPrefix(unquoteCStyle(trimmed));
+  }
+
   assert(double_string.length % 2 === 0); // should be 2*(' a|b/'.length + file_name.length)
   const to = double_string.length >> 1; // /2, we've already paid for modulo
   const first = double_string.slice(3, to); // ' a/`.length === 3
@@ -91,15 +147,17 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
       status = Status.DELETED;
     }
     else if (line.startsWith('rename from')) {
-      oldFile = line.slice('rename from '.length);
+      const from = line.slice('rename from '.length);
+      oldFile = from.startsWith('"') ? unquoteCStyle(from) : from;
       status = Status.INDEX_RENAMED;
     }
     else if (line.startsWith('rename to')) {
-      newFile = line.slice('rename to '.length);
+      const to = line.slice('rename to '.length);
+      newFile = to.startsWith('"') ? unquoteCStyle(to) : to;
       status = Status.INDEX_RENAMED;
     }
-    else if (line.startsWith('---')) oldFile = stripTabSuffix(line.slice('--- a/'.length));
-    else if (line.startsWith('+++')) newFile = stripTabSuffix(line.slice('+++ a/'.length));
+    else if (line.startsWith('---')) oldFile = parseDiffHeaderPath(line.slice('--- '.length));
+    else if (line.startsWith('+++')) newFile = parseDiffHeaderPath(line.slice('+++ '.length));
   }
   if (oldFile === null || newFile === null) { // Fallback for stuff like binary files
     // This will fail if the header doesn't repeat the filename

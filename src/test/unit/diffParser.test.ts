@@ -204,4 +204,44 @@ suite('diffParser with real git output', () => {
     assert.strictEqual(changes[0].relativePath, name);
     assert.ok(changes[0].uri.path.endsWith(`/repo/${name}`));
   });
+
+  // git C-quotes any path containing control characters — or, with
+  // core.quotePath on, any byte >= 0x80 — emitting `--- "a/ta\tb.txt"`
+  // (double-quoted, tab escaped as backslash-t). The parser decodes it.
+  test('parses a filename containing a tab (git C-quotes the path)', () => {
+    const name = 'ta\tb.txt';
+    fs.writeFileSync(path.join(tmp, name), 'one\ntwo\n');
+    git(tmp, ['add', '.']);
+    git(tmp, ['commit', '-qm', 'init']);
+    fs.writeFileSync(path.join(tmp, name), 'one\nTWO\n');
+
+    const rawDiff = git(tmp, ['diff']);
+    // Precondition: git really does C-quote the header for this name.
+    assert.ok(rawDiff.includes('--- "a/'), `expected C-quoted header:\n${rawDiff}`);
+
+    const changes = diffToMagitChanges(rawDiff, ROOT);
+    assert.strictEqual(changes.length, 1);
+    assert.strictEqual(changes[0].relativePath, name);
+    assert.ok(changes[0].uri.path.endsWith(`/repo/${name}`));
+  });
+
+  // With core.quotePath on (the default), git octal-escapes every byte >= 0x80,
+  // so a UTF-8 name is spread across several `\NNN` escapes that must be
+  // reassembled into bytes before decoding (é -> \303\251).
+  test('parses a non-ASCII filename (git octal-escapes the UTF-8 bytes)', () => {
+    const name = 'résumé.txt';
+    fs.writeFileSync(path.join(tmp, name), 'x\n');
+    git(tmp, ['add', '.']);
+    git(tmp, ['commit', '-qm', 'init']);
+    fs.writeFileSync(path.join(tmp, name), 'y\n');
+
+    const rawDiff = git(tmp, ['diff']);
+    // Precondition: git emits octal byte escapes, not the raw characters.
+    assert.ok(rawDiff.includes('\\303\\251'), `expected octal-escaped header:\n${rawDiff}`);
+
+    const changes = diffToMagitChanges(rawDiff, ROOT);
+    assert.strictEqual(changes.length, 1);
+    assert.strictEqual(changes[0].relativePath, name);
+    assert.ok(changes[0].uri.path.endsWith(`/repo/${name}`));
+  });
 });
