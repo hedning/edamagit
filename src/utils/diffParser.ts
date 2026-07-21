@@ -5,6 +5,13 @@ import { Status, Ref } from '../typings/git';
 import { LineSplitterRegex } from '../common/constants';
 import GitTextUtils from './gitTextUtils';
 
+// Git appends a single trailing tab to `---`/`+++` header lines when the
+// filename contains a space, to mark where the name ends. Tabs *within* a
+// filename are C-quoted by git, so the only raw tab here is that delimiter.
+function stripTabSuffix(file: string): string {
+  return file.endsWith('\t') ? file.slice(0, -1) : file;
+}
+
 /**
  * Only handles repeating filenames, since it's not possible to parse if the name is not repeating
  *
@@ -91,8 +98,8 @@ export function diffToMagitChange(text: string, root: Uri, ref?: Ref) {
       newFile = line.slice('rename to '.length);
       status = Status.INDEX_RENAMED;
     }
-    else if (line.startsWith('---')) oldFile = line.slice('--- a/'.length);
-    else if (line.startsWith('+++')) newFile = line.slice('+++ a/'.length);
+    else if (line.startsWith('---')) oldFile = stripTabSuffix(line.slice('--- a/'.length));
+    else if (line.startsWith('+++')) newFile = stripTabSuffix(line.slice('+++ a/'.length));
   }
   if (oldFile === null || newFile === null) { // Fallback for stuff like binary files
     // This will fail if the header doesn't repeat the filename
