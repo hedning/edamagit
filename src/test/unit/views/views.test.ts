@@ -54,9 +54,11 @@ suite('views (text snapshot)', () => {
         makeCommit({ hash: 'bbbbbbb', message: 'Earlier' }),
       ];
       const view = new BranchHeaderSectionView(REPO_URI, [], HEAD, log, refs);
+      // BranchHeaderSectionView deliberately skips ref decorations in its
+      // inline log (see the CommitItemView([]) calls in the view).
       assertView(view, `
 HEAD: repo main
-aaaaaaa main Tip
+aaaaaaa Tip
 bbbbbbb Earlier
 `);
     });
@@ -91,7 +93,7 @@ bbbbbbb Earlier
 
       assertView(view, `
 HEAD: repo main
-aaaaaaa origin/main Initial commit
+aaaaaaa Initial commit
 Merge:
 origin/main Upstream tip
 `);
@@ -339,7 +341,7 @@ HEAD: repo main
 
       assertView(view, `
 HEAD: repo main
-aaaaaaa main Initial commit
+aaaaaaa Initial commit
 bbbbbbb Earlier work
 
 Unstaged changes (1)
